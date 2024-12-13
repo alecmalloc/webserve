@@ -11,6 +11,7 @@
 **Integration Points:** Will need to work closely with others on request handling and CGI implementation
 
 ## Alec
+- Configuration file parsing
 - HTTP request parsing
 - Method validation
 - Header extraction and processing
@@ -34,7 +35,6 @@
 **Integration Points:** Will need to work with Moritz on CGI implementation and Alec for request/response flow
 
 ## Shared Tasks
-- Configuration file parsing
 - Testing and debugging
 - Documentation
 - Code reviews
