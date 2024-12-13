@@ -53,4 +53,4 @@
 
 ---
 
-This distribution ensures each person has a clear area of responsibility while maintaining logical connections between related components. Moritz handles the core architecture, Alec manages request processing and file operations, and Linus takes care of responses and error handling.
+Moritz handles the core architecture, Alec manages request processing and file operations, and Linus takes care of responses and error handling.
