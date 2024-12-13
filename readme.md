@@ -1,6 +1,18 @@
-# WebServ Project Task Distribution
+# WebServ
+### HTTP/1.1 compliant web server in C++98
 
-## Moritz (Core Architecture)
+<div align="center">
+  <img src="assets/webserver.png" alt="webserve" width="200"/>
+</div>
+
+## Team Members
+- [Moritz](https://github.com/mobartsch)
+- [Alec](https://github.com/alecmalloc)
+- [Linus](https://github.com/eschencode )
+
+## Project Task Distribution
+
+### Moritz (Core Architecture)
 - TCP connection management and socket handling
 - I/O multiplexing with select()
 - Main event loop implementation
@@ -10,7 +22,7 @@
 
 **Integration Points:** Will need to work closely with others on request handling and CGI implementation
 
-## Alec
+### Alec
 - Configuration file parsing
 - HTTP request parsing
 - Method validation
@@ -22,7 +34,7 @@
 
 **Integration Points:** Will coordinate with Moritz on request handling and Linus for error responses
 
-## Linus
+### Linus
 - HTTP response construction
 - Status code and headers generation
 - Content formatting
