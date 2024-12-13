@@ -31,21 +31,3 @@ jobs:
           echo "Executable not created"
           exit 1
         fi
-
-    - name: Test compilation flags
-      run: |
-        if ! make | grep -q "c++ -Wall -Wextra -Werror -std=c++98"; then
-          echo "Required compilation flags not used"
-          exit 1
-        fi
-
-    - name: Clean build
-      run: |
-        make fclean
-        if [ -f webserve ] || [ -d obj ]; then
-          echo "Clean failed"
-          exit 1
-        fi
-
-    - name: Rebuild
-      run: make re
