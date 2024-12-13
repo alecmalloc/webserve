@@ -1,0 +1,28 @@
+# Build files
+*.o
+*.d
+obj/
+build/
+
+# Executables
+*.out
+*.exe
+webserv
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Debug files
+*.dSYM/
