@@ -1,7 +1,7 @@
 # WebServ
 ### HTTP/1.1 compliant web server in C++98
 
-<div align="left">
+<div align="center">
   <img src="assets/webserver.png" alt="webserve" width="150"/>
 </div>
 
