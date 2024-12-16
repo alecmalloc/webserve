@@ -1,8 +1,10 @@
 #ifndef CONFIG_HPP
-#define CONFIGP_HPP
+#define CONFIG_HPP
 
 #include <string>
 #include <map>
+#include <iostream>
+#include <fstream>
 
 // nginx config files are divided into server blocks and location blocks
 // server contains: directives, location blocks
@@ -25,14 +27,14 @@ class ServerConfig {
 // main Config obj
 class Config {
     private:
-        std::string config_filename;
+        std::string _config_file;
         std::vector<ServerConfig> servers;
     public:
         Config() {};
         Config(const std::string& filename);
         ~Config() {};
 
-        void parse(std::string& filename);
+        void parse();
         bool validateConfig();
 };
 

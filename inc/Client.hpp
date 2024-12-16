@@ -3,7 +3,7 @@
 
 class Client {
     private:
-        int socket_fd;
+        // int socket_fd;
     public:
 };
 
