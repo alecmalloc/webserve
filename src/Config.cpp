@@ -23,7 +23,7 @@ static bool bracesValidate(std::ifstream& file) {
     // missing first brace
     if (!braceStack.empty())
         return false;
-    // Reset file pointer to the beginning
+    // reset file pointer to the beginning
     file.clear();
     file.seekg(0, std::ios::beg);
     return true;
