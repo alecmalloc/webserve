@@ -28,13 +28,12 @@ class Config {
         std::string config_filename;
         std::vector<ServerConfig> servers;
     public:
-        Config() {return;};
+        Config() {};
         Config(const std::string& filename);
         ~Config() {};
 
         void parse(std::string& filename);
         bool validateConfig();
 };
-
 
 #endif
