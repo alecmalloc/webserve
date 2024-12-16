@@ -4,6 +4,7 @@ Config::Config(const std::string& filename): _config_file(filename) {
     parse();
 }
 
+// quick draft
 static bool bracesValidate(std::ifstream& file) {
     std::stack<char> braceStack;
     std::string line;
