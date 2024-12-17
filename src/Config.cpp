@@ -5,12 +5,18 @@ Config::Config(const std::string& filename): _config_filename(filename) {
     parse();
 }
 
-std::map<std::string, std::vector<std::string>> extractPair(const std::string& line) {
+static std::pair<std::string, std::vector<std::string> > extractDirectives(const std::string& line) {
     std::istringstream iss(line);
-    std::string first;
-    std::string second;
-    iss >> first >> second;
-    return std::make_pair(first, second);
+    std::string directive;
+    std::vector<std::string> subdirectives;
+    std::string subdirective;
+
+    iss >> directive;
+    while (iss >> subdirective) {
+        subdirectives.push_back(subdirective);
+    }
+
+    return std::make_pair(directive, subdirectives);
 }
 
 void Config::loadConfig(void) {
@@ -46,12 +52,12 @@ void Config::loadConfig(void) {
                 continue;
             // insert location directives into directives map (server -> location -> directive)
             else if (contextStack.top() == "location") {
-                _servers.back().locations.back().directives.insert(extractPair(line));
+                _servers.back().locations.back().directives.insert(extractDirectives(line));
                 std::cout << "pushed directives to location block" << '\n';
             }
             // insert server directives into directives map (server -> directive)
             else if (contextStack.top() == "server") {
-                _servers.back().directives.insert(extractPair(line));
+                _servers.back().directives.insert(extractDirectives(line));
                 std::cout << "pushed directives to server block" << '\n';
             }
         }
