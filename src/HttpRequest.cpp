@@ -53,8 +53,7 @@ HttpError HttpRequest::parse(void) {
         // extract key and value
         std::string key = line.substr(0, colon);
         std::string value = line.substr(colon + 1);
-        std::cout << value << '\n';
-        // TODO parse rest of value into vector 
+        _headers.insert(std::make_pair(key, value));
     }
 
     // TODO handle body
