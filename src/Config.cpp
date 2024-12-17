@@ -10,8 +10,44 @@ void Config::loadConfig(void) {
     std::stack<std::string> contextStack;
 
     while (getline(_config_file, line)) {
-        std::cout << ft_trim(line) << '\n';
+        line = ft_trim(line);
+        std::cout << "Processing line: " << line << '\n'; // Debug output
+
+        // scan for first server block -> server context on
+        if (line.substr(0, 7) == "server ") {
+            contextStack.push("server");
+            std::cout << "Found server block: " << line << '\n'; // Debug output
+        }
+        // scan for location block under server -> location context on
+        else if (contextStack.top() == "server" && line.substr(0, 9) == "location ") {
+            contextStack.push("location");
+            std::cout << "Found location block under server\n"; // Debug output
+        } else
+            std::cout << "Line does not match any context: " << line << '\n'; // Debug output
     }
+}
+
+
+static bool bracesValidate(std::ifstream& file) {
+    int braceCount = 0;
+    std::string line;
+    while (std::getline(file, line)) {
+        for (size_t i = 0; i < line.length(); ++i) {
+            char c = line[i];
+            if (c == '{') {
+                braceCount++;
+            } else if (c == '}') {
+                braceCount--;
+                if (braceCount < 0)
+                    return false;
+            }
+        }
+    }
+    if (braceCount != 0)
+        return false;
+    file.clear();
+    file.seekg(0, std::ios::beg);
+    return true;
 }
 
 void Config::parse() {
@@ -22,6 +58,9 @@ void Config::parse() {
     // check that file is not empty
     if (_config_file.peek() == std::ifstream::traits_type::eof()) 
         throw std::runtime_error("Cannot open configuration file '" + _config_filename + "'.");
+    // validate amt of braces
+    if (bracesValidate(_config_file) == false)
+        throw std::runtime_error("Misconfigured braces in '" + _config_filename + "'.");
     // parse file and load into config objects
     loadConfig();
     _config_file.close();
