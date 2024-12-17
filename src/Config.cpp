@@ -5,25 +5,56 @@ Config::Config(const std::string& filename): _config_filename(filename) {
     parse();
 }
 
+std::pair<std::string, std::string> extractPair(const std::string& line) {
+    std::istringstream iss(line);
+    std::string first;
+    std::string second;
+    iss >> first >> second;
+    return std::make_pair(first, second);
+}
+
 void Config::loadConfig(void) {
     std::string line;
     std::stack<std::string> contextStack;
+    std::stack<std::string> directives;
 
     while (getline(_config_file, line)) {
         line = ft_trim(line);
         std::cout << "Processing line: " << line << '\n'; // Debug output
-
+        if (contextStack.empty() == false)
+            std::cout << "context:" << contextStack.top() << '\n';
         // scan for first server block -> server context on
         if (line.substr(0, 7) == "server ") {
             contextStack.push("server");
             std::cout << "Found server block: " << line << '\n'; // Debug output
+            ServerConfig server;
+            _servers.push_back(server);
         }
         // scan for location block under server -> location context on
         else if (contextStack.top() == "server" && line.substr(0, 9) == "location ") {
             contextStack.push("location");
             std::cout << "Found location block under server\n"; // Debug output
-        } else
-            std::cout << "Line does not match any context: " << line << '\n'; // Debug output
+            LocationConfig location;
+            _servers.back().locations.push_back(location);
+        }
+        // push rest of directives and pop from context
+        else {
+            // get rid of current context if closing brace found
+            if (line == "}")
+                contextStack.pop();
+            if (line.empty())
+                continue;
+            // insert location directives into directives map (server -> location -> directive)
+            else if (contextStack.top() == "location") {
+                _servers.back().locations.back().directives.insert(extractPair(line));
+                std::cout << "pushed directives to location block" << '\n';
+            }
+            // insert server directives into directives map (server -> directive)
+            else if (contextStack.top() == "server") {
+                _servers.back().directives.insert(extractPair(line));
+                std::cout << "pushed directives to server block" << '\n';
+            }
+        }
     }
 }
 
