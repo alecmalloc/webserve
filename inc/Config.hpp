@@ -7,6 +7,7 @@
 #include <fstream>
 #include <vector>
 #include <stack>
+#include "Server.hpp"
 
 // nginx config files are divided into server blocks and location blocks
 // server contains: directives, location blocks
@@ -34,37 +35,13 @@ class LocationConfig {
 };
 
 // server block obj config
-class ServerConfig {
-	public:
-		//constructors
-		ServerConfig( void );
-		ServeerConfig( const ServerConfig& og );
-		~ServerConfig( void );
-
-		//operator overloads
-		ServerConfig&	operator =( const ServerConfig& og );
-
-		//getter functions
-
-		//setter functions
-		
-		//member functions
-
-
-	private: 
-		//store server names
-		std::vector< std::string >	_serverNames;
-		//store location diretives
-		std::vector< LocationConfig >	_locations;
-
-};
 
 // main Config obj
 class Config {
     private:
         std::string                 _config_filename;
         std::ifstream               _config_file;
-        std::vector<ServerConfig>   servers;
+        std::vector<Server>   servers;
     public:
         Config() {};
         Config(const std::string& filename);
