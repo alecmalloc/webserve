@@ -5,6 +5,8 @@
 #include <map>
 #include <iostream>
 #include <fstream>
+#include <vector>
+#include <stack>
 
 // nginx config files are divided into server blocks and location blocks
 // server contains: directives, location blocks
@@ -27,15 +29,16 @@ class ServerConfig {
 // main Config obj
 class Config {
     private:
-        std::string _config_file;
-        std::vector<ServerConfig> servers;
+        std::string                 _config_filename;
+        std::ifstream               _config_file;
+        std::vector<ServerConfig>   servers;
     public:
         Config() {};
         Config(const std::string& filename);
         ~Config() {};
 
         void parse();
-        bool validateConfig();
+        void loadConfig(void);
 };
 
 #endif

@@ -1,45 +1,28 @@
 #include "../inc/Config.hpp"
+#include "../inc/StrUtils.hpp"
 
-Config::Config(const std::string& filename): _config_file(filename) {
+Config::Config(const std::string& filename): _config_filename(filename) {
     parse();
 }
 
-static bool bracesValidate(std::ifstream& file) {
-    int braceCount = 0;
+void Config::loadConfig(void) {
     std::string line;
-    while (std::getline(file, line)) {
-        for (size_t i = 0; i < line.length(); ++i) {
-            char c = line[i];
-            if (c == '{') {
-                braceCount++;
-            } else if (c == '}') {
-                braceCount--;
-                if (braceCount < 0)
-                    return false;
-            }
-        }
+    std::stack<std::string> contextStack;
+
+    while (getline(_config_file, line)) {
+        std::cout << ft_trim(line) << '\n';
     }
-    if (braceCount != 0)
-        return false;
-    file.clear();
-    file.seekg(0, std::ios::beg);
-    return true;
 }
 
 void Config::parse() {
     // check if we can open file
-    std::ifstream file(_config_file);
-    if (!file.is_open())
-        throw std::runtime_error("Cannot open configuration file '" + _config_file + "'.");
+    _config_file.open(_config_filename.c_str());
+    if (!_config_file.is_open())
+        throw std::runtime_error("Cannot open configuration file '" + _config_filename + "'.");
     // check that file is not empty
-    if (file.peek() == std::ifstream::traits_type::eof()) 
-        throw std::runtime_error("Cannot open configuration file '" + _config_file + "'.");
-    if (bracesValidate(file) == false)
-        throw std::runtime_error("Missing or wrong braces in '" + _config_file + "'." );
-
-
-}
-
-bool Config::validateConfig() {
-    return true;
+    if (_config_file.peek() == std::ifstream::traits_type::eof()) 
+        throw std::runtime_error("Cannot open configuration file '" + _config_filename + "'.");
+    // parse file and load into config objects
+    loadConfig();
+    _config_file.close();
 }
