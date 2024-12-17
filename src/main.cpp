@@ -1,6 +1,4 @@
-#include "../inc/Server.hpp"
-#include "../inc/Client.hpp"
-#include "../inc/Config.hpp"
+#include "webserv.hpp"
 
 int main(int argc, char**argv) {
     

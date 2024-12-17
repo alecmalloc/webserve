@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include <cstddef>
+#include "Location.hpp"
 
 class Server {
 	public:
@@ -18,13 +19,13 @@ class Server {
 
 		//getter functions
 		const std::vector< std::string >&	getServerNames( void ) const ;
-		//const std::vector< Location >&		getLocations( void ) const ;
+		const std::vector< Location >&		getLocations( void ) const ;
 		const std::map< int, std::string >&	getErrorPages( void ) const ;
 		size_t 					getBodySize( void ) const ;
 
 		//setter functions
 		void	setServerName( const std::string& name );
-		//void	setLocation( Location location );
+		void	setLocation( Location& location );
 		void	setErrorPage( int errorCode, std::string& path );
 		void	setBodySize( size_t size );
 
@@ -34,10 +35,13 @@ class Server {
 	private: 
 		//store server names -> stores server names as strings
 		std::vector< std::string >	_serverNames;
+
 		//store location diretives -> stores LocationConfig class
-		//std::vector< Location >	_locations;
+		std::vector< Location >	_locations;
+
 		//store defaullt error pages -> error code, location
 		std::map< int, std::string >	_errorPages;
+		
 		//limit of client body size for RFC
 		size_t				_bodySize;
 };

@@ -2,51 +2,34 @@
 #define CONFIG_HPP
 
 #include <string>
-#include <map>
-#include <iostream>
 #include <fstream>
 #include <vector>
-#include <stack>
 #include "Server.hpp"
+#include "Location.hpp"
 
-// nginx config files are divided into server blocks and location blocks
-// server contains: directives, location blocks
-// location contains: directives and paths
+#define DEFAULT_CONF conf/default.conf
 
-// location block obj config
-class LocationConfig {
-	public:
-		//constructors
-		LocationConfig( void );
-		LocationConfig( const LocationConfig& og );
-		~LocationConfig( void );
-
-		//operator overloads
-		LocationConfig&	operator =( const LocationConfig& og );
-
-		//getter functions
-
-		//setter functions
-		
-		//member functions
-
-
-	private: 
-};
-
-// server block obj config
-
-// main Config obj
 class Config {
     private:
-        std::string                 _config_filename;
-        std::ifstream               _config_file;
-        std::vector<Server>   servers;
+        std::string			_config_filename;
+        std::ifstream			_config_file;
+        std::vector< Server >   	_servers;
+
     public:
+	//cosntructors
         Config() {};
         Config(const std::string& filename);
         ~Config() {};
 
+	//operator overloads
+	Config&		operator =( const Config& og );
+
+	//getters
+	std::vector< Server >	getServers( void );
+
+	//setters
+
+	//member fucnitons
         void parse();
         void loadConfig(void);
 };

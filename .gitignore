@@ -26,3 +26,5 @@ Thumbs.db
 
 # Debug files
 *.dSYM/
+
+compile_commands.json
