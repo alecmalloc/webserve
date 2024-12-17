@@ -12,9 +12,8 @@ static std::pair<std::string, std::vector<std::string> > extractDirectives(const
     std::string subdirective;
 
     iss >> directive;
-    while (iss >> subdirective) {
+    while (iss >> subdirective)
         subdirectives.push_back(subdirective);
-    }
 
     return std::make_pair(directive, subdirectives);
 }
@@ -46,9 +45,9 @@ void Config::loadConfig(void) {
         // push rest of directives and pop from context
         else {
             // get rid of current context if closing brace found
-            if (line == "}")
+            if (line.find("}") != std::string::npos)
                 contextStack.pop();
-            if (line.empty())
+            else if (line.empty())
                 continue;
             // insert location directives into directives map (server -> location -> directive)
             else if (contextStack.top() == "location") {
