@@ -47,7 +47,7 @@ HttpError HttpRequest::parse(void) {
         if (line.empty())
             break;
         std::istringstream issHeaders;
-        if (issHeaders >> )
+        if (issHeaders >> ) // TODO
     }
 
     return OK;
