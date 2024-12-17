@@ -14,16 +14,49 @@
 
 // location block obj config
 class LocationConfig {
-    public:
-        std::string path;
-        std::map<std::string, std::string> directives;
+	public:
+		//constructors
+		LocationConfig( void );
+		LocationConfig( const LocationConfig& og );
+		~LocationConfig( void );
+
+		//operator overloads
+		LocationConfig&	operator =( const LocationConfig& og );
+
+		//getter functions
+
+		//setter functions
+		
+		//member functions
+
+
+	private: 
 };
 
 // server block obj config
 class ServerConfig {
-    public:
-        std::map<std::string, std::string> directives;
-        std::vector<LocationConfig> locations;
+	public:
+		//constructors
+		ServerConfig( void );
+		ServeerConfig( const ServerConfig& og );
+		~ServerConfig( void );
+
+		//operator overloads
+		ServerConfig&	operator =( const ServerConfig& og );
+
+		//getter functions
+
+		//setter functions
+		
+		//member functions
+
+
+	private: 
+		//store server names
+		std::vector< std::string >	_serverNames;
+		//store location diretives
+		std::vector< LocationConfig >	_locations;
+
 };
 
 // main Config obj
