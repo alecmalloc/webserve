@@ -5,7 +5,7 @@ Config::Config(const std::string& filename): _config_filename(filename) {
     parse();
 }
 
-std::pair<std::string, std::string> extractPair(const std::string& line) {
+std::map<std::string, std::vector<std::string>> extractPair(const std::string& line) {
     std::istringstream iss(line);
     std::string first;
     std::string second;

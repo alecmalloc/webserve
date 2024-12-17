@@ -17,13 +17,13 @@
 class LocationConfig {
     public:
         std::string path;
-        std::map<std::string, std::string> directives;
+        std::map<std::string, std::vector<std::string>> directives;
 };
 
 // server block obj config
 class ServerConfig {
     public:
-        std::map<std::string, std::string> directives;
+        std::map<std::string, std::vector<std::string>> directives;
         std::vector<LocationConfig> locations;
 };
 
