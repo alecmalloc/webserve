@@ -19,11 +19,11 @@
 - Server block parsing
 - Location block interpretation
 - Process management for CGI
+- Configuration file parsing
 
 **Integration Points:** Will need to work closely with others on request handling and CGI implementation
 
 ### Alec
-- Configuration file parsing
 - HTTP request parsing
 - Method validation
 - Header extraction and processing
