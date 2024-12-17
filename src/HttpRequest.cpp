@@ -1,4 +1,5 @@
 #include "../inc/HttpRequest.hpp"
+#include "../inc/StrUtils.hpp"
 
 HttpRequest::HttpRequest(int fd): _fd(fd) {
     HttpError error = parse();
@@ -51,12 +52,19 @@ HttpError HttpRequest::parse(void) {
         if (colon == std::string::npos)
             return BAD_REQUEST;
         // extract key and value
-        std::string key = line.substr(0, colon);
-        std::string value = line.substr(colon + 1);
+        std::string key = ft_trim(line.substr(0, colon));
+        std::string value = ft_trim(line.substr(colon + 1));
         _headers.insert(std::make_pair(key, value));
     }
 
-    // TODO handle body
+    // add body to http request
+    std::map<std::string, std::string>::iterator contentLenIt;
+    contentLenIt = _headers.find("Content-Length");
+    // if content-length is provided there is a body TODO
+    if (contentLenIt != _headers.end()) {
+        std::cout << "found Content-Length: " << contentLenIt->second << '\n';
+    }
+
 
     return OK;
 }
