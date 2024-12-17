@@ -12,7 +12,7 @@ HttpRequest::HttpRequest(int fd): _fd(fd) {
 
 HttpError HttpRequest::parse(void) {
 
-    // read file and poll for fd to be ready (c stuff)
+    // read from fd and poll for fd to be ready (c stuff)
     char buffer[1024];
     ssize_t bytes_read;
     struct pollfd fds[1];
@@ -40,15 +40,24 @@ HttpError HttpRequest::parse(void) {
     // validate uri TODO
     if (_version.substr(5, 3) != "1.1")
         return HTTP_VERSION_NOT_SUPPORTED;
-
+    
     // get rest of request
     while (getline(iss, line)) {
         // break for body
         if (line.empty())
             break;
-        std::istringstream issHeaders;
-        if (issHeaders >> ) // TODO
+        // find position of colon
+        size_t colon = line.find(':');
+        if (colon == std::string::npos)
+            return BAD_REQUEST;
+        // extract key and value
+        std::string key = line.substr(0, colon);
+        std::string value = line.substr(colon + 1);
+        std::cout << value << '\n';
+        // TODO parse rest of value into vector 
     }
+
+    // TODO handle body
 
     return OK;
 }
