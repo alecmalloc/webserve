@@ -7,3 +7,7 @@ Accept-Encoding: gzip, deflate, br
 Connection: keep-alive
 Cookie: sessionId=abc123; userId=12345
 Cache-Control: max-age=0
+
+{
+    "data": "1"
+}

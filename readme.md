@@ -32,6 +32,8 @@
 - MIME type detection
 - Directory listing
 
+comments cheat sheet: TODO, DELETE
+
 **Integration Points:** Will coordinate with Moritz on request handling and Linus for error responses
 
 ### Linus

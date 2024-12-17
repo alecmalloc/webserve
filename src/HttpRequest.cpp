@@ -1,16 +1,18 @@
 #include "../inc/HttpRequest.hpp"
 
 HttpRequest::HttpRequest(int fd): _fd(fd) {
-    HttpError errors = parse();
+    HttpError error = parse();
 
-    if (errors.status > 0)
-        throw std::runtime_error(errors.error);
+    if (error != 200) {
+        std::stringstream output;
+        output << error;
+        throw std::runtime_error(output.str());
+    }
 }
 
 HttpError HttpRequest::parse(void) {
-    HttpError errors;
 
-    // read file and poll for fd to be ready
+    // read file and poll for fd to be ready (c stuff)
     char buffer[1024];
     ssize_t bytes_read;
     struct pollfd fds[1];
@@ -20,11 +22,33 @@ HttpError HttpRequest::parse(void) {
     int timeout = 5000;
     if (poll(fds, 1, timeout) > 0) {
         bytes_read = read(_fd, buffer, sizeof(buffer) - 1);
-        if (bytes_read > 0) {
+        if (bytes_read > 0)
             buffer[bytes_read] = '\0';
-            std::cout << buffer << '\n';
-        }
     }
 
-    return errors;
+    // traverse using an iss (cpp way)
+    std::string line;
+    std::istringstream iss(buffer);
+
+    // get first line (METHOD, URI, VERSION)
+    getline(iss, line);
+    std::istringstream lineStream(line);
+    if (!(lineStream >> _method >> _uri >> _version))
+        return BAD_REQUEST;
+    if (_method != "GET" && _method != "POST" && _method != "DELETE")
+        return METHOD_NOT_ALLOWED;
+    // validate uri TODO
+    if (_version.substr(5, 3) != "1.1")
+        return HTTP_VERSION_NOT_SUPPORTED;
+
+    // get rest of request
+    while (getline(iss, line)) {
+        // break for body
+        if (line.empty())
+            break;
+        std::istringstream issHeaders;
+        if (issHeaders >> )
+    }
+
+    return OK;
 }
