@@ -32,6 +32,10 @@
 - MIME type detection
 - Directory listing
 
+comments cheat sheet: TODO, DELETE
+
+- [HTTP] (https://developer.mozilla.org/en-US/docs/Web/HTTP)
+
 **Integration Points:** Will coordinate with Moritz on request handling and Linus for error responses
 
 ### Linus
