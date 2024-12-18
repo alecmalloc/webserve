@@ -60,11 +60,12 @@ HttpError HttpRequest::parse(void) {
     // add body to http request
     std::map<std::string, std::string>::iterator contentLenIt;
     contentLenIt = _headers.find("Content-Length");
-    // if content-length is provided there is a body TODO
+    // if content-length is provided there is a body
+    // store each line of body vector to
     if (contentLenIt != _headers.end()) {
-        std::cout << "found Content-Length: " << contentLenIt->second << '\n';
+        while(getline(iss, line))
+            _body.push_back(ft_trim(line));
     }
-
 
     return OK;
 }
