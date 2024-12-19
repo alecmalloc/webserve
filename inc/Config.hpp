@@ -6,20 +6,21 @@
 #include <vector>
 #include "Server.hpp"
 #include "Location.hpp"
-
-#define DEFAULT_CONF conf/default.conf
+#include "Defines.hpp"
 
 class Config {
     private:
-        std::string			_config_filename;
-        std::ifstream			_config_file;
+	//safe filedisriptor
+        std::ifstream			_configFile;
+
+	//safe servers
         std::vector< Server >   	_servers;
 
     public:
 	//cosntructors
-        Config() {};
-        Config(const std::string& filename);
-        ~Config() {};
+        Config( void );
+        Config( const Config& og );
+        ~Config( void );
 
 	//operator overloads
 	Config&		operator =( const Config& og );
@@ -28,10 +29,12 @@ class Config {
 	std::vector< Server >	getServers( void );
 
 	//setters
+	void	setServer( Server& );
 
 	//member fucnitons
-        void parse();
-        void loadConfig(void);
+        void	parse( std::string& filename );
+	void	parseServerBlock( void );
+	void	parseLocationBlock( Server&, std::stringstream& );
 };
 
 #endif

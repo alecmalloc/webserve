@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include <string>
 
 //constructors
 
@@ -26,6 +27,9 @@ Server&		Server::operator =( const Server& og ) {
 }
 
 //getter functions
+const std::string	Server::getIpPort( void ) const {
+	return( _ipPort );
+}
 
 const std::vector< std::string >&	Server::getServerNames( void ) const {
 	return( _serverNames );
@@ -45,7 +49,9 @@ size_t				Server::getBodySize( void ) const {
 
 
 //setter functions
-
+void	Server::setIpPort( std::string& tmp ){
+	_ipPort = tmp;
+}
 void	Server::setServerName( const std::string& name ){
 	_serverNames.push_back( name );
 }

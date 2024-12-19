@@ -17,7 +17,7 @@ class Location {
 
 		//getter functions
 		const std::string			getPath( void ) const;
-		const std::map< std::string, bool >	getAllowedMethods( void ) const;
+		const std::vector< std::string >	getAllowedMethods( void ) const;
 		const std::map< int, std::string >	getAllowedRedirects( void ) const;
 		const std::string			getRootDir( void ) const;
 		bool				getAutoIndex( void ) const;
@@ -27,7 +27,7 @@ class Location {
 
 		//setter functions
 		void	setPath( std::string );
-		void	setAllowedMethod( std::string, bool );
+		void	setAllowedMethod( std::string );
 		void	setAllowedRedirects( int, std::string );
 		void	setRootDir( std::string );
 		void	setAutoIndex( bool );
@@ -43,7 +43,7 @@ class Location {
 		std::string			_path;
 
 		//store http methiods
-		std::map< std::string, bool >	_allowedMethods;
+		std::vector< std::string >	_allowedMethods;
 
 		//store http redirects
 		std::map< int, std::string >	_allowedRedirects;

@@ -18,12 +18,14 @@ class Server {
 		Server&	operator =( const Server& og );
 
 		//getter functions
+		const std::string			getIpPort( void ) const;
 		const std::vector< std::string >&	getServerNames( void ) const ;
 		const std::vector< Location >&		getLocations( void ) const ;
 		const std::map< int, std::string >&	getErrorPages( void ) const ;
 		size_t 					getBodySize( void ) const ;
 
 		//setter functions
+		void	setIpPort( std::string& tmp );
 		void	setServerName( const std::string& name );
 		void	setLocation( Location& location );
 		void	setErrorPage( int errorCode, std::string& path );
@@ -33,6 +35,9 @@ class Server {
 
 
 	private: 
+		//store ip address and port 
+		std::string			_ipPort;
+
 		//store server names -> stores server names as strings
 		std::vector< std::string >	_serverNames;
 
