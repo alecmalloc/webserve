@@ -19,9 +19,9 @@ class Server {
 
 		//getter functions
 		const std::string			getIpPort( void ) const;
-		const std::vector< std::string >&	getServerNames( void ) const ;
-		const std::vector< Location >&		getLocations( void ) const ;
-		const std::map< int, std::string >&	getErrorPages( void ) const ;
+		const std::vector< std::string >	getServerNames( void ) const ;
+		const std::vector< Location >		getLocations( void ) const ;
+		const std::map< int, std::string >	getErrorPages( void ) const ;
 		size_t 					getBodySize( void ) const ;
 
 		//setter functions

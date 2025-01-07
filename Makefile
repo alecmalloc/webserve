@@ -1,39 +1,62 @@
-NAME    = webserve
-CC      = c++
-FLAGS   = -Wall -Wextra -Werror -std=c++98
-OUT     = $(NAME)
+NAME = webserv
+BONUS_NAME =
 
-# Directories
-SRC_DIR = src
-INC_DIR = inc
-OBJ_DIR = obj
+BUILD_DIR = ./obj
+SRC_DIR = ./src
+INCL_DIR = ./inc
 
-# Find all .cpp files in the src directory
-SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
+LIB = 
+LIBS = $(addprefix -L, $(LIB))
 
-# Convert the .cpp files to .o files and place them in obj directory
-OBJS    = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SOURCES))
+SRCS = $(filter-out %_bonus.cpp, $(shell find $(SRC_DIR) -name *.cpp))
+OBJS = $(subst $(SRC_DIR), $(BUILD_DIR), $(SRCS:.cpp=.o))
 
-# Include path
-INC     = -I$(INC_DIR)
+BONUS_SRCS = $(shell find $(SRC_DIR) -name *-bonus.cpp))
+BONUS_OBJS = $(subst $(SRC_DIR), $(BUILD_DIR), $(BONUS_SRCS:.cpp=.o))
 
-# Compile all object files and link into the final executable
-all: $(OUT)
+DEPS = $(OBJS:.o=.d)
 
-$(OUT): $(OBJS)
-	$(CC) -g $(OBJS) -o $(OUT)
+INC_DIRS = $(shell find $(INCL_DIR) -type d)
+INC_FLAGS = $(addprefix -I, $(INC_DIRS))
 
-# Pattern rule for object files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(OBJ_DIR)
-	$(CC) $(FLAGS) $(INC) -c $< -o $@
+CC = c++
+CPPFLAGS = $(INC_FLAGS) -Wall -Werror -Wextra -MMD -MP -g3 -std=c++98
+
+LD = c++
+LDFLAGS = $(LIBS) -g
+LINKS =
+
+all: $(NAME)
+
+$(NAME): $(OBJS)
+ ifdef $(LIB)
+	make -C $(LIB)
+ endif
+	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LINKS)
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	mkdir -p $(@D)
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+bonus: $(BONUS_NAME)
+
+$(BONUS_NAME): $(BONUS_OBJS)
+ ifdef $(LIB)
+	make -C $(LIB)
+ endif
+	$(LD) $(LDFLAGS) -o $@ $(BONUS_OBJS) $(BONUS_LINKS)
+
+$(BUILD_DIR)/%_bonus.o: $(SRC_DIR)/%_bonus.cpp
+	mkdir -p $(@D)
+	$(CC) $(CPPFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(OBJ_DIR)
+	$(RM) -r $(BUILD_DIR)
 
 fclean: clean
-	rm -f $(NAME)
+	$(RM) $(NAME)
+
 
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: clean fclean re all bonus

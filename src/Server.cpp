@@ -31,15 +31,15 @@ const std::string	Server::getIpPort( void ) const {
 	return( _ipPort );
 }
 
-const std::vector< std::string >&	Server::getServerNames( void ) const {
+const std::vector< std::string >	Server::getServerNames( void ) const {
 	return( _serverNames );
 }
 
-const std::vector< Location >&		Server::getLocations( void ) const {
+const std::vector< Location >		Server::getLocations( void ) const {
 	return( _locations );
 }
 
-const std::map< int, std::string >&	Server::getErrorPages( void ) const {
+const std::map< int, std::string >	Server::getErrorPages( void ) const {
 	return( _errorPages );
 }
 
