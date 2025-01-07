@@ -14,6 +14,9 @@ webserv
 .idea/
 *.swp
 *~
+.cache
+compile_commands.json
+
 
 # OS specific
 .DS_Store
