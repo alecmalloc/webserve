@@ -40,7 +40,6 @@ class PathInfo {
 
 // url to file system path
 bool resolvePath(const std::string& urlPath, std::string& fsPath);
-    // Remove URL encoding
     // Convert URL path to filesystem path
     // Check for directory traversal attempts
     // Validate final path is within server root
