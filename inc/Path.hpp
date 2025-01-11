@@ -1,26 +1,34 @@
-#ifndef FILES_HPP
-#define FILES_HPP
+#ifndef PATH_HPP
+#define PATH_HPP
 
 #include <string>
+#include <sys/stat.h> // file stat to check existence and properties
 
 // ALL FILE OPERATIONS FOR SERVER
 
-// TODO:
-// Resonse return class
-// FileError error class
-// PathInfo class
+
 
 class PathInfo {
     private:
-        std::string fullPath; // /home/users/report.txt
-        std::string dirName;  // /home/users
-        std::string baseName; // report
-        std::string extension; // .txt
-        std::string fileName; // report.txt
+        std::string m_fullPath; // /home/users/report.txt
+        // TODO: parse these out of full path
+        std::string m_dirName;  // /home/users
+        std::string m_baseName; // report
+        std::string m_extension; // .txt
+        std::string m_fileName; // report.txt
+
+        // used m_ prefix to avoid conflict with function names
+        bool m_isDirectory;
+        bool m_isFile;
+        bool m_hasExtension;
+
+        // moved to private because we only need at beginning
+        bool validatePath();
+        void parsePath();
     public:
         PathInfo(const std::string& path);
 
-        // not using references as return due to no guarantee of lifecycle
+        // not using str references as return due to no guarantee of lifecycle
         std::string getFullPath() const;
         std::string getDirName() const;
         std::string getBaseName() const;
@@ -28,14 +36,9 @@ class PathInfo {
         std::string getFilename() const;
 
         // path validation
-        bool exists() const;
         bool isDirectory() const;
         bool isFile() const;
-        bool isValidPath() const;
         bool hasExtension() const;
-
-        // getRelativepath?
-        // getAbsolutepath?
 };
 
 // url to file system path
@@ -43,13 +46,6 @@ bool resolvePath(const std::string& urlPath, std::string& fsPath);
     // Convert URL path to filesystem path
     // Check for directory traversal attempts
     // Validate final path is within server root
-
-// check if path exists and type
-bool validatePath(const std::string& path, PathInfo& info);
-    // Check if path exists
-    // Determine if file or directory
-    // Check permissions (read/execute)
-    // Return path information
 
 // handle directory requests
 // Response handleDirectory()
