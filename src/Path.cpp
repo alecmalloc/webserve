@@ -83,5 +83,38 @@ bool PathInfo::validatePath() {
 }
 
 void PathInfo::parsePath() {
-    
+
+    // check for empty path
+    if (m_fullPath.empty()) {
+        throw std::runtime_error("Path is empty");
+    }
+
+    // check for invalid path traversal
+    if (m_fullPath.find("..") != std::string::npos) {
+        throw std::runtime_error("Path contains invalid traversal");
+    }
+
+    // find the last directory separator
+    size_t lastSlash = m_fullPath.find_last_of("/\\");
+    if (lastSlash != std::string::npos) {
+        m_dirName = m_fullPath.substr(0, lastSlash);
+        m_fileName = m_fullPath.substr(lastSlash + 1);
+    } else {
+        m_fileName = m_fullPath;
+    }
+
+    // find the last dot to get the file extension
+    size_t lastDot = m_fileName.find_last_of('.');
+    if (lastDot != std::string::npos) {
+        m_extension = m_fileName.substr(lastDot + 1);
+        m_fileName = m_fileName.substr(0, lastDot);
+    }
+
+    // additional validation for directory and filename
+    if (m_dirName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\._-") != std::string::npos) {
+        throw std::runtime_error("Directory contains invalid characters");
+    }
+    if (m_fileName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-") != std::string::npos) {
+        throw std::runtime_error("Filename contains invalid characters");
+    }
 }

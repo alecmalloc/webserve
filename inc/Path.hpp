@@ -6,8 +6,6 @@
 
 // ALL FILE OPERATIONS FOR SERVER
 
-
-
 class PathInfo {
     private:
         std::string m_fullPath; // /home/users/report.txt
@@ -25,6 +23,7 @@ class PathInfo {
         // moved to private because we only need at beginning
         bool validatePath();
         void parsePath();
+    
     public:
         PathInfo(const std::string& path);
 
@@ -34,8 +33,6 @@ class PathInfo {
         std::string getBaseName() const;
         std::string getExtension() const;
         std::string getFilename() const;
-
-        // path validation
         bool isDirectory() const;
         bool isFile() const;
         bool hasExtension() const;
