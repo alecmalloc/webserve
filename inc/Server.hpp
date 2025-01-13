@@ -1,6 +1,7 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
+#include <ostream>
 #include <vector>
 #include <map>
 #include <string>
@@ -15,7 +16,7 @@ class Server {
 		~Server( void );
 
 		//operator overloads
-		Server&	operator =( const Server& og );
+		Server&		operator =( const Server& og );
 
 		//getter functions
 		const std::string			getIpPort( void ) const;
@@ -51,4 +52,5 @@ class Server {
 		size_t				_bodySize;
 };
 
+	std::ostream&	operator <<( std::ostream& os, const Server& server );
 #endif

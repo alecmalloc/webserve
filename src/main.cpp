@@ -35,8 +35,10 @@ void	Location_print( Location& location ){
 		std::cout << "false" << std::endl;
 	std::cout << "Indeces: ";
 	print_Vec( location.getIndex() );
-	std::cout << "Cgi: ";
-	print_Map( location.getCgi() );
+	std::cout << "Cgi_Path: ";
+	print_Vec( location.getCgiPath() );
+	std::cout << "Cgi_Ext: ";
+	print_Vec( location.getCgiExt() );
 }
 
 void	Server_print( Server& server ){
@@ -86,7 +88,10 @@ int main(int argc, char *argv[]) {
 	    std::cerr <<  "\033[0;31m" << \
 		 "Error: " << e.what() << "\033[0m" << std::endl;
 	}
-	
+	std::vector< Server > tmp = config.getServers();
+	for( std::vector< Server >::const_iterator it = tmp.begin(); it != tmp.end(); it++ ){
+		std::cout << *it << std::endl;
+	}
 	// Server server;
 	// server.start();
 	return 0;

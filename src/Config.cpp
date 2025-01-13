@@ -99,23 +99,17 @@ void	parseListen( Server& server, std::stringstream& ss ){
 void	parseServerName( Server& server, std::stringstream& ss ){
 	std::string	tmp;
 
-	ss >> tmp;
+	while( ss >> tmp ){
+		server.setServerName( tmp );
+	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
-	while( tmp.at( tmp.size() - 1 ) != ';' ){
-		server.setServerName( tmp );
-		ss >> tmp;
-	}
-	server.setServerName( tmp.substr( 0, tmp.size() - 1 ) );
 }
 
 void	parseErrorPage( Server& server, std::stringstream& ss ){
 	std::string	tmp;
 
-	ss >> tmp;
-	if( tmp.at( tmp.size() - 1 ) != ';' )
-		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
-	while( tmp != ";" ){
+	while( ss >> tmp ){
 		int	error;
 		std::stringstream	sstmp( tmp );
 		sstmp >> error;
@@ -123,17 +117,15 @@ void	parseErrorPage( Server& server, std::stringstream& ss ){
 		ss >> tmp;
 		//check if path is accesible 
 		server.setErrorPage( error, tmp );
-		ss >> tmp;
 	}
+	if( tmp.at( tmp.size() - 1 ) != ';' )
+		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
 void	parseBodySize( Server& server, std::stringstream& ss ){
 	std::string	tmp;
 
-	ss >> tmp;
-	if( tmp.at( tmp.size() - 1 ) != ';' )
-		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
-	while( tmp != ";" ){
+	while( ss >> tmp ){
 		std::stringstream	sstmp( tmp );
 		int			size;
 
@@ -141,27 +133,26 @@ void	parseBodySize( Server& server, std::stringstream& ss ){
 		if( size < 0 || size > MAXBODYSIZE )
 			throw( std::runtime_error( "Wrong Max Body Size" ) );
 		server.setBodySize( size );
-		ss >> tmp;
 	}
+	if( tmp.at( tmp.size() - 1 ) != ';' )
+		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
 void	parsePath( Location& location, std::stringstream& ss ){
 	std::string	tmp;
 
-	ss >> tmp;
+	while( ss >> tmp ){
+		location.setPath( tmp );
+	}
 //	if( tmp.at( tmp.size() - 1 ) != ';' )
 //		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
-	location.setPath( tmp );
 }
 
 
 void	parseAllowedRedirects( Location& location, std::stringstream& ss ){
 	std::string	tmp;
 
-	ss >> tmp;
-	if( tmp.at( tmp.size() - 1 ) != ';' )
-		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
-	while( tmp != ";" ){
+	while( ss >> tmp ){
 		int	error;
 		std::stringstream	sstmp( tmp );
 		sstmp >> error;
@@ -169,18 +160,16 @@ void	parseAllowedRedirects( Location& location, std::stringstream& ss ){
 		ss >> tmp;
 		//check if path is accesible 
 		location.setAllowedRedirects( error, tmp );
-		ss >> tmp;
 	}
+	if( tmp.at( tmp.size() - 1 ) != ';' )
+		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
 void	parseAllowedMethods( Location& location, std::stringstream& ss ){
 	std::string	tmp;
 	std::string	allowedMethodes[] = ALLOWED_METHODES;
 
-	ss >> tmp;
-	if( tmp.at( tmp.size() - 1 ) != ';' )
-		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
-	while( tmp != ";" ){
+	while( ss >> tmp ){
 		for( size_t i = 0; \
 		i == sizeof( allowedMethodes ) / sizeof( allowedMethodes[0] ); i++ ){
 			if( i == sizeof( allowedMethodes ) / sizeof( allowedMethodes[0] ))
@@ -188,89 +177,91 @@ void	parseAllowedMethods( Location& location, std::stringstream& ss ){
 			else if( tmp == allowedMethodes[ i ] )
 				location.setAllowedMethod( tmp );
 		}	
-		ss >> tmp;	
 	}
+	if( tmp.at( tmp.size() - 1 ) != ';' )
+		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
 void	parseRootDir( Location& location, std::stringstream& ss ){
 	std::string	tmp;
 
-	ss >> tmp;
+	while( ss >> tmp ){
+		//check for access
+		location.setRootDir( tmp );
+	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
-	//check for access
-	location.setRootDir( tmp );
 }
 
 void	parseAutoIndex( Location& location, std::stringstream& ss ){
 	std::string	tmp;
 
-	ss >> tmp;
-	if( tmp.at( tmp.size() - 1 ) != ';' )
-		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
-	while( tmp != ";" ){
+	while( ss >> tmp ){
 		if( tmp == "true" )
 			location.setAutoIndex( true );
 		else if( tmp != "false" )
 			location.setAutoIndex( false );
 		else 
 			throw( std::runtime_error( "Wrong Auto Index " + tmp ) );
-		ss >> tmp;
 	}
-
+	if( tmp.at( tmp.size() - 1 ) != ';' )
+		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
 void	parseIndex( Location& location, std::stringstream& ss ){
 	std::string	tmp;
 
-	ss >> tmp;
-	if( tmp.at( tmp.size() - 1 ) != ';' )
-		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
-	while( tmp != ";" ){
+	while( ss >> tmp ){
 		//check for access
 		location.setIndex( tmp );
-		ss >> tmp;
 	}
-}
-
-void	parseCgi( Location& location, std::stringstream& ss ){
-	std::string	tmp;
-
-	ss >> tmp;
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
-	while( tmp != ";" ){
-		std::string tmp2;
-		ss >> tmp2;
+}
+
+void	parseCgiPath( Location& location, std::stringstream& ss ){
+	std::string	tmp;
+
+	while( ss >> tmp ){
 		//check for endings
-		location.setCgi( tmp, tmp2 );
-		ss >> tmp;
+		location.setCgiPath( tmp );
 	}
+	if( tmp.at( tmp.size() - 1 ) != ';' )
+		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
+}
+
+
+void	parseCgiExt( Location& location, std::stringstream& ss ){
+	std::string	tmp;
+
+	while( ss >> tmp ){
+		//check for endings
+		location.setCgiExt( tmp );
+	}
+	if( tmp.at( tmp.size() - 1 ) != ';' )
+		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
 void	parseUploadDir( Location& location, std::stringstream& ss ){
 	std::string	tmp;
 
-	ss >> tmp;
-	if( tmp.at( tmp.size() - 1 ) != ';' )
-		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
-	while( tmp != ";" ){
+	while( ss >> tmp ){
 		//check for access
 		location.setUploadDir( tmp );
-		ss >> tmp;
 	}
-
+	if( tmp.at( tmp.size() - 1) != ';' )
+		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
 
 void	Config::parseLocationBlock( Server& server, std::stringstream& ss ){
 	const std::string	optionsArray[] =  \
 	{ "allowed_methods", "allowed_redirects", "root", "auto_index", \
-		"index", "cgi", "upload_dir" };
+		"index", "cgi_path", "cgi_ext", "upload_dir" };
 
 	void ( *functionArray[] )( Location&, std::stringstream& ) = \
 	{ parseAllowedMethods, parseAllowedRedirects, parseRootDir, \
-		parseAutoIndex, parseIndex, parseCgi, parseUploadDir };
+		parseAutoIndex, parseIndex, parseCgiPath, parseCgiExt, parseUploadDir };
 
 	Location	location;
 	std::string	tmp;
@@ -279,18 +270,18 @@ void	Config::parseLocationBlock( Server& server, std::stringstream& ss ){
 	getline( _configFile, tmp );
 	if ( tmp == "{" )
 		getline( _configFile, tmp );
-	while( tmp != "}" ){
+	while( tmp.find( '}' ) == tmp.npos ){
 		std::stringstream	ss( tmp );
 		std::string		key;
 		ss >> key;
-		for( int i = 0; i < 7; i++ ){
+		for( int i = 0; i < 8; i++ ){
 			if( optionsArray[ i ] == key ){
 				functionArray[ i ]( location, ss );
 				break;
 			}
-			//else
-			//	throw( std::runtime_error( "Not an valid configuration " 
-			//		+ tmp ) );
+			else if ( i == 7 && !key.empty() )
+				throw( std::runtime_error( "Not an valid configuration " 
+					+ tmp ) );
 		}
 		getline( _configFile, tmp );
 	}
@@ -310,7 +301,7 @@ void	Config::parseServerBlock( void ){
 	getline( _configFile, tmp );
 	if ( tmp == "{" )
 		getline( _configFile, tmp );
-	while( tmp != "}"){
+	while( tmp.find( '}' ) == tmp.npos ){
 		std::stringstream	ss( tmp );
 		std::string		key;
 		ss >> key;
@@ -323,9 +314,12 @@ void	Config::parseServerBlock( void ){
 				parseLocationBlock( server, ss );
 				break;
 			}
-				// throw( std::runtime_error( "Not an valid configuration " 
-				//	+ tmp ) );
-		}
+			else if ( i == 4 && !key.empty() ){
+				 throw( std::runtime_error( "Not an valid configuration "\
+					 + tmp ) );
+
+			}
+						}
 		getline( _configFile, tmp );
 	}
 	this->setServer( server );

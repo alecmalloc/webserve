@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include <ostream>
 #include <string>
 
 //constructors
@@ -25,6 +26,45 @@ Server&		Server::operator =( const Server& og ) {
 	}
 	return( *this );
 }
+
+std::ostream&	operator <<( std::ostream& os, const Server& server) {
+
+	os << "Server Details:\n";
+
+	// Print IP and Port
+	os << "IP and Port: " << server.getIpPort() << "\n";
+
+	// Print Server Names
+	os << "Server Names: ";
+	std::vector< std::string > tmp = server.getServerNames();
+	for (std::vector<std::string>::const_iterator it = tmp.begin(); 
+			it != tmp.end(); ++it) {
+		os << *it << " ";
+	}
+	os << "\n";
+
+	// Print Error Pages
+	os << "Error Pages:\n";
+	std::map< int, std::string > tmp2 = server.getErrorPages();
+	for (std::map<int, std::string>::const_iterator it = tmp2.begin(); 
+			it != tmp2.end(); ++it) {
+		os << "Error " << it->first << ": " << it->second << "\n";
+	}
+
+	// Print Body Size Limit
+	os << "Body Size Limit: " << server.getBodySize() << " bytes\n";
+
+	// Print Locations
+	os << "Locations:\n";
+	std::vector< Location >	tmp3 = server.getLocations();
+	for (std::vector<Location>::const_iterator it = tmp3.begin(); 
+			it != tmp3.end(); ++it) {
+		os << *it << "\n";
+	}
+	
+	return( os );
+}
+
 
 //getter functions
 const std::string	Server::getIpPort( void ) const {
