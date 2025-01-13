@@ -46,7 +46,8 @@ PathInfo::PathInfo(const std::string& path):
     if (!validatePath())
         throw std::runtime_error("Invalid path detected");
     // parse all other path properties
-    parsePath();
+    if (!parsePath())
+        throw std::runtime_error("Invalid path detected");
 }
 
 bool PathInfo::validatePath() {
@@ -82,17 +83,7 @@ bool PathInfo::validatePath() {
     return true;
 }
 
-void PathInfo::parsePath() {
-
-    // check for empty path
-    if (m_fullPath.empty()) {
-        throw std::runtime_error("Path is empty");
-    }
-
-    // check for invalid path traversal
-    if (m_fullPath.find("..") != std::string::npos) {
-        throw std::runtime_error("Path contains invalid traversal");
-    }
+bool PathInfo::parsePath() {
 
     // find the last directory separator
     size_t lastSlash = m_fullPath.find_last_of("/\\");
@@ -117,4 +108,5 @@ void PathInfo::parsePath() {
     if (m_fileName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-") != std::string::npos) {
         throw std::runtime_error("Filename contains invalid characters");
     }
+
 }

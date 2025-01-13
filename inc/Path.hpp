@@ -22,7 +22,7 @@ class PathInfo {
 
         // moved to private because we only need at beginning
         bool validatePath();
-        void parsePath();
+        bool parsePath();
     
     public:
         PathInfo(const std::string& path);
