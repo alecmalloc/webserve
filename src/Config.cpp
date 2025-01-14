@@ -387,7 +387,7 @@ void	Config::parse( std::string& filename ){
 	if( !_configFile.is_open() )
 		throw( std::runtime_error( "Could not open Config File" ) );
 	std::getline( _configFile, tmp );
-	while( tmp.find( '}' ) == tmp.npos && !_configFile.eof() ){
+	while( !_configFile.eof() ){
 		std::stringstream	ss( tmp );
 		std::string		key;
 		ss >> key;
