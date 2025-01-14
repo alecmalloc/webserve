@@ -37,6 +37,28 @@ void	Config::setServer( Server server ){
 
 //memeber fucntions
 
+static void	cutEnding( std::string& tmp ){
+	if( tmp.at( tmp.size() - 1 ) == ';' )
+		tmp = tmp.substr( 0, tmp.size() - 1 );
+}
+
+static bool	accessibleFile( std::string tmp ){
+	cutEnding( tmp );
+	if( access( tmp.c_str(), R_OK ) == 0 )
+		return( true );
+	else
+		return( false );
+}
+
+static bool	accessibleDir( std::string tmp ){
+	struct stat	info;
+
+	cutEnding( tmp );
+	if( stat( tmp.c_str(), &info ) != 0 )	return false;
+	else if( info.st_mode & S_IFDIR )	return true;
+	else 					return false;
+}
+
 static bool	checkIp( std::string tmp ){
 	int	i = 0;
 	int	check;
@@ -115,8 +137,11 @@ void	parseErrorPage( Server& server, std::stringstream& ss ){
 		sstmp >> error;
 		//check if error code is valid
 		ss >> tmp;
-		//check if path is accesible 
-		server.setErrorPage( error, tmp );
+		if( accessibleFile( tmp ) )
+			server.setErrorPage( error, tmp );
+		else
+			throw( std::runtime_error( "Error Page " + tmp \
+				+ " not accessable" ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
@@ -145,8 +170,6 @@ void	parsePath( Location& location, std::stringstream& ss ){
 		if( tmp.find( '{' ) == tmp.npos )
 			location.setPath( tmp );
 	}
-//	if( tmp.at( tmp.size() - 1 ) != ';' )
-//		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
 
@@ -157,10 +180,13 @@ void	parseAllowedRedirects( Location& location, std::stringstream& ss ){
 		int	error;
 		std::stringstream	sstmp( tmp );
 		sstmp >> error;
-		//check if error code is valid
+		//check if  redirect is valid
 		ss >> tmp;
-		//check if path is accesible 
-		location.setAllowedRedirects( error, tmp );
+		if(  accessibleFile( tmp ) )
+			location.setAllowedRedirects( error, tmp );
+		else
+			throw( std::runtime_error( "Redirect " + tmp \
+				+ " not accessable" ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
@@ -187,8 +213,11 @@ void	parseRootDir( Location& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
-		//check for access
-		location.setRootDir( tmp );
+		if( accessibleDir( tmp ) )
+			location.setRootDir( tmp );
+		else
+			throw( std::runtime_error( "Root Dir " + tmp \
+				+ " not accessable" ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
@@ -213,8 +242,11 @@ void	parseIndex( Location& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
-		//check for access
-		location.setIndex( tmp );
+		if( accessibleFile( tmp ) )
+			location.setIndex( tmp );
+		else
+			throw( std::runtime_error( "Index " + tmp \
+				+ " not accessable" ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
@@ -247,8 +279,11 @@ void	parseUploadDir( Location& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
-		//check for access
-		location.setUploadDir( tmp );
+		if( accessibleDir( tmp ) )
+			location.setUploadDir( tmp );
+		else
+			throw( std::runtime_error( "Upload Dir " + tmp \
+				+ " not accessable" ) );
 	}
 	if( tmp.at( tmp.size() - 1) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );

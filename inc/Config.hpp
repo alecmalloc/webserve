@@ -4,6 +4,8 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <unistd.h>
+#include <sys/stat.h>
 #include "Server.hpp"
 #include "Location.hpp"
 #include "Defines.hpp"
