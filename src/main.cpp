@@ -1,6 +1,7 @@
 #include "../inc/Server.hpp"
 // #include "../inc/Client.hpp"
 // #include "../inc/HttpHelpers.hpp"
+#include "../inc/Path.hpp"
 
 #include <iostream>
 

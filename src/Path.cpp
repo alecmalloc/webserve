@@ -50,6 +50,10 @@ PathInfo::PathInfo(const std::string& path):
         throw std::runtime_error("Invalid path detected");
 }
 
+PathInfo::~PathInfo() {
+    
+}
+
 bool PathInfo::validatePath() {
 
     // check for empty path
@@ -62,7 +66,7 @@ bool PathInfo::validatePath() {
 
     struct stat statbuf;
     // check file existence
-    if (stat(m_fullPath.c_str(), &statbuf) == 0)
+    if (stat(m_fullPath.c_str(), &statbuf) != 0)
         return false;
 
     // set file properties
@@ -102,11 +106,10 @@ bool PathInfo::parsePath() {
     }
 
     // additional validation for directory and filename
-    if (m_dirName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\._-") != std::string::npos) {
-        throw std::runtime_error("Directory contains invalid characters");
-    }
-    if (m_fileName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-") != std::string::npos) {
-        throw std::runtime_error("Filename contains invalid characters");
-    }
+    if (m_dirName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\._-") != std::string::npos)
+        return false;
+    if (m_fileName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-") != std::string::npos) 
+        return false;
 
+    return true;
 }

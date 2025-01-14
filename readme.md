@@ -10,6 +10,11 @@
 - [Alec](https://github.com/alecmalloc)
 - [Linus](https://github.com/eschencode )
 
+
+## Documentation
+- [MIME Types](https://developer.mozilla.org/en-US/docs/Web/HTTP/MIME_types#structure_of_a_mime_type)
+- [HTTP Response Codes](./assets/responseCodes.md)
+
 ## Project Task Distribution
 
 ### Moritz (Core Architecture)
