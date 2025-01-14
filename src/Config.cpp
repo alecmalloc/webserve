@@ -58,6 +58,19 @@ static bool	accessibleDir( std::string tmp ){
 	else 					return false;
 }
 
+static bool	validRedirect( std::string tmp ) {
+	std::string	allowedRedirects[] = ALLOWED_REDIRECTS;
+	for( int i = 0; \
+		i != sizeof( allowedRedirects ) / sizeof( allowedRedirects[0] ) + 1; \
+		i++ ){
+		if ( i == sizeof( allowedRedirects ) / sizeof( allowedRedirects[0] ) )
+			return( false );
+		else if ( allowedRedirects[i] == tmp )
+			return( true );
+	}
+	return( false );
+}
+
 static bool	checkIp( std::string tmp ){
 	int	i = 0;
 	int	check;
@@ -176,10 +189,12 @@ void	parseAllowedRedirects( Location& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
-		int	error;
+		std::string	error;
 		std::stringstream	sstmp( tmp );
 		sstmp >> error;
-		//check if  redirect is valid
+		if( !validRedirect( error ) )
+			throw( std::runtime_error( "Redirect Code " + error \
+				+ " not allowed" ) );
 		ss >> tmp;
 		if(  accessibleFile( tmp ) )
 			location.setAllowedRedirects( error, cutEnding( tmp ) );
@@ -260,7 +275,6 @@ void	parseCgiPath( Location& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
-		//check for endings
 		location.setCgiPath( cutEnding( tmp ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
@@ -296,8 +310,7 @@ void	parseUploadDir( Location& location, std::stringstream& ss ){
 
 void	Config::parseLocationBlock( Server& server, std::stringstream& ss ){
 	const std::string	optionsArray[] =  \
-	{ "allowed_methods", "allowed_redirects", "root", "autoindex", \
-		"index", "cgi_path", "cgi_ext", "upload_dir" };
+	{ METHODE, REDIRECT, ROOT, AINDEX, INDEX, CGIPATH, CGIEXT, UPDIR };
 
 	void ( *functionArray[] )( Location&, std::stringstream& ) = \
 	{ parseAllowedMethods, parseAllowedRedirects, parseRootDir, \
@@ -330,7 +343,7 @@ void	Config::parseLocationBlock( Server& server, std::stringstream& ss ){
 
 void	Config::parseServerBlock( Server& server ){
 	const std::string	optionsArray[] =  \
-	{ "listen", "server_name", "error_page", "client_max_body_size", "root", "index" };
+	{ LISTEN, SERVER, ERROR, CLIENT, ROOT, INDEX };
 
 	void ( *functionArray[] )( Server&, std::stringstream& ) = \
 	{ parseListen, parseServerName, parseErrorPage, parseBodySize, \

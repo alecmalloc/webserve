@@ -59,8 +59,8 @@ std::ostream&	operator <<( std::ostream& os, const Location& loc ) {
     // Print allowed redirects
     if ( !loc.getAllowedRedirects().empty() ){
     	os << "Allowed Redirects:" << std::endl;
-    	std::map< int, std::string >	tmp2 = loc.getAllowedRedirects();
-    	for (std::map<int, std::string>::const_iterator it = tmp2.begin();
+    	std::map< std::string, std::string >	tmp2 = loc.getAllowedRedirects();
+    	for (std::map<std::string, std::string>::const_iterator it = tmp2.begin();
     	     it != tmp2.end(); ++it) {
     	    os << "  Code " << it->first << ": " << it->second << std::endl;
     	}
@@ -126,7 +126,7 @@ std::ostream&	operator <<( std::ostream& os, const Location& loc ) {
  	return( _allowedMethods );
  }
 
- const std::map< int, std::string >     Location::getAllowedRedirects( void ) const{
+ const std::map< std::string, std::string >     Location::getAllowedRedirects( void ) const{
  	return( _allowedRedirects );
  }
 
@@ -163,7 +163,7 @@ void	Location:: setAllowedMethod( std::string method ){
 	_allowedMethods.push_back( method );
 }
 
-void	Location:: setAllowedRedirects( int redirect, std::string path ){
+void	Location:: setAllowedRedirects( std::string redirect, std::string path ){
 	_allowedRedirects[ redirect ] = path;
 }
 
