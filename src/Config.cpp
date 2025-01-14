@@ -37,14 +37,14 @@ void	Config::setServer( Server server ){
 
 //memeber fucntions
 
-static void	cutEnding( std::string& tmp ){
+static std::string	cutEnding( std::string tmp ){
 	if( tmp.at( tmp.size() - 1 ) == ';' )
 		tmp = tmp.substr( 0, tmp.size() - 1 );
+	return( tmp );
 }
 
 static bool	accessibleFile( std::string tmp ){
-	cutEnding( tmp );
-	if( access( tmp.c_str(), R_OK ) == 0 )
+	if( access( cutEnding( tmp ).c_str(), R_OK ) == 0 )
 		return( true );
 	else
 		return( false );
@@ -53,8 +53,7 @@ static bool	accessibleFile( std::string tmp ){
 static bool	accessibleDir( std::string tmp ){
 	struct stat	info;
 
-	cutEnding( tmp );
-	if( stat( tmp.c_str(), &info ) != 0 )	return false;
+	if( stat( cutEnding( tmp ).c_str(), &info ) != 0 )	return false;
 	else if( info.st_mode & S_IFDIR )	return true;
 	else 					return false;
 }
@@ -65,16 +64,16 @@ static bool	checkIp( std::string tmp ){
 	size_t	pos;
 
 	pos = tmp.find( '.' );
-	while( pos != tmp.size() ){
-		i++;
-		if( i > 3 )
-			return( false );
-		std::string iptmp = tmp.substr( 0, pos );
+	while( pos != tmp.npos ){
+		std::string iptmp = tmp.substr( i, pos );
 		std::stringstream ss( iptmp );
 		ss >> check;
 		if ( check > 255 || check < 0 )
 			return( false );
-		tmp = tmp.substr( pos + 1, tmp.size() );
+		if( tmp.at( pos + 1 ) )
+			tmp = tmp.substr( pos + 1, tmp.size() );
+		i = pos;
+		pos = tmp.find( '.' );
 	}	
 	return( true );
 }
@@ -85,7 +84,7 @@ static bool	checkPort( std::string tmp ){
 
 	ss >> check;
 	if ( check < 0 || check > 65535 )
-			return( false );
+		return( false );
 	return( true );
 }
 
@@ -100,10 +99,10 @@ void	parseListen( Server& server, std::stringstream& ss ){
 	if( tmp.find( ':' ) != tmp.npos ){
 		if ( !checkIp( tmp.substr( 0, tmp.find( ':' ) ) ) )
 			throw( std::runtime_error( "Wrong IpAddress" + \
-				tmp.substr( 0, tmp.find( ':' ) ) ) );
+						tmp.substr( 0, tmp.find( ':' ) ) ) );
 		if( !checkPort( tmp.substr( tmp.find( ':' ) + 1, tmp.size() ) ) )
 			throw( std::runtime_error( "Wrong Port" + \
-				tmp.substr( tmp.find( ':' ), tmp.size()  ) ) );
+						tmp.substr( tmp.find( ':' ), tmp.size()  ) ) );
 	}
 	else if( tmp.find( '.' ) != tmp.npos ){
 		if( !checkIp( tmp ) )
@@ -115,14 +114,14 @@ void	parseListen( Server& server, std::stringstream& ss ){
 			throw( std::runtime_error( "Wrong Port" + tmp ) );
 		tmp = ip + ":" + tmp.substr(0, tmp.size() - 1 );
 	}
-	server.setIpPort( tmp );
+	server.setIpPort( cutEnding( tmp ) );
 }
 
 void	parseServerName( Server& server, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
-		server.setServerName( tmp );
+		server.setServerName( cutEnding( tmp ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
@@ -138,10 +137,10 @@ void	parseErrorPage( Server& server, std::stringstream& ss ){
 		//check if error code is valid
 		ss >> tmp;
 		if( accessibleFile( tmp ) )
-			server.setErrorPage( error, tmp );
+			server.setErrorPage( error, cutEnding( tmp ) );
 		else
 			throw( std::runtime_error( "Error Page " + tmp \
-				+ " not accessable" ) );
+						+ " not accessable" ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
@@ -168,7 +167,7 @@ void	parsePath( Location& location, std::stringstream& ss ){
 
 	while( ss >> tmp ){
 		if( tmp.find( '{' ) == tmp.npos )
-			location.setPath( tmp );
+			location.setPath( cutEnding( tmp ) );
 	}
 }
 
@@ -183,10 +182,10 @@ void	parseAllowedRedirects( Location& location, std::stringstream& ss ){
 		//check if  redirect is valid
 		ss >> tmp;
 		if(  accessibleFile( tmp ) )
-			location.setAllowedRedirects( error, tmp );
+			location.setAllowedRedirects( error, cutEnding( tmp ) );
 		else
 			throw( std::runtime_error( "Redirect " + tmp \
-				+ " not accessable" ) );
+						+ " not accessable" ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
@@ -198,26 +197,30 @@ void	parseAllowedMethods( Location& location, std::stringstream& ss ){
 
 	while( ss >> tmp ){
 		for( size_t i = 0; \
-		i == sizeof( allowedMethodes ) / sizeof( allowedMethodes[0] ); i++ ){
+		i != ( sizeof( allowedMethodes ) / sizeof( allowedMethodes[0] ) + 1 ); \
+		i++ ){
 			if( i == sizeof( allowedMethodes ) / sizeof( allowedMethodes[0] ))
 				throw( std::runtime_error( "Method not found " + tmp ) );
-			else if( tmp == allowedMethodes[ i ] )
-				location.setAllowedMethod( tmp );
+			else if( cutEnding( tmp ) == allowedMethodes[ i ] ){
+				location.setAllowedMethod( cutEnding( tmp ) );
+				break;
+			}
 		}	
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
-void	parseRootDir( Location& location, std::stringstream& ss ){
+template< typename T >
+void	parseRootDir( T& temp, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
 		if( accessibleDir( tmp ) )
-			location.setRootDir( tmp );
+			temp.setRootDir( cutEnding( tmp ) );
 		else
 			throw( std::runtime_error( "Root Dir " + tmp \
-				+ " not accessable" ) );
+						+ " not accessable" ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
@@ -227,9 +230,9 @@ void	parseAutoIndex( Location& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
-		if( tmp == "true" )
+		if( cutEnding( tmp ) == "on" )
 			location.setAutoIndex( true );
-		else if( tmp != "false" )
+		else if( cutEnding( tmp ) == "off" )
 			location.setAutoIndex( false );
 		else 
 			throw( std::runtime_error( "Wrong Auto Index " + tmp ) );
@@ -238,15 +241,16 @@ void	parseAutoIndex( Location& location, std::stringstream& ss ){
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
-void	parseIndex( Location& location, std::stringstream& ss ){
+template< typename T>
+void	parseIndex( T& temp, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
 		if( accessibleFile( tmp ) )
-			location.setIndex( tmp );
+			temp.setIndex( cutEnding( tmp ) );
 		else
 			throw( std::runtime_error( "Index " + tmp \
-				+ " not accessable" ) );
+						+ " not accessable" ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
@@ -257,7 +261,7 @@ void	parseCgiPath( Location& location, std::stringstream& ss ){
 
 	while( ss >> tmp ){
 		//check for endings
-		location.setCgiPath( tmp );
+		location.setCgiPath( cutEnding( tmp ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
@@ -269,7 +273,7 @@ void	parseCgiExt( Location& location, std::stringstream& ss ){
 
 	while( ss >> tmp ){
 		//check for endings
-		location.setCgiExt( tmp );
+		location.setCgiExt( cutEnding( tmp ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
@@ -280,10 +284,10 @@ void	parseUploadDir( Location& location, std::stringstream& ss ){
 
 	while( ss >> tmp ){
 		if( accessibleDir( tmp ) )
-			location.setUploadDir( tmp );
+			location.setUploadDir( cutEnding( tmp ) );
 		else
 			throw( std::runtime_error( "Upload Dir " + tmp \
-				+ " not accessable" ) );
+						+ " not accessable" ) );
 	}
 	if( tmp.at( tmp.size() - 1) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
@@ -292,7 +296,7 @@ void	parseUploadDir( Location& location, std::stringstream& ss ){
 
 void	Config::parseLocationBlock( Server& server, std::stringstream& ss ){
 	const std::string	optionsArray[] =  \
-	{ "allowed_methods", "allowed_redirects", "root", "auto_index", \
+	{ "allowed_methods", "allowed_redirects", "root", "autoindex", \
 		"index", "cgi_path", "cgi_ext", "upload_dir" };
 
 	void ( *functionArray[] )( Location&, std::stringstream& ) = \
@@ -317,7 +321,7 @@ void	Config::parseLocationBlock( Server& server, std::stringstream& ss ){
 			}
 			else if ( i == 7 && !key.empty() )
 				throw( std::runtime_error( "Not an valid configuration " 
-					+ tmp ) );
+							+ tmp ) );
 		}
 		getline( _configFile, tmp );
 	}
@@ -326,10 +330,11 @@ void	Config::parseLocationBlock( Server& server, std::stringstream& ss ){
 
 void	Config::parseServerBlock( Server& server ){
 	const std::string	optionsArray[] =  \
-	{ "listen", "server_name", "error_page", "client_max_body_size" };
+	{ "listen", "server_name", "error_page", "client_max_body_size", "root", "index" };
 
 	void ( *functionArray[] )( Server&, std::stringstream& ) = \
-	{ parseListen, parseServerName, parseErrorPage, parseBodySize };
+	{ parseListen, parseServerName, parseErrorPage, parseBodySize, \
+		parseRootDir, parseIndex };
 
 	std::string		tmp;
 
@@ -340,7 +345,10 @@ void	Config::parseServerBlock( Server& server ){
 		std::stringstream	ss( tmp );
 		std::string		key;
 		ss >> key;
-		for( int i = 0; i < 5; i++ ){
+		for( int i = 0; i < 7; i++ ){
+			if( !key.empty() && key.at( 0 ) == '#' ){
+				break;
+			}
 			if( optionsArray[ i ] == key ){
 				functionArray[ i ]( server, ss );
 				break;
@@ -349,12 +357,12 @@ void	Config::parseServerBlock( Server& server ){
 				parseLocationBlock( server, ss );
 				break;
 			}
-			else if ( i == 4 && !key.empty() ){
-				 throw( std::runtime_error( "Not an valid configuration "\
-					 + tmp ) );
+			else if ( i == 6 && !key.empty() ){
+				throw( std::runtime_error( "Not an valid configuration "\
+							+ tmp ) );
 
 			}
-						}
+		}
 		getline( _configFile, tmp );
 	}
 }
@@ -362,16 +370,20 @@ void	Config::parseServerBlock( Server& server ){
 void	Config::parse( std::string& filename ){
 	std::string	tmp;
 
-	_configFile.open( filename.c_str() );
+	_configFile.open( filename.c_str(), std::ios::in );
 	if( !_configFile.is_open() )
 		throw( std::runtime_error( "Could not open Config File" ) );
-	while( std::getline( _configFile, tmp ) ){
-		if( tmp == "server" ){
+	std::getline( _configFile, tmp );
+	while( tmp.find( '}' ) == tmp.npos && !_configFile.eof() ){
+		std::stringstream	ss( tmp );
+		std::string		key;
+		ss >> key;
+		if( key == "server" ){
 			Server	server;
 			this->parseServerBlock( server );	
 			this->setServer( server );
-
 		}
+		getline( _configFile, tmp );
 	}
 	if( _configFile.eof() && _servers.empty() )
 		throw( std::runtime_error( "Did not find server block" ) );

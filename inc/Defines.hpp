@@ -5,6 +5,6 @@
 #define DEFAULT_IP		"0.0.0.0"
 #define DEFAULT_PORT		"80"
 #define MAXBODYSIZE		10000
-#define ALLOWED_METHODES	{ "POST", "DELETE" }
+#define ALLOWED_METHODES	{ "POST", "DELETE", "GET" }
 
 #endif

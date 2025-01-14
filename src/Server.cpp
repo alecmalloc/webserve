@@ -1,6 +1,7 @@
 #include "Server.hpp"
 #include <ostream>
 #include <string>
+#include <vector>
 
 //constructors
 
@@ -12,6 +13,8 @@ Server::Server( const Server& og ){
 	_locations = og._locations;
 	_errorPages = og._errorPages;
 	_bodySize = og._bodySize;
+	_rootDir = og._rootDir;
+	_index = og._index;
 }
 
 Server::~Server( void ) {;}
@@ -25,6 +28,8 @@ Server&		Server::operator =( const Server& og ) {
 		_locations = og._locations;
 		_errorPages = og._errorPages;
 		_bodySize = og._bodySize;
+		_rootDir = og._rootDir;
+		_index = og._index;
 	}
 	return( *this );
 }
@@ -32,6 +37,7 @@ Server&		Server::operator =( const Server& og ) {
 std::ostream&	operator <<( std::ostream& os, const Server& server) {
 
 	os << "Server Details:\n" << std::endl;
+	std::vector< std::string >	tmp;
 
 	// Print IP and Port
 	if ( !server.getIpPort().empty() )
@@ -64,16 +70,32 @@ std::ostream&	operator <<( std::ostream& os, const Server& server) {
 
 	}
 
+	//print RootDir
+	if ( !server.getRootDir().empty() )
+		os << "RootDir: " << server.getRootDir() << "\n";
+
+	// Print index files
+	if ( !server.getIndex().empty() ){
+		os << "Index Files: ";
+		tmp = server.getIndex();
+		for (std::vector<std::string>::const_iterator it = tmp.begin();
+				it != tmp.end(); ++it) {
+			os << *it << " ";
+		}
+		os << std::endl;
+	}
+
 	// Print Locations
 	if ( !server.getLocations().empty() ){
 		os << "Locations:\n";
+		int	i = 0;
 		std::vector< Location >	tmp3 = server.getLocations();
 		for (std::vector<Location>::const_iterator it = tmp3.begin(); 
 				it != tmp3.end(); ++it) {
-			os << *it << "\n";
+			os << i << ":\n" << *it << "\n";
+			i++;
 		}
 	}
-	
 	return( os );
 }
 
@@ -99,6 +121,13 @@ size_t				Server::getBodySize( void ) const {
 	return( _bodySize );
 }
 
+const std::string	Server::getRootDir( void ) const {
+	return( _rootDir );
+}
+
+const std::vector< std::string >	Server::getIndex( void ) const{
+	return( _index );
+}
 
 //setter functions
 void	Server::setIpPort( std::string tmp ){
@@ -118,4 +147,12 @@ void	Server::setErrorPage( int errorCode, std::string path ){
 
 void	Server::setBodySize( size_t size ){
 	_bodySize = size;
+}
+
+void	Server::setRootDir( std::string tmp ){
+	_rootDir = tmp;
+}
+
+void	Server::setIndex( std::string tmp ){
+	_index.push_back( tmp );
 }

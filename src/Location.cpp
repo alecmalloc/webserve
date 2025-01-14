@@ -1,7 +1,7 @@
 #include "Location.hpp"
 
 //constructors 
-Location::Location( void ) {;}
+Location::Location( void ) : _autoIndex( false ) {;}
 
 Location::~Location( void ) {;}
 
@@ -38,7 +38,6 @@ Location&	Location::operator =( const Location& og ){
 }
 
 std::ostream&	operator <<( std::ostream& os, const Location& loc ) {
-    os << "Location Details:\n" << std::endl;
 	std::vector< std::string > tmp;
 
     // Print path
@@ -74,7 +73,7 @@ std::ostream&	operator <<( std::ostream& os, const Location& loc ) {
 
     // Print auto index setting
     if ( loc.getAutoIndex() == true ){
-    	os << "Auto Index: " << "Enabled" << std::endl;
+    	os << "Auto Index: " << "On" << std::endl;
     }
 
     // Print index files

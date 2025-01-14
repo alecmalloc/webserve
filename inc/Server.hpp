@@ -24,6 +24,8 @@ class Server {
 		const std::vector< Location >		getLocations( void ) const ;
 		const std::map< int, std::string >	getErrorPages( void ) const ;
 		size_t 					getBodySize( void ) const ;
+		const std::string			getRootDir( void ) const;
+		const std::vector< std::string >	getIndex( void ) const;
 
 		//setter functions
 		void	setIpPort( std::string tmp );
@@ -31,6 +33,8 @@ class Server {
 		void	setLocation( Location location );
 		void	setErrorPage( int errorCode, std::string path );
 		void	setBodySize( size_t size );
+		void	setRootDir( std::string tmp );
+		void	setIndex( std::string );
 
 		//member functions
 
@@ -50,6 +54,12 @@ class Server {
 		
 		//limit of client body size for RFC
 		size_t				_bodySize;
+
+		//root directory -> dir
+		std::string			_rootDir;
+
+		//store indexes
+		std::vector< std::string >	_index;
 };
 
 	std::ostream&	operator <<( std::ostream& os, const Server& server );
