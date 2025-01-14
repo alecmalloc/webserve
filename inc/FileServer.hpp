@@ -33,7 +33,7 @@ Response serveDirectory(const PathInfo& path);
     // X 1. Check if Path is a Directory: Verify that the provided path is a directory.
     // X 2. Check for Default Files: Look for default files like index.html to serve.
     // 3. Check if Directory Listing is Enabled: Ensure that directory listing is allowed.
-    // 4. Read Directory Contents: List the contents of the directory if no default file is found.
+    // x 4. Read Directory Contents: List the contents of the directory if no default file is found.
     // 5. Generate Directory Listing HTML: Create an HTML page that lists the contents of the directory.
     // 6. Set Response Headers: Set appropriate HTTP headers, such as Content-Type and Content-Length.
     // 7. Return Response: Return a Response object with the generated HTML content and appropriate status code.

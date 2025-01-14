@@ -25,6 +25,7 @@ Response serveDirectory(const PathInfo& path) {
         throw std::runtime_error("Failed to open directory");
     }
 
+    std::vector<std::string> directoryEntries;
     // generate directory listing
     struct dirent* entry;
     while ((entry = readdir(dir)) != nullptr) {
@@ -34,11 +35,11 @@ Response serveDirectory(const PathInfo& path) {
         if (entryName == "." || entryName == "..")
             continue;
         // add entry to response
-        // example: response.addDirectoryEntry(entryName);
-        // TODO i think ill make a string vector and convert the string vector to html
+        directoryEntries.push_back(entryName);
     }
     closedir(dir);
 
+    // TODO convert entries to html
     return response;
 }
 
