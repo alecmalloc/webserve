@@ -29,11 +29,11 @@ class Config {
 	std::vector< Server >	getServers( void );
 
 	//setters
-	void	setServer( Server& );
+	void	setServer( Server server );
 
 	//member fucnitons
         void	parse( std::string& filename );
-	void	parseServerBlock( void );
+	void	parseServerBlock( Server& server );
 	void	parseLocationBlock( Server&, std::stringstream& );
 };
 

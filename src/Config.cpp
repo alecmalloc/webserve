@@ -31,7 +31,7 @@ std::vector< Server >	Config::getServers( void ){
 }
 
 //setters
-void	Config::setServer( Server& server ){
+void	Config::setServer( Server server ){
 	_servers.push_back( server );
 }
 
@@ -142,7 +142,8 @@ void	parsePath( Location& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
-		location.setPath( tmp );
+		if( tmp.find( '{' ) == tmp.npos )
+			location.setPath( tmp );
 	}
 //	if( tmp.at( tmp.size() - 1 ) != ';' )
 //		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
@@ -288,7 +289,7 @@ void	Config::parseLocationBlock( Server& server, std::stringstream& ss ){
 	server.setLocation( location );	
 }
 
-void	Config::parseServerBlock( void ){
+void	Config::parseServerBlock( Server& server ){
 	const std::string	optionsArray[] =  \
 	{ "listen", "server_name", "error_page", "client_max_body_size" };
 
@@ -296,7 +297,6 @@ void	Config::parseServerBlock( void ){
 	{ parseListen, parseServerName, parseErrorPage, parseBodySize };
 
 	std::string		tmp;
-	Server			server;
 
 	getline( _configFile, tmp );
 	if ( tmp == "{" )
@@ -322,7 +322,6 @@ void	Config::parseServerBlock( void ){
 						}
 		getline( _configFile, tmp );
 	}
-	this->setServer( server );
 }
 
 void	Config::parse( std::string& filename ){
@@ -332,8 +331,12 @@ void	Config::parse( std::string& filename ){
 	if( !_configFile.is_open() )
 		throw( std::runtime_error( "Could not open Config File" ) );
 	while( std::getline( _configFile, tmp ) ){
-		if( tmp == "server" )
-			this->parseServerBlock();	
+		if( tmp == "server" ){
+			Server	server;
+			this->parseServerBlock( server );	
+			this->setServer( server );
+
+		}
 	}
 	if( _configFile.eof() && _servers.empty() )
 		throw( std::runtime_error( "Did not find server block" ) );

@@ -26,10 +26,10 @@ class Server {
 		size_t 					getBodySize( void ) const ;
 
 		//setter functions
-		void	setIpPort( std::string& tmp );
-		void	setServerName( const std::string& name );
-		void	setLocation( Location& location );
-		void	setErrorPage( int errorCode, std::string& path );
+		void	setIpPort( std::string tmp );
+		void	setServerName( const std::string name );
+		void	setLocation( Location location );
+		void	setErrorPage( int errorCode, std::string path );
 		void	setBodySize( size_t size );
 
 		//member functions

@@ -38,63 +38,82 @@ Location&	Location::operator =( const Location& og ){
 }
 
 std::ostream&	operator <<( std::ostream& os, const Location& loc ) {
-    os << "Location Details:\n";
+    os << "Location Details:\n" << std::endl;
+	std::vector< std::string > tmp;
 
     // Print path
-    os << "Path: " << loc.getPath() << "\n";
+    if ( !loc.getPath().empty() ){
+    	os << "Path: " << loc.getPath() << std::endl;
+    }
 
     // Print allowed methods
-    os << "Allowed Methods: ";
-    std::vector< std::string > tmp = loc.getAllowedMethods();
-    for (std::vector<std::string>::const_iterator it = tmp.begin();
-         it != tmp.end(); ++it) {
-        os << *it << " ";
+    if ( !loc.getAllowedMethods().empty() ){
+    	os << "Allowed Methods: ";
+    	tmp = loc.getAllowedMethods();
+    	for (std::vector<std::string>::const_iterator it = tmp.begin();
+    	     it != tmp.end(); ++it) {
+    	    os << *it << " ";
+    	}
+    	os << std::endl;
     }
-    os << "\n";
 
     // Print allowed redirects
-    os << "Allowed Redirects:\n";
-    std::map< int, std::string >	tmp2 = loc.getAllowedRedirects();
-    for (std::map<int, std::string>::const_iterator it = tmp2.begin();
-         it != tmp2.end(); ++it) {
-        os << "  Code " << it->first << ": " << it->second << "\n";
+    if ( !loc.getAllowedRedirects().empty() ){
+    	os << "Allowed Redirects:" << std::endl;
+    	std::map< int, std::string >	tmp2 = loc.getAllowedRedirects();
+    	for (std::map<int, std::string>::const_iterator it = tmp2.begin();
+    	     it != tmp2.end(); ++it) {
+    	    os << "  Code " << it->first << ": " << it->second << std::endl;
+    	}
     }
 
     // Print root directory
-    os << "Root Directory: " << loc.getRootDir() << "\n";
+    if ( !loc.getRootDir().empty() ){
+    	os << "Root Directory: " << loc.getRootDir() << std::endl;
+    }
 
     // Print auto index setting
-    os << "Auto Index: " << (loc.getAutoIndex() ? "Enabled" : "Disabled") << "\n";
+    if ( loc.getAutoIndex() == true ){
+    	os << "Auto Index: " << "Enabled" << std::endl;
+    }
 
     // Print index files
-    os << "Index Files: ";
-    tmp = loc.getIndex();
-    for (std::vector<std::string>::const_iterator it = tmp.begin();
-         it != tmp.end(); ++it) {
-        os << *it << " ";
+    if ( !loc.getIndex().empty() ){
+    	os << "Index Files: ";
+    	tmp = loc.getIndex();
+    	for (std::vector<std::string>::const_iterator it = tmp.begin();
+    	     it != tmp.end(); ++it) {
+    	    os << *it << " ";
+    	}
+    	os << std::endl;
     }
-    os << "\n";
 
     // Print CGI paths
-    os << "CGI Paths: ";
-    tmp = loc.getCgiPath();
-    for (std::vector<std::string>::const_iterator it = tmp.begin();
-         it != tmp.end(); ++it) {
-        os << *it << " ";
+    if ( !loc.getCgiPath().empty() ){
+   	 os << "CGI Paths: ";
+   	 tmp = loc.getCgiPath();
+   	 for (std::vector<std::string>::const_iterator it = tmp.begin();
+   	      it != tmp.end(); ++it) {
+   	     os << *it << " ";
+   	 }
+   	 os << std::endl;
     }
-    os << "\n";
 
     // Print CGI extensions
-    os << "CGI Extensions: ";
-    tmp = loc.getCgiExt();
-    for (std::vector<std::string>::const_iterator it = tmp.begin();
-         it != tmp.end(); ++it) {
-        os << *it << " ";
+    if ( !loc.getCgiExt().empty() ) {
+    	os << "CGI Extensions: ";
+    	tmp = loc.getCgiExt();
+    	for (std::vector<std::string>::const_iterator it = tmp.begin();
+    	     it != tmp.end(); ++it) {
+    	    os << *it << " ";
+    	}
+    	os << std::endl;
     }
-    os << "\n";
 
     // Print upload directory
-    os << "Upload Directory: " << loc.getUploadDir() << "\n";
+    if ( !loc.getUploadDir().empty() ){
+    	os << "Upload Directory: " << loc.getUploadDir() << std::endl;
+    }
 
     return os;
 }

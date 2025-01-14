@@ -7,6 +7,7 @@
 Server::Server( void ) : _bodySize( 0 ) {;}
 
 Server::Server( const Server& og ){
+	_ipPort = og._ipPort;
 	_serverNames = og._serverNames;
 	_locations = og._locations;
 	_errorPages = og._errorPages;
@@ -19,6 +20,7 @@ Server::~Server( void ) {;}
 
 Server&		Server::operator =( const Server& og ) {
 	if ( this != &og ){
+		_ipPort = og._ipPort;
 		_serverNames = og._serverNames;
 		_locations = og._locations;
 		_errorPages = og._errorPages;
@@ -29,37 +31,47 @@ Server&		Server::operator =( const Server& og ) {
 
 std::ostream&	operator <<( std::ostream& os, const Server& server) {
 
-	os << "Server Details:\n";
+	os << "Server Details:\n" << std::endl;
 
 	// Print IP and Port
-	os << "IP and Port: " << server.getIpPort() << "\n";
+	if ( !server.getIpPort().empty() )
+		os << "IP and Port: " << server.getIpPort() << "\n";
 
 	// Print Server Names
-	os << "Server Names: ";
-	std::vector< std::string > tmp = server.getServerNames();
-	for (std::vector<std::string>::const_iterator it = tmp.begin(); 
-			it != tmp.end(); ++it) {
-		os << *it << " ";
+	if ( !server.getServerNames().empty() ){
+		os << "Server Names: ";
+		std::vector< std::string > tmp = server.getServerNames();
+		for (std::vector<std::string>::const_iterator it = tmp.begin(); 
+				it != tmp.end(); ++it) {
+			os << *it << " ";
+		}
+		os << "\n";
 	}
-	os << "\n";
 
 	// Print Error Pages
-	os << "Error Pages:\n";
-	std::map< int, std::string > tmp2 = server.getErrorPages();
-	for (std::map<int, std::string>::const_iterator it = tmp2.begin(); 
-			it != tmp2.end(); ++it) {
-		os << "Error " << it->first << ": " << it->second << "\n";
+	if ( !server.getErrorPages().empty() ){
+		os << "Error Pages:\n";
+		std::map< int, std::string > tmp2 = server.getErrorPages();
+		for (std::map<int, std::string>::const_iterator it = tmp2.begin(); 
+				it != tmp2.end(); ++it) {
+			os << "Error " << it->first << ": " << it->second << "\n";
+		}
 	}
 
 	// Print Body Size Limit
-	os << "Body Size Limit: " << server.getBodySize() << " bytes\n";
+	if ( server.getBodySize() != 0 ){
+		os << "Body Size Limit: " << server.getBodySize() << " bytes\n";
+
+	}
 
 	// Print Locations
-	os << "Locations:\n";
-	std::vector< Location >	tmp3 = server.getLocations();
-	for (std::vector<Location>::const_iterator it = tmp3.begin(); 
-			it != tmp3.end(); ++it) {
-		os << *it << "\n";
+	if ( !server.getLocations().empty() ){
+		os << "Locations:\n";
+		std::vector< Location >	tmp3 = server.getLocations();
+		for (std::vector<Location>::const_iterator it = tmp3.begin(); 
+				it != tmp3.end(); ++it) {
+			os << *it << "\n";
+		}
 	}
 	
 	return( os );
@@ -89,18 +101,18 @@ size_t				Server::getBodySize( void ) const {
 
 
 //setter functions
-void	Server::setIpPort( std::string& tmp ){
+void	Server::setIpPort( std::string tmp ){
 	_ipPort = tmp;
 }
-void	Server::setServerName( const std::string& name ){
+void	Server::setServerName( const std::string name ){
 	_serverNames.push_back( name );
 }
 
-void	Server::setLocation( Location& location ){
+void	Server::setLocation( Location location ){
 	_locations.push_back( location );
 }
 
-void	Server::setErrorPage( int errorCode, std::string& path ){
+void	Server::setErrorPage( int errorCode, std::string path ){
 	_errorPages[ errorCode ] = path;
 }
 
