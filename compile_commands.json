@@ -1,0 +1,92 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/Location.o",
+      "src/Location.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/Location.cpp",
+    "output": "/home/mo/42/webserv/obj/Location.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/Server.o",
+      "src/Server.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/Server.cpp",
+    "output": "/home/mo/42/webserv/obj/Server.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/StrUtils.o",
+      "src/StrUtils.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/StrUtils.cpp",
+    "output": "/home/mo/42/webserv/obj/StrUtils.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/main.o",
+      "src/main.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/main.cpp",
+    "output": "/home/mo/42/webserv/obj/main.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/Config.o",
+      "src/Config.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/Config.cpp",
+    "output": "/home/mo/42/webserv/obj/Config.o"
+  }
+]
