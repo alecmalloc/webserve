@@ -27,7 +27,7 @@ jobs:
 
     - name: Check executable exists
       run: |
-        if [ ! -f webserve ]; then
+        if [ ! -f webserv ]; then
           echo "Executable not created"
           exit 1
         fi

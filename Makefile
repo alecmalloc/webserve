@@ -1,5 +1,5 @@
+
 NAME = webserv
-BONUS_NAME =
 
 BUILD_DIR = ./obj
 SRC_DIR = ./src

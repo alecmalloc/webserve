@@ -28,7 +28,20 @@ int main(int argc, char *argv[]) {
 	for( std::vector< ServerConf >::const_iterator it = tmp.begin(); it != tmp.end(); it++ ){
 		std::cout << *it << std::endl;
 	}
-	// ServerConf server;
-	// server.start();
+  
+   // *** TESTING FOR HTTP_REQUEST
+    // #include <fcntl.h>
+    // #include <unistd.h>
+    // int fd = open("get.example", O_RDONLY);
+    // if (fd < 0)
+    //     return -1;
+    // try {
+    //     HttpRequest http(fd);
+    // }
+    // catch (std::runtime_error &e) {
+    //     std::cerr << "Error: " << e.what() << std::endl;
+    // }
+  
+
 	return 0;
 }

@@ -1,17 +1,29 @@
-# WebServ Project Task Distribution
+# WebServ
+### HTTP/1.1 compliant web server in C++98
 
-## Moritz (Core Architecture)
+<div align="center">
+  <img src="assets/webserver.png" alt="webserve" width="150"/>
+</div>
+
+## Team Members
+- [Moritz](https://github.com/mobartsch)
+- [Alec](https://github.com/alecmalloc)
+- [Linus](https://github.com/eschencode )
+
+## Project Task Distribution
+
+### Moritz (Core Architecture)
 - TCP connection management and socket handling
 - I/O multiplexing with select()
 - Main event loop implementation
 - Server block parsing
 - Location block interpretation
 - Process management for CGI
+- Configuration file parsing
 
 **Integration Points:** Will need to work closely with others on request handling and CGI implementation
 
-## Alec
-- Configuration file parsing
+### Alec
 - HTTP request parsing
 - Method validation
 - Header extraction and processing
@@ -20,9 +32,13 @@
 - MIME type detection
 - Directory listing
 
+comments cheat sheet: TODO, DELETE
+
+- [HTTP] (https://developer.mozilla.org/en-US/docs/Web/HTTP)
+
 **Integration Points:** Will coordinate with Moritz on request handling and Linus for error responses
 
-## Linus
+### Linus
 - HTTP response construction
 - Status code and headers generation
 - Content formatting
@@ -41,4 +57,4 @@
 
 ---
 
-This distribution ensures each person has a clear area of responsibility while maintaining logical connections between related components. Moritz handles the core architecture, Alec manages request processing and file operations, and Linus takes care of responses and error handling.
+Moritz handles the core architecture, Alec manages request processing and file operations, and Linus takes care of responses and error handling.
