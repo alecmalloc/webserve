@@ -142,7 +142,7 @@ static void	mainLoopServer( int epoll_fd, const std::vector<int>& listen_fds ){
 
 			//unexpected event
 			else {
-				std::cout << RED << "unexpected event on: " << event_fd \
+				std::cerr << RED << "unexpected event on: " << event_fd \
 					<< END << std::endl;
 				close( event_fd );
 			}
