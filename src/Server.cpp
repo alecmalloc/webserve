@@ -67,7 +67,7 @@ static int	createSocket( const char* ip, int port ){
 	if( listen( socket_fd, SOMAXCONN ) == -1 )
 		throw( std::runtime_error( "Socket listening failed" ) );
 
-	std::cout << GREEN << "Listening on: " << ip << ":" << port << std::endl;
+	std::cout << GREEN << "Listening on: " << END << ip << ":" << port << std::endl;
 	return( socket_fd );
 }
 
@@ -123,13 +123,13 @@ static void	mainLoopServer( int epoll_fd, const std::vector<int>& listen_fds ){
 						"Client non blocking failed" ) );
 				addSocketEpoll( epoll_fd, client_fd, EPOLLIN | EPOLLET );
 				std::cout << GREEN << "New Client connected: " << \
-					client_fd << std::endl;
+					END << client_fd << std::endl;
 			}
 
 			//Read http request
 			else if ( events[i].events & EPOLLIN ){
-				std::cout << BLUE << "Ready to read from: " << event_fd \
-					<< std::endl;
+				std::cout << BLUE << "Ready to read from: " << END << \
+					event_fd << std::endl;
 			}
 
 			//write http request
@@ -143,7 +143,7 @@ static void	mainLoopServer( int epoll_fd, const std::vector<int>& listen_fds ){
 			//unexpected event
 			else {
 				std::cout << RED << "unexpected event on: " << event_fd \
-					<< std::endl;
+					<< END << std::endl;
 				close( event_fd );
 			}
 				

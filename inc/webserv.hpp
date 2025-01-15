@@ -17,10 +17,15 @@
 #include <string>
 
 #define	MAX_EVENTS 	100
-#define RED 		"\033[0;31m"
-#define GREEN 		"\033[0;32m"
-#define BLUE		"\033[0;34m"
-#define RESET		"\033[0;0m"
+# define RED		"\x1B[31m"
+# define GREEN		"\x1B[32m"
+# define YELLOW		"\x1B[33m"
+# define ORANGE		"\x1B[34m"
+# define PURPLE		"\x1B[35m"
+# define BLUE		"\x1B[36m"
+# define BOLD		"\x1B[1m"
+# define GRAY		"\x1B[90m"
+# define END		"\x1B[0m"
 
 void	runServer( void );
 
