@@ -15,6 +15,7 @@ webserv
 *.swp
 *~
 .cache
+compile_commands.json
 
 # OS specific
 .DS_Store
@@ -27,3 +28,5 @@ Thumbs.db
 
 # Debug files
 *.dSYM/
+
+compile_commands.json
