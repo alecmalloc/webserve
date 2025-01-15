@@ -1,11 +1,11 @@
 #include "Location.hpp"
 
 //constructors 
-Location::Location( void ) : _autoIndex( false ) {;}
+LocationConf::LocationConf( void ) : _autoIndex( false ) {;}
 
-Location::~Location( void ) {;}
+LocationConf::~LocationConf( void ) {;}
 
-Location::Location( const Location& og ){
+LocationConf::LocationConf( const LocationConf& og ){
 	_path = og._path;
 	_allowedMethods = og._allowedMethods;
 	_allowedRedirects = og._allowedRedirects;
@@ -20,7 +20,7 @@ Location::Location( const Location& og ){
 }
 
 //operator overloads
-Location&	Location::operator =( const Location& og ){
+LocationConf&	LocationConf::operator =( const LocationConf& og ){
 	if ( this != & og ){
 		_path = og._path;
 		_allowedMethods = og._allowedMethods;
@@ -37,7 +37,7 @@ Location&	Location::operator =( const Location& og ){
 	return( *this );
 }
 
-std::ostream&	operator <<( std::ostream& os, const Location& loc ) {
+std::ostream&	operator <<( std::ostream& os, const LocationConf& loc ) {
 	std::vector< std::string > tmp;
 
     // Print path
@@ -118,75 +118,75 @@ std::ostream&	operator <<( std::ostream& os, const Location& loc ) {
 }
 
 //getter functions
-  const std::string                      Location::getPath( void ) const{
+  const std::string                      LocationConf::getPath( void ) const{
  	return( _path );
  }
 
- const std::vector< std::string >    Location::getAllowedMethods( void ) const{
+ const std::vector< std::string >    LocationConf::getAllowedMethods( void ) const{
  	return( _allowedMethods );
  }
 
- const std::map< std::string, std::string >     Location::getAllowedRedirects( void ) const{
+ const std::map< std::string, std::string >     LocationConf::getAllowedRedirects( void ) const{
  	return( _allowedRedirects );
  }
 
- const std::string                      Location::getRootDir( void ) const{
+ const std::string                      LocationConf::getRootDir( void ) const{
  	return( _rootDir );
  }
 
-bool                             Location::getAutoIndex( void ) const{
+bool                             LocationConf::getAutoIndex( void ) const{
 	return( _autoIndex );	
  }
 
- const std::vector< std::string >       Location::getIndex( void ) const{
+ const std::vector< std::string >       LocationConf::getIndex( void ) const{
 	 return( _index );
  }
 
- const std::vector< std::string >      Location::getCgiPath( void ) const{
+ const std::vector< std::string >      LocationConf::getCgiPath( void ) const{
 	 return( _cgiPath );
  }
 
- const std::vector< std::string >      Location::getCgiExt( void ) const{
+ const std::vector< std::string >      LocationConf::getCgiExt( void ) const{
 	 return( _cgiExt );
  }
 
- const std::string                       Location::getUploadDir( void ) const{
+ const std::string                       LocationConf::getUploadDir( void ) const{
 	 return( _uploadDir );
  }
 
 //setter funcitons
-void	Location:: setPath( std::string path ){
+void	LocationConf:: setPath( std::string path ){
 	_path =  path;
 }
 
-void	Location:: setAllowedMethod( std::string method ){
+void	LocationConf:: setAllowedMethod( std::string method ){
 	_allowedMethods.push_back( method );
 }
 
-void	Location:: setAllowedRedirects( std::string redirect, std::string path ){
+void	LocationConf:: setAllowedRedirects( std::string redirect, std::string path ){
 	_allowedRedirects[ redirect ] = path;
 }
 
-void	Location:: setRootDir( std::string rootDir ){
+void	LocationConf:: setRootDir( std::string rootDir ){
 	_rootDir = rootDir;
 }
 
-void	Location:: setAutoIndex( bool status ){
+void	LocationConf:: setAutoIndex( bool status ){
 	_autoIndex = status;
 }
 
-void	Location:: setIndex( std::string index ){
+void	LocationConf:: setIndex( std::string index ){
 	_index.push_back( index );
 }
 
-void	Location:: setCgiPath( std::string key ){
+void	LocationConf:: setCgiPath( std::string key ){
 	_cgiPath.push_back(  key );
 }
 
-void	Location:: setCgiExt( std::string key ){
+void	LocationConf:: setCgiExt( std::string key ){
 	_cgiExt.push_back( key );
 }
 
-void	Location:: setUploadDir( std::string uploadDir ){
+void	LocationConf:: setUploadDir( std::string uploadDir ){
 	_uploadDir = uploadDir;
 }

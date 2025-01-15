@@ -6,15 +6,15 @@
 #include <string>
 #include <ostream>
 
-class Location {
+class LocationConf {
 	public:
 		//constructors
-		Location( void );
-		Location( const Location& og );
-		~Location( void );
+		LocationConf( void );
+		LocationConf( const LocationConf& og );
+		~LocationConf( void );
 
 		//operator overloads
-		Location&	operator =( const Location& og );
+		LocationConf&	operator =( const LocationConf& og );
 
 		//getter functions
 		const std::string			getPath( void ) const;
@@ -67,5 +67,5 @@ class Location {
 		//Upload
 		std::string			_uploadDir;
 };
-	std::ostream& operator <<(std::ostream& os, const Location& loc);
+	std::ostream& operator <<(std::ostream& os, const LocationConf& loc);
 #endif

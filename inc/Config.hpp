@@ -16,7 +16,7 @@ class Config {
         std::ifstream			_configFile;
 
 	//safe servers
-        std::vector< Server >   	_servers;
+        std::vector< ServerConf >   	_servers;
 
     public:
 	//cosntructors
@@ -28,15 +28,15 @@ class Config {
 	Config&		operator =( const Config& og );
 
 	//getters
-	std::vector< Server >	getServers( void );
+	std::vector< ServerConf >	getServerConfs( void );
 
 	//setters
-	void	setServer( Server server );
+	void	setServerConf( ServerConf server );
 
 	//member fucnitons
         void	parse( std::string& filename );
-	void	parseServerBlock( Server& server );
-	void	parseLocationBlock( Server&, std::stringstream& );
+	void	parseServerConfBlock( ServerConf& server );
+	void	parseLocationConfBlock( ServerConf&, std::stringstream& );
 };
 
 #endif

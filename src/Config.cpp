@@ -26,12 +26,12 @@ Config&		Config::operator =( const Config& og ){
 }
 
 //getters
-std::vector< Server >	Config::getServers( void ){
+std::vector< ServerConf >	Config::getServerConfs( void ){
 	return( _servers );
 }
 
 //setters
-void	Config::setServer( Server server ){
+void	Config::setServerConf( ServerConf server ){
 	_servers.push_back( server );
 }
 
@@ -101,7 +101,7 @@ static bool	checkPort( std::string tmp ){
 	return( true );
 }
 
-void	parseListen( Server& server, std::stringstream& ss ){
+void	parseListen( ServerConf& server, std::stringstream& ss ){
 	std::string	tmp;
 	std::string	ip( DEFAULT_IP );
 	std::string	port( DEFAULT_PORT );
@@ -130,17 +130,17 @@ void	parseListen( Server& server, std::stringstream& ss ){
 	server.setIpPort( cutEnding( tmp ) );
 }
 
-void	parseServerName( Server& server, std::stringstream& ss ){
+void	parseServerConfName( ServerConf& server, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
-		server.setServerName( cutEnding( tmp ) );
+		server.setServerConfName( cutEnding( tmp ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
-void	parseErrorPage( Server& server, std::stringstream& ss ){
+void	parseErrorPage( ServerConf& server, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
@@ -159,7 +159,7 @@ void	parseErrorPage( Server& server, std::stringstream& ss ){
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
-void	parseBodySize( Server& server, std::stringstream& ss ){
+void	parseBodySize( ServerConf& server, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
@@ -175,7 +175,7 @@ void	parseBodySize( Server& server, std::stringstream& ss ){
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
-void	parsePath( Location& location, std::stringstream& ss ){
+void	parsePath( LocationConf& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
@@ -185,7 +185,7 @@ void	parsePath( Location& location, std::stringstream& ss ){
 }
 
 
-void	parseAllowedRedirects( Location& location, std::stringstream& ss ){
+void	parseAllowedRedirects( LocationConf& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
@@ -206,7 +206,7 @@ void	parseAllowedRedirects( Location& location, std::stringstream& ss ){
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
-void	parseAllowedMethods( Location& location, std::stringstream& ss ){
+void	parseAllowedMethods( LocationConf& location, std::stringstream& ss ){
 	std::string	tmp;
 	std::string	allowedMethodes[] = ALLOWED_METHODES;
 
@@ -241,7 +241,7 @@ void	parseRootDir( T& temp, std::stringstream& ss ){
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
-void	parseAutoIndex( Location& location, std::stringstream& ss ){
+void	parseAutoIndex( LocationConf& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
@@ -271,7 +271,7 @@ void	parseIndex( T& temp, std::stringstream& ss ){
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
-void	parseCgiPath( Location& location, std::stringstream& ss ){
+void	parseCgiPath( LocationConf& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
@@ -282,7 +282,7 @@ void	parseCgiPath( Location& location, std::stringstream& ss ){
 }
 
 
-void	parseCgiExt( Location& location, std::stringstream& ss ){
+void	parseCgiExt( LocationConf& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
@@ -293,7 +293,7 @@ void	parseCgiExt( Location& location, std::stringstream& ss ){
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
-void	parseUploadDir( Location& location, std::stringstream& ss ){
+void	parseUploadDir( LocationConf& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
@@ -308,15 +308,15 @@ void	parseUploadDir( Location& location, std::stringstream& ss ){
 }
 
 
-void	Config::parseLocationBlock( Server& server, std::stringstream& ss ){
+void	Config::parseLocationConfBlock( ServerConf& server, std::stringstream& ss ){
 	const std::string	optionsArray[] =  \
 	{ METHODE, REDIRECT, ROOT, AINDEX, INDEX, CGIPATH, CGIEXT, UPDIR };
 
-	void ( *functionArray[] )( Location&, std::stringstream& ) = \
+	void ( *functionArray[] )( LocationConf&, std::stringstream& ) = \
 	{ parseAllowedMethods, parseAllowedRedirects, parseRootDir, \
 		parseAutoIndex, parseIndex, parseCgiPath, parseCgiExt, parseUploadDir };
 
-	Location	location;
+	LocationConf	location;
 	std::string	tmp;
 
 	parsePath( location, ss );
@@ -338,15 +338,15 @@ void	Config::parseLocationBlock( Server& server, std::stringstream& ss ){
 		}
 		getline( _configFile, tmp );
 	}
-	server.setLocation( location );	
+	server.setLocationConf( location );	
 }
 
-void	Config::parseServerBlock( Server& server ){
+void	Config::parseServerConfBlock( ServerConf& server ){
 	const std::string	optionsArray[] =  \
 	{ LISTEN, SERVER, ERROR, CLIENT, ROOT, INDEX };
 
-	void ( *functionArray[] )( Server&, std::stringstream& ) = \
-	{ parseListen, parseServerName, parseErrorPage, parseBodySize, \
+	void ( *functionArray[] )( ServerConf&, std::stringstream& ) = \
+	{ parseListen, parseServerConfName, parseErrorPage, parseBodySize, \
 		parseRootDir, parseIndex };
 
 	std::string		tmp;
@@ -367,7 +367,7 @@ void	Config::parseServerBlock( Server& server ){
 				break;
 			}
 			else if ( key == "location" ){
-				parseLocationBlock( server, ss );
+				parseLocationConfBlock( server, ss );
 				break;
 			}
 			else if ( i == 6 && !key.empty() ){
@@ -392,9 +392,9 @@ void	Config::parse( std::string& filename ){
 		std::string		key;
 		ss >> key;
 		if( key == "server" ){
-			Server	server;
-			this->parseServerBlock( server );	
-			this->setServer( server );
+			ServerConf	server;
+			this->parseServerConfBlock( server );	
+			this->setServerConf( server );
 		}
 		getline( _configFile, tmp );
 	}

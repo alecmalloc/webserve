@@ -5,9 +5,9 @@
 
 //constructors
 
-Server::Server( void ) : _bodySize( 0 ) {;}
+ServerConf::ServerConf( void ) : _bodySize( 0 ) {;}
 
-Server::Server( const Server& og ){
+ServerConf::ServerConf( const ServerConf& og ){
 	_ipPort = og._ipPort;
 	_serverNames = og._serverNames;
 	_locations = og._locations;
@@ -17,11 +17,11 @@ Server::Server( const Server& og ){
 	_index = og._index;
 }
 
-Server::~Server( void ) {;}
+ServerConf::~ServerConf( void ) {;}
 
 //operator overloads
 
-Server&		Server::operator =( const Server& og ) {
+ServerConf&		ServerConf::operator =( const ServerConf& og ) {
 	if ( this != &og ){
 		_ipPort = og._ipPort;
 		_serverNames = og._serverNames;
@@ -34,19 +34,19 @@ Server&		Server::operator =( const Server& og ) {
 	return( *this );
 }
 
-std::ostream&	operator <<( std::ostream& os, const Server& server) {
+std::ostream&	operator <<( std::ostream& os, const ServerConf& server) {
 
-	os << "Server Details:\n" << std::endl;
+	os << "ServerConf Details:\n" << std::endl;
 	std::vector< std::string >	tmp;
 
 	// Print IP and Port
 	if ( !server.getIpPort().empty() )
 		os << "IP and Port: " << server.getIpPort() << "\n";
 
-	// Print Server Names
-	if ( !server.getServerNames().empty() ){
-		os << "Server Names: ";
-		std::vector< std::string > tmp = server.getServerNames();
+	// Print ServerConf Names
+	if ( !server.getServerConfNames().empty() ){
+		os << "ServerConf Names: ";
+		std::vector< std::string > tmp = server.getServerConfNames();
 		for (std::vector<std::string>::const_iterator it = tmp.begin(); 
 				it != tmp.end(); ++it) {
 			os << *it << " ";
@@ -85,12 +85,12 @@ std::ostream&	operator <<( std::ostream& os, const Server& server) {
 		os << std::endl;
 	}
 
-	// Print Locations
-	if ( !server.getLocations().empty() ){
-		os << "Locations:\n";
+	// Print LocationConfs
+	if ( !server.getLocationConfs().empty() ){
+		os << "LocationConfs:\n";
 		int	i = 0;
-		std::vector< Location >	tmp3 = server.getLocations();
-		for (std::vector<Location>::const_iterator it = tmp3.begin(); 
+		std::vector< LocationConf >	tmp3 = server.getLocationConfs();
+		for (std::vector<LocationConf>::const_iterator it = tmp3.begin(); 
 				it != tmp3.end(); ++it) {
 			os << i << ":\n" << *it << "\n";
 			i++;
@@ -101,58 +101,58 @@ std::ostream&	operator <<( std::ostream& os, const Server& server) {
 
 
 //getter functions
-const std::string	Server::getIpPort( void ) const {
+const std::string	ServerConf::getIpPort( void ) const {
 	return( _ipPort );
 }
 
-const std::vector< std::string >	Server::getServerNames( void ) const {
+const std::vector< std::string >	ServerConf::getServerConfNames( void ) const {
 	return( _serverNames );
 }
 
-const std::vector< Location >		Server::getLocations( void ) const {
+const std::vector< LocationConf >		ServerConf::getLocationConfs( void ) const {
 	return( _locations );
 }
 
-const std::map< int, std::string >	Server::getErrorPages( void ) const {
+const std::map< int, std::string >	ServerConf::getErrorPages( void ) const {
 	return( _errorPages );
 }
 
-size_t				Server::getBodySize( void ) const {
+size_t				ServerConf::getBodySize( void ) const {
 	return( _bodySize );
 }
 
-const std::string	Server::getRootDir( void ) const {
+const std::string	ServerConf::getRootDir( void ) const {
 	return( _rootDir );
 }
 
-const std::vector< std::string >	Server::getIndex( void ) const{
+const std::vector< std::string >	ServerConf::getIndex( void ) const{
 	return( _index );
 }
 
 //setter functions
-void	Server::setIpPort( std::string tmp ){
+void	ServerConf::setIpPort( std::string tmp ){
 	_ipPort = tmp;
 }
-void	Server::setServerName( const std::string name ){
+void	ServerConf::setServerConfName( const std::string name ){
 	_serverNames.push_back( name );
 }
 
-void	Server::setLocation( Location location ){
+void	ServerConf::setLocationConf( LocationConf location ){
 	_locations.push_back( location );
 }
 
-void	Server::setErrorPage( int errorCode, std::string path ){
+void	ServerConf::setErrorPage( int errorCode, std::string path ){
 	_errorPages[ errorCode ] = path;
 }
 
-void	Server::setBodySize( size_t size ){
+void	ServerConf::setBodySize( size_t size ){
 	_bodySize = size;
 }
 
-void	Server::setRootDir( std::string tmp ){
+void	ServerConf::setRootDir( std::string tmp ){
 	_rootDir = tmp;
 }
 
-void	Server::setIndex( std::string tmp ){
+void	ServerConf::setIndex( std::string tmp ){
 	_index.push_back( tmp );
 }

@@ -8,20 +8,20 @@
 #include <cstddef>
 #include "Location.hpp"
 
-class Server {
+class ServerConf {
 	public:
 		//constructors
-		Server( void );
-		Server( const Server& og );
-		~Server( void );
+		ServerConf( void );
+		ServerConf( const ServerConf& og );
+		~ServerConf( void );
 
 		//operator overloads
-		Server&		operator =( const Server& og );
+		ServerConf&		operator =( const ServerConf& og );
 
 		//getter functions
 		const std::string			getIpPort( void ) const;
-		const std::vector< std::string >	getServerNames( void ) const ;
-		const std::vector< Location >		getLocations( void ) const ;
+		const std::vector< std::string >	getServerConfNames( void ) const ;
+		const std::vector< LocationConf >		getLocationConfs( void ) const ;
 		const std::map< int, std::string >	getErrorPages( void ) const ;
 		size_t 					getBodySize( void ) const ;
 		const std::string			getRootDir( void ) const;
@@ -29,8 +29,8 @@ class Server {
 
 		//setter functions
 		void	setIpPort( std::string tmp );
-		void	setServerName( const std::string name );
-		void	setLocation( Location location );
+		void	setServerConfName( const std::string name );
+		void	setLocationConf( LocationConf location );
 		void	setErrorPage( int errorCode, std::string path );
 		void	setBodySize( size_t size );
 		void	setRootDir( std::string tmp );
@@ -46,8 +46,8 @@ class Server {
 		//store server names -> stores server names as strings
 		std::vector< std::string >	_serverNames;
 
-		//store location diretives -> stores LocationConfig class
-		std::vector< Location >	_locations;
+		//store location diretives -> stores LocationConfConfig class
+		std::vector< LocationConf >	_locations;
 
 		//store defaullt error pages -> error code, location
 		std::map< int, std::string >	_errorPages;
@@ -62,5 +62,5 @@ class Server {
 		std::vector< std::string >	_index;
 };
 
-	std::ostream&	operator <<( std::ostream& os, const Server& server );
+	std::ostream&	operator <<( std::ostream& os, const ServerConf& server );
 #endif
