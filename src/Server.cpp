@@ -1,4 +1,5 @@
 #include "webserv.hpp"
+#include <algorithm>
 
 static void	cleanUp( int epoll_fd, std::vector< int > listen_fds ){
 	//clean up open sockets
@@ -50,7 +51,8 @@ static int	createSocket( const char* ip, int port ){
 	//set addr stuct for socket to ip and port given in config
 	memset( &addr, 0, sizeof( addr ) );
 	addr.sin_family = AF_INET;	
-	addr.sin_addr.s_addr = inet_addr( ip );
+	//TODO:::. create inet_pton and htons
+	inet_pton( AF_INET, ip, &addr.sin_addr.s_addr );
 	addr.sin_port = htons( port );
 
 	//bind socket to address
@@ -66,6 +68,7 @@ static int	createSocket( const char* ip, int port ){
 		throw( std::runtime_error( "Socket listening failed" ) );
 
 	std::cout << GREEN << "Listening on: " << ip << ":" << port << std::endl;
+	return( socket_fd );
 }
 
 static void	addSocketEpoll( int epoll_fd, int socket_fd, uint32_t events ){
@@ -101,11 +104,11 @@ static void	mainLoopServer( int epoll_fd, const std::vector<int>& listen_fds ){
 
 			//check if event is a new connection
 			if( std::find( listen_fds.begin(), listen_fds.end(), event_fd ) \
-				listen_fds.edn() ){
+				!= listen_fds.end() ){
 
 				//add new client to events
 				struct sockaddr_in	client_addr;
-				sockelen_t		client_len = sizeof( client_addr );
+				socklen_t		client_len = sizeof( client_addr );
 				int			client_fd = accept( event_fd, \
 					( struct sockaddr* )&client_addr, &client_len );
 
@@ -130,7 +133,7 @@ static void	mainLoopServer( int epoll_fd, const std::vector<int>& listen_fds ){
 			}
 
 			//write http request
-			else if( events[i].events & WPOLLOUT ){
+			else if( events[i].events & EPOLLOUT ){
 				std::cout << BLUE << "Ready to write to: " << event_fd \
 					<< std::endl;
 			}
@@ -150,7 +153,7 @@ static void	mainLoopServer( int epoll_fd, const std::vector<int>& listen_fds ){
 }
 
 void	runServer( void ){
-	std::vector< std::pair< const char*, int>	config;
+	std::vector< std::pair< const char*, int > >	config;
 	std::vector<int>				listen_fds;
 	int						epoll_fd;
 
@@ -171,5 +174,5 @@ void	runServer( void ){
 	mainLoopServer( epoll_fd, listen_fds );
 
 	//clean up sockets
-	cleanUp( epoll_fd, listend_fds );
+	cleanUp( epoll_fd, listen_fds );
 }
