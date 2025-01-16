@@ -3,6 +3,7 @@
 
 #include <ostream>
 #include <vector>
+#include <set>
 #include <map>
 #include <string>
 #include <cstddef>
@@ -19,16 +20,16 @@ class ServerConf {
 		ServerConf&		operator =( const ServerConf& og );
 
 		//getter functions
-		const std::string			getIpPort( void ) const;
-		const std::vector< std::string >	getServerConfNames( void ) const ;
+		const std::map< std::string, std::set< int > >	getIpPort( void ) const;
+		const std::vector< std::string >		getServerConfNames( void ) const ;
 		const std::vector< LocationConf >		getLocationConfs( void ) const ;
-		const std::map< int, std::string >	getErrorPages( void ) const ;
-		size_t 					getBodySize( void ) const ;
-		const std::string			getRootDir( void ) const;
-		const std::vector< std::string >	getIndex( void ) const;
+		const std::map< int, std::string >		getErrorPages( void ) const ;
+		size_t 						getBodySize( void ) const ;
+		const std::string				getRootDir( void ) const;
+		const std::vector< std::string >		getIndex( void ) const;
 
 		//setter functions
-		void	setIpPort( std::string tmp );
+		void	setIpPort( std::string ip, int port );
 		void	setServerConfName( const std::string name );
 		void	setLocationConf( LocationConf location );
 		void	setErrorPage( int errorCode, std::string path );
@@ -41,7 +42,7 @@ class ServerConf {
 
 	private: 
 		//store ip address and port 
-		std::string			_ipPort;
+		std::map< std::string, std::set< int > >		_ipPort;
 
 		//store server names -> stores server names as strings
 		std::vector< std::string >	_serverNames;
