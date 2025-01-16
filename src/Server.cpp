@@ -58,17 +58,28 @@ static int	createSocket( const char* ip, int port ){
 	int			options;
 	struct sockaddr_in	addr;
 
-	//TODO::::::close sockets on error
+	//if something with sockets failes -> closing that socket and go on
+
 	//create Socket with Ip:Port sending and reciving connection
 	socket_fd = socket( AF_INET, SOCK_STREAM, 0 );
-	if( socket_fd == -1 && errno != EADDRINUSE )
-		throw( std::runtime_error( "socket creation failed" ) );
+	if( socket_fd == -1 && errno != EADDRINUSE ){
+		std::cerr << RED << "Creating Socket: " << socket_fd << " failed" << \
+			"on ip: " << ip << " with port: " << port << " because of: " << \
+			strerror( errno ) << BLUE << "\nCarry on without that Socket" << \
+			END << std::endl;
+		return( -1 );
+	}
 
 	//set options to REUSE ADDRES for easier debugging and multiple ports on one ip
 	options = 1;
-	if( -1 == 
-	setsockopt( socket_fd, SOL_SOCKET, SO_REUSEADDR, &options, sizeof( options ) ) )
-		throw( std::runtime_error( "Socket option adding failed" ) );
+	if( setsockopt( socket_fd, SOL_SOCKET, SO_REUSEADDR, &options, sizeof( options ) ) == -1 ){
+		std::cerr << RED << "Setting options on Socket: " << socket_fd << " failed" << \
+			"on ip: " << ip << " with port: " << port << " because of: " << \
+			strerror( errno ) << BLUE << "\nCarry on without that Socket" << \
+			END << std::endl;
+		close( socket_fd );
+		return( -1 );
+	}
 	
 	//set addr stuct for socket to ip and port given in config
 	memset( &addr, 0, sizeof( addr ) );
@@ -81,21 +92,33 @@ static int	createSocket( const char* ip, int port ){
 	if( bind( socket_fd, ( struct sockaddr* )&addr, sizeof( addr) ) == -1 ){
 		std::cerr << RED << "Binding Socket: " << socket_fd << " failed" << \
 			"on ip: " << ip << " with port: " << port << " because of: " << \
-			strerror( errno ) << END << std::endl;
+			strerror( errno ) << BLUE << "\nCarry on without that Socket" << \
+			END << std::endl;
 		close( socket_fd );
-		socket_fd = -1;
+		return( -1 );
 	}
 
 	//set socket to nonblocking so multiple conections can be connected
-	if( socket_fd > 0 && setNonBlocking( socket_fd ) == -1 )
-		throw( std::runtime_error( "Socket unblocking failed" ) );
+	if( setNonBlocking( socket_fd ) == -1 ){
+		std::cerr << RED << "Set Socket: " << socket_fd << " to non Blocking failed" << \
+			"on ip: " << ip << " with port: " << port << " because of: " << \
+			strerror( errno ) << BLUE << "\nCarry on without that Socket" << \
+			END << std::endl;
+		close( socket_fd );
+		return( -1 );
+	}
 
 	//start listening on socket
-	if( socket_fd > 0 && listen( socket_fd, SOMAXCONN ) == -1 )
-		throw( std::runtime_error( "Socket listening failed" ) );
+	if( listen( socket_fd, SOMAXCONN ) == -1 ){
+		std::cerr << RED << "Listening to Socket: " << socket_fd << " failed" << \
+			"on ip: " << ip << " with port: " << port << " because of: " << \
+			strerror( errno ) << BLUE << "\nCarry on without that Socket" << \
+			END << std::endl;
+		close( socket_fd );
+		return( -1 );
+	}
 
-	if ( socket_fd > 0 )
-		std::cout << GREEN << "Listening on: " << END << ip << ":" << port << std::endl;
+	std::cout << GREEN << "Listening on: " << END << ip << ":" << port << std::endl;
 	return( socket_fd );
 }
 
@@ -144,9 +167,9 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 				int			client_fd = accept( event_fd, \
 					( struct sockaddr* )&client_addr, &client_len );
 
-				//TODO:: keeping running if client failed???
 				if( client_fd == -1 ){
-					std::cerr << RED << "Client Conection failed" << END << std::endl;
+					std::cerr << RED << "Client Conection failed" << \
+						END << std::endl;
 					continue;
 				}
 				
