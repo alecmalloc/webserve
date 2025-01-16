@@ -91,20 +91,20 @@ static bool	checkIp( std::string tmp ){
 	return( true );
 }
 
-static bool	checkPort( std::string tmp ){
+static int	checkPort( std::string tmp ){
 	std::stringstream	ss( tmp );
 	int			check;
 
 	ss >> check;
 	if ( check < 0 || check > 65535 )
-		return( false );
-	return( true );
+		return( -1 );
+	return( check );
 }
 
 void	parseListen( ServerConf& server, std::stringstream& ss ){
 	std::string	tmp;
 	std::string	ip( DEFAULT_IP );
-	std::string	port( DEFAULT_PORT );
+	int		port =  DEFAULT_PORT;
 
 	ss >> tmp;
 	if( tmp.at( tmp.size() - 1 ) != ';' )
@@ -112,22 +112,24 @@ void	parseListen( ServerConf& server, std::stringstream& ss ){
 	if( tmp.find( ':' ) != tmp.npos ){
 		if ( !checkIp( tmp.substr( 0, tmp.find( ':' ) ) ) )
 			throw( std::runtime_error( "Wrong IpAddress" + \
-						tmp.substr( 0, tmp.find( ':' ) ) ) );
-		if( !checkPort( tmp.substr( tmp.find( ':' ) + 1, tmp.size() ) ) )
+				tmp.substr( 0, tmp.find( ':' ) ) ) );
+		if( checkPort( tmp.substr( tmp.find( ':' ) + 1, tmp.size() ) ) == -1 )
 			throw( std::runtime_error( "Wrong Port" + \
-						tmp.substr( tmp.find( ':' ), tmp.size()  ) ) );
+				tmp.substr( tmp.find( ':' ), tmp.size()  ) ) );
+		ip = tmp.substr( 0, tmp.find( ':' ) );
+		port = checkPort( tmp.substr( tmp.find( ':' ) + 1, tmp.size() ) ); 
 	}
 	else if( tmp.find( '.' ) != tmp.npos ){
 		if( !checkIp( tmp ) )
 			throw( std::runtime_error( "Wrong IpAddress" + tmp ) );
-		tmp = tmp.substr( 0, tmp.size() -1 ) + ":"  + port;
+		ip = tmp.substr( 0, tmp.find( ':' ) );
 	}
 	else{
-		if( !checkPort( tmp ) )
+		if( checkPort( tmp ) == -1 )
 			throw( std::runtime_error( "Wrong Port" + tmp ) );
-		tmp = ip + ":" + tmp.substr(0, tmp.size() - 1 );
+		port = checkPort( tmp.substr( tmp.find( ':' ) + 1, tmp.size() ) ); 
 	}
-	server.setIpPort( cutEnding( tmp ) );
+	server.setIpPort( cutEnding( ip ), port );
 }
 
 void	parseServerConfName( ServerConf& server, std::stringstream& ss ){
