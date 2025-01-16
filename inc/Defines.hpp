@@ -3,7 +3,7 @@
 
 #define DEFAULT_CONF		"conf/default.conf"
 #define DEFAULT_IP		"0.0.0.0"
-#define DEFAULT_PORT		"80"
+#define DEFAULT_PORT		8080
 #define MAXBODYSIZE		10000
 #define ALLOWED_METHODES	{ "POST", "DELETE", "GET" }
 #define ALLOWED_REDIRECTS	{ "301", "302", "307", "308", "300", "304", "303" }

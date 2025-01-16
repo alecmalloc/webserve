@@ -40,8 +40,18 @@ std::ostream&	operator <<( std::ostream& os, const ServerConf& server) {
 	std::vector< std::string >	tmp;
 
 	// Print IP and Port
-	if ( !server.getIpPort().empty() )
-		os << "IP and Port: " << server.getIpPort() << "\n";
+	if ( !server.getIpPort().empty() ){
+		std::map< std::string, std::set< int > > tmp2 = server.getIpPort();
+		for( std::map< std::string, std::set< int > >::const_iterator it = \
+				tmp2.begin(); it != tmp2.end(); it++ ){
+			os << "ip: " << it->first << " ports: ";
+			for( std::set< int >::iterator it2 = it->second.begin(); \
+					it2 != it->second.end(); it2++ ){
+				os << *it2 << " ";
+			}
+			os << "\n";
+		}
+	}
 
 	// Print ServerConf Names
 	if ( !server.getServerConfNames().empty() ){
@@ -101,7 +111,7 @@ std::ostream&	operator <<( std::ostream& os, const ServerConf& server) {
 
 
 //getter functions
-const std::string	ServerConf::getIpPort( void ) const {
+const std::map< std::string, std::set< int > >	ServerConf::getIpPort( void ) const {
 	return( _ipPort );
 }
 
@@ -130,8 +140,8 @@ const std::vector< std::string >	ServerConf::getIndex( void ) const{
 }
 
 //setter functions
-void	ServerConf::setIpPort( std::string tmp ){
-	_ipPort = tmp;
+void	ServerConf::setIpPort( std::string ip, int port ){
+	_ipPort[ ip ].insert( port );
 }
 void	ServerConf::setServerConfName( const std::string name ){
 	_serverNames.push_back( name );
