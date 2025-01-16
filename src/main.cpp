@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 
 	//start server
 	try {
-		runServer();
+		runServer( config );
 	}
 	catch ( std::runtime_error &e ){
 		std::cerr << RED << "ERROR: " << e.what() << END << std::endl;

@@ -30,6 +30,6 @@
 #include "Defines.hpp"
 
 
-void	runServer( void );
+void	runServer( Config& conf );
 
 #endif

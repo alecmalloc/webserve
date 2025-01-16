@@ -61,7 +61,7 @@ static int	createSocket( const char* ip, int port ){
 	//TODO::::::close sockets on error
 	//create Socket with Ip:Port sending and reciving connection
 	socket_fd = socket( AF_INET, SOCK_STREAM, 0 );
-	if( socket_fd == -1 )
+	if( socket_fd == -1 && errno != EADDRINUSE )
 		throw( std::runtime_error( "socket creation failed" ) );
 
 	//set options to REUSE ADDRES for easier debugging and multiple ports on one ip
@@ -78,18 +78,24 @@ static int	createSocket( const char* ip, int port ){
 	addr.sin_port = htons( port );
 
 	//bind socket to address
-	if( bind( socket_fd, ( struct sockaddr* )&addr, sizeof( addr) ) == -1 )
-		throw( std::runtime_error( "Socket bining failed" ) );
+	if( bind( socket_fd, ( struct sockaddr* )&addr, sizeof( addr) ) == -1 ){
+		std::cerr << RED << "Binding Socket: " << socket_fd << " failed" << \
+			"on ip: " << ip << " with port: " << port << " because of: " << \
+			strerror( errno ) << END << std::endl;
+		close( socket_fd );
+		socket_fd = -1;
+	}
 
 	//set socket to nonblocking so multiple conections can be connected
-	if( setNonBlocking( socket_fd ) == -1 )
+	if( socket_fd > 0 && setNonBlocking( socket_fd ) == -1 )
 		throw( std::runtime_error( "Socket unblocking failed" ) );
 
 	//start listening on socket
-	if( listen( socket_fd, SOMAXCONN ) == -1 )
+	if( socket_fd > 0 && listen( socket_fd, SOMAXCONN ) == -1 )
 		throw( std::runtime_error( "Socket listening failed" ) );
 
-	std::cout << GREEN << "Listening on: " << END << ip << ":" << port << std::endl;
+	if ( socket_fd > 0 )
+		std::cout << GREEN << "Listening on: " << END << ip << ":" << port << std::endl;
 	return( socket_fd );
 }
 
@@ -105,11 +111,14 @@ static void	addSocketEpoll( int epoll_fd, int socket_fd, uint32_t events ){
 		throw( std::runtime_error( "Adding socket to Epoll failed" ) );
 }
 
-static void	mainLoopServer( int epoll_fd, const std::vector<int>& listen_fds ){
+static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& listen_fds ){
 	int				num_events;
 	int				event_fd;
 	struct epoll_event		events[ MAX_EVENTS ];
 	std::map< int, std::string >	client_data;
+
+	//TODO: give config file to linus and alec
+	(void) conf;
 
 	//run loop
 	while( running ){
@@ -181,30 +190,51 @@ static void	mainLoopServer( int epoll_fd, const std::vector<int>& listen_fds ){
 	}
 }
 
-void	runServer( void ){
-	std::vector< std::pair< const char*, int > >	config;
-	std::vector<int>				listen_fds;
-	int						epoll_fd;
 
-	config.push_back( std::make_pair("127.0.0.1", 8080));
-	config.push_back( std::make_pair("127.0.0.1", 8081));
+static void	setupServer( Config& conf, int& epoll_fd, std::vector< int >& listen_fds ){
+
+	//store servers and ips
+	std::vector< ServerConf >	server = conf.getServerConfs();
 
 	//create Epoll
 	epoll_fd = createEpoll();	
-	
+
+	//travers through each port of ips from each server block
+	for( std::vector< ServerConf >::const_iterator it = server.begin(); \
+		it != server.end(); it++ ){
+		std::map< std::string, std::set< int > >	ip = it->getIpPort();
+		for( std::map< std::string, std::set< int > >::const_iterator it2 = ip.begin(); \
+			it2 != ip.end(); it2++ ){	
+			std::set< int >	port = it2->second;
+			for( std::set< int >::const_iterator it3 = port.begin(); \
+					it3 != port.end(); it3++ ){
+
+				//add sockets for ips and ports from config
+				int	listen_fd = createSocket( it2->first.c_str(), *it3 );
+				if( listen_fd > 0 ){
+					//add to list of open fds
+					listen_fds.push_back( listen_fd );
+
+					//add to epoll
+					addSocketEpoll( epoll_fd, listen_fd, EPOLLIN );
+				}
+			}
+		}
+	}
+}
+
+void	runServer( Config& conf ){
+	std::vector<int>				listen_fds;
+	int						epoll_fd;
+
 	//start signal hander
 	setupSignalHandling();
-	
 
-	//add sockets for ips and ports from config
-	for( size_t i = 0; i < config.size(); i++ ){
-		int	listen_fd = createSocket( config[i].first, config[i].second );
-		listen_fds.push_back( listen_fd );
-		addSocketEpoll( epoll_fd, listen_fd, EPOLLIN );
-	}
+	//setup Servers
+	setupServer( conf, epoll_fd, listen_fds );
 
 	//run main loop
-	mainLoopServer( epoll_fd, listen_fds );
+	mainLoopServer( conf, epoll_fd, listen_fds );
 
 	//clean up sockets
 	cleanUp( epoll_fd, listen_fds );
