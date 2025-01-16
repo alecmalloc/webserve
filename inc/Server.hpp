@@ -52,7 +52,7 @@ class ServerConf {
 
 		//store defaullt error pages -> error code, location
 		std::map< int, std::string >	_errorPages;
-		
+
 		//limit of client body size for RFC
 		size_t				_bodySize;
 
@@ -63,5 +63,5 @@ class ServerConf {
 		std::vector< std::string >	_index;
 };
 
-	std::ostream&	operator <<( std::ostream& os, const ServerConf& server );
+std::ostream&	operator <<( std::ostream& os, const ServerConf& server );
 #endif
