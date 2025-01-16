@@ -23,6 +23,7 @@ int main(int argc, char *argv[]) {
 	catch ( std::runtime_error &e ){
 		std::cerr <<  RED << \
 			"ERROR: " << e.what() << END << std::endl;
+		return( 1 );
 	}
 
 	//start server
@@ -31,6 +32,7 @@ int main(int argc, char *argv[]) {
 	}
 	catch ( std::runtime_error &e ){
 		std::cerr << RED << "ERROR: " << e.what() << END << std::endl;
+		return( 1 );
 	}
 
 	// *** TESTING PARSER
