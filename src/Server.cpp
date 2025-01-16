@@ -136,14 +136,18 @@ static void	mainLoopServer( int epoll_fd, const std::vector<int>& listen_fds ){
 					( struct sockaddr* )&client_addr, &client_len );
 
 				//TODO:: keeping running if client failed???
-				if( client_fd == -1 )
-					throw( std::runtime_error( \
-						"Acceptning Client failed" ) );
+				if( client_fd == -1 ){
+					std::cerr << RED << "Client Conection failed" << END << std::endl;
+					continue;
+				}
 				
 				//set Client NonBlocking and adding to epoll	
-				if( setNonBlocking( client_fd ) == -1 )
-					throw( std::runtime_error( \
-						"Client non blocking failed" ) );
+				if( setNonBlocking( client_fd ) == -1 ){
+					std::cerr << RED << "Setting Client to non Blocking failed" \
+					       << END << std::endl;	
+					close( client_fd );
+					continue;
+				}
 				addSocketEpoll( epoll_fd, client_fd, EPOLLIN | EPOLLET );
 				std::cout << GREEN << "New Client connected: " << \
 					END << client_fd << std::endl;
@@ -153,12 +157,14 @@ static void	mainLoopServer( int epoll_fd, const std::vector<int>& listen_fds ){
 			else if ( events[i].events & EPOLLIN ){
 				std::cout << BLUE << "Ready to read from: " << END << \
 					event_fd << std::endl;
+				//TODO: ending conections handeld by http request handler??
 			}
 
 			//write http request
 			else if( events[i].events & EPOLLOUT ){
 				std::cout << BLUE << "Ready to write to: " << event_fd \
 					<< std::endl;
+				//TODO: ending conections handeld by http request handler??
 			}
 
 			//TODO:: add other events
