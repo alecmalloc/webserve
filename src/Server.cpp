@@ -1,13 +1,35 @@
 #include "webserv.hpp"
 #include <algorithm>
 
+//global variable for signalhandling
+static volatile bool running = true;
+
+//handle on SIGINT
+static void	handleSignal( int signal ){
+	if( signal == SIGINT ) {
+		running = false;
+		std::cout << BLUE << "\nShutting down Server ... ... ... " << END << std::endl;
+	}
+
+}
+
+//setup Signalhandler
+static void	setupSignalHandling( void ){
+	struct sigaction	sa;
+
+	memset( &sa, 0, sizeof( sa ) );
+	sa.sa_handler = handleSignal;
+	sigaction( SIGINT, &sa, NULL );
+}
+
+//cleanup sockets and epoll
 static void	cleanUp( int epoll_fd, std::vector< int > listen_fds ){
-	//clean up open sockets
 	for( size_t i = 0; i < listen_fds.size(); i++)
 	       close( listen_fds[i] );
 	close( epoll_fd );
 }
 
+//set non Blocking to fds
 static int	setNonBlocking( int tmp ){
 	int	flags;
 
@@ -90,10 +112,11 @@ static void	mainLoopServer( int epoll_fd, const std::vector<int>& listen_fds ){
 	std::map< int, std::string >	client_data;
 
 	//run loop
-	while( true ){
+	while( running ){
 
 		//wait for events to que
-		if( ( num_events = epoll_wait( epoll_fd, events, MAX_EVENTS, -1 ) ) == -1 )
+		if( ( ( num_events = epoll_wait( epoll_fd, events, MAX_EVENTS, -1 ) ) == -1 ) && \
+		 	( errno != EINTR ) )
 			throw( std::runtime_error( "Epoll wait failed" ) );
 
 		//handle events one after another
@@ -162,6 +185,10 @@ void	runServer( void ){
 
 	//create Epoll
 	epoll_fd = createEpoll();	
+	
+	//start signal hander
+	setupSignalHandling();
+	
 
 	//add sockets for ips and ports from config
 	for( size_t i = 0; i < config.size(); i++ ){

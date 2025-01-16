@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <signal.h>
 
 //cpp header
 #include <cstdio>
