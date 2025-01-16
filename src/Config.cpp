@@ -149,7 +149,6 @@ void	parseErrorPage( ServerConf& server, std::stringstream& ss ){
 		int	error;
 		std::stringstream	sstmp( tmp );
 		sstmp >> error;
-		//check if error code is valid
 		ss >> tmp;
 		if( accessibleFile( tmp ) )
 			server.setErrorPage( error, cutEnding( tmp ) );
@@ -181,8 +180,13 @@ void	parsePath( LocationConf& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
-		if( tmp.find( '{' ) == tmp.npos )
-			location.setPath( cutEnding( tmp ) );
+		if( tmp.find( '{' ) == tmp.npos ){
+			if( accessibleDir( tmp ) )
+				location.setRootDir( cutEnding( tmp ) );
+			else
+				throw( std::runtime_error( "Locationn Dir " + tmp \
+							+ " not accessable" ) );
+		}
 	}
 }
 
