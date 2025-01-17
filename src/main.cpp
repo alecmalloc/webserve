@@ -1,25 +1,58 @@
-#include "../inc/HttpRequest.hpp"
+#include "webserv.hpp"
 
-int main(int argc, char**argv) {
+int main(int argc, char *argv[]) {
+	std::string	confFile;	
+	Config config;
 
-    // assuming we need args to init server. or option to
-    (void)argc;
-    (void)argv;
-    
-    // *** TESTING FOR HTTP_REQUEST
-    // #include <fcntl.h>
-    // #include <unistd.h>
-    // int fd = open("get.example", O_RDONLY);
-    // if (fd < 0)
-    //     return -1;
-    // try {
-    //     HttpRequest http(fd);
-    // }
-    // catch (std::runtime_error &e) {
-    //     std::cerr << "Error: " << e.what() << std::endl;
-    // }
+	// check for config file
+	if ( argc == 2 ) 
+		confFile = argv[ 1 ];
+	else if ( argc == 1 )	
+		confFile = DEFAULT_CONF;	
+	else {
+		std::cerr << RED << \
+			"Too many Arguments. Usage:\n" << "\033[0;5m"  << \
+			"./webserv confFile" << END << std::endl;
+		return( 1 );
+	}
 
-    // Server server;
-    // server.start();
-    return 0;
+	// Parse Config File 
+	try {
+		config.parse( confFile );
+	}
+	catch ( std::runtime_error &e ){
+		std::cerr <<  RED << \
+			"ERROR: " << e.what() << END << std::endl;
+		return( 1 );
+	}
+
+	//start server
+	try {
+		runServer( config );
+	}
+	catch ( std::runtime_error &e ){
+		std::cerr << RED << "ERROR: " << e.what() << END << std::endl;
+		return( 1 );
+	}
+
+	// *** TESTING PARSER
+	//std::vector< ServerConf > tmp = config.getServerConfs();
+	//for( std::vector< ServerConf >::const_iterator it = tmp.begin(); it != tmp.end(); it++ ){
+	//	std::cout << *it << std::endl;
+	//}
+
+	// *** TESTING FOR HTTP_REQUEST
+	// #include <fcntl.h>
+	// #include <unistd.h>
+	// int fd = open("get.example", O_RDONLY);
+	// if (fd < 0)
+	//     return -1;
+	// try {
+	//     HttpRequest http(fd);
+	// }
+	// catch (std::runtime_error &e) {
+	//     std::cerr << "Error: " << e.what() << std::endl;
+	// }
+
+	return 0;
 }

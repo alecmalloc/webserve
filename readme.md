@@ -10,6 +10,11 @@
 - [Alec](https://github.com/alecmalloc)
 - [Linus](https://github.com/eschencode )
 
+
+## Documentation
+- [MIME Types](https://developer.mozilla.org/en-US/docs/Web/HTTP/MIME_types#structure_of_a_mime_type)
+- [HTTP Response Codes](./assets/responseCodes.md)
+
 ## Project Task Distribution
 
 ### Moritz (Core Architecture)
@@ -19,11 +24,11 @@
 - Server block parsing
 - Location block interpretation
 - Process management for CGI
+- Configuration file parsing
 
 **Integration Points:** Will need to work closely with others on request handling and CGI implementation
 
 ### Alec
-- Configuration file parsing
 - HTTP request parsing
 - Method validation
 - Header extraction and processing
