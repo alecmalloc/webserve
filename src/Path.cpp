@@ -2,6 +2,8 @@
 #include "../inc/HttpHelpers.hpp"
 
 #include <stdexcept>
+#include <dirent.h>
+#include <cstddef>
 
 std::string PathInfo::getFullPath() const {
    return m_fullPath; 
@@ -72,6 +74,14 @@ bool PathInfo::validatePath() {
     // set file properties
     m_isDirectory = S_ISDIR(statbuf.st_mode);
     m_isFile = S_ISREG(statbuf.st_mode);
+
+    // check dir with open dir too
+    if (m_isDirectory) {
+        DIR* dir = opendir(m_fullPath.c_str());
+        if (dir == NULL) {
+            return false;
+        }
+    }
 
     // check permissions
     if (m_isDirectory) {
