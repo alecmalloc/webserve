@@ -10,10 +10,10 @@ class Response {
     private:
         int m_statusCode; // http status code
     public:
-        Response();
-        ~Response();
+        Response(): m_statusCode(200) {};
+        ~Response() {};
 
-        void setStatus(int statusCode) {m_statusCode = 500;};
+        void setStatus(int statusCode) {m_statusCode = statusCode;};
 };
 
 // not sure if i need a FileServer class rn, going to keep it simple until i need state management

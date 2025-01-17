@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <fstream>
 #include <sstream>
+#include <cstddef>
 
 Response serveDirectory(const PathInfo& path) {
     Response response;
@@ -29,14 +30,14 @@ Response serveDirectory(const PathInfo& path) {
 
     // TODO maybe move this part into validatePath so that we can error handle properly
     DIR* dir = opendir(path.getFullPath().c_str());
-    if (dir == nullptr) {
+    if (dir == NULL) {
         throw std::runtime_error("Failed to open directory");
     }
 
     std::vector<std::string> directoryEntries;
     // generate directory listing
     struct dirent* entry;
-    while ((entry = readdir(dir)) != nullptr) {
+    while ((entry = readdir(dir)) != NULL) {
         // process each directory entry
         std::string entryName = entry->d_name;
         // skip "." and ".." entries
@@ -80,4 +81,5 @@ Response serveFile(const PathInfo& path) {
     if (!path.isFile())
         throw std::runtime_error("Path is not a file");
 
+    return response;
 }

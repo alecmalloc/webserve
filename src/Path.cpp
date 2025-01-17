@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <dirent.h>
+#include <cstddef>
 
 std::string PathInfo::getFullPath() const {
    return m_fullPath; 
@@ -77,7 +78,7 @@ bool PathInfo::validatePath() {
     // check dir with open dir too
     if (m_isDirectory) {
         DIR* dir = opendir(m_fullPath.c_str());
-        if (dir == nullptr) {
+        if (dir == NULL) {
             return false;
         }
     }
