@@ -153,9 +153,21 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 
 		//handle events one after another
 		for( int i = 0; i < num_events; i++ ){
-			
+			// TODO
+			// Check for errors first
+			// if ((events[i].events & EPOLLERR) || 
+			// 	(events[i].events & EPOLLHUP) || 
+			// 	(events[i].events & EPOLLRDHUP)) {
+			// 	std::cerr << "Error condition on fd: " << event_fd << std::endl;
+			// 	close(event_fd);
+			// 	continue;
+			// }
+
 			//start with events 
 			event_fd = events[i].data.fd;
+
+			// create http request obj
+			HttpRequest request(event_fd, conf);
 
 			//check if event is a new connection
 			if( std::find( listen_fds.begin(), listen_fds.end(), event_fd ) \
@@ -172,7 +184,7 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 						END << std::endl;
 					continue;
 				}
-				
+
 				//set Client NonBlocking and adding to epoll	
 				if( setNonBlocking( client_fd ) == -1 ){
 					std::cerr << RED << "Setting Client to non Blocking failed" \
@@ -186,15 +198,14 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 			}
 
 			//Read http request
-			else if ( events[i].events & EPOLLIN ) {
+			if ( events[i].events & EPOLLIN ) {
 				std::cout << BLUE << "Ready to read from: " << END << \
 					event_fd << std::endl;
-				//TODO: ending conections handeld by http request handler??
-					// Alec TODO: functioncall(event_fd, Config& conf)
+				request.parse();
 			}
 
 			//write http request
-			else if( events[i].events & EPOLLOUT ) {
+			if( events[i].events & EPOLLOUT ) {
 				std::cout << BLUE << "Ready to write to: " << event_fd \
 					<< std::endl;
 				//TODO: ending conections handeld by http request handler??

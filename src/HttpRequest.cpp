@@ -1,6 +1,4 @@
-#include "../inc/HttpRequest.hpp"
-#include "../inc/StrUtils.hpp"
-#include "../inc/Config.hpp"
+#include "webserv.hpp"
 
 HttpRequest::HttpRequest(int fd, Config& conf): _fd(fd), _conf(conf) {
     ;
@@ -9,13 +7,13 @@ HttpRequest::HttpRequest(int fd, Config& conf): _fd(fd), _conf(conf) {
 HttpRequest::HttpRequest(const HttpRequest& other): 
     _fd(other._fd), 
     _conf(other._conf),
+    _response(other._response),
     _method(other._method),
     _uri(other._uri),
     _url(other._url),
     _version(other._version),
     _headers(other._headers),
-    _body(other._body),
-    _response(other._response)
+    _body(other._body)
 {
     ;
 }
@@ -44,7 +42,7 @@ Config& HttpRequest::getConf() const {
     return _conf;
 }
 
-Response HttpRequest::getResponse() const {
+const Response HttpRequest::getResponse() const {
     return _response;
 }
 
@@ -64,7 +62,7 @@ std::string HttpRequest::getMethod() const {
     return _method;
 }
 
-std::map<std::string, std::vector<std::string>> HttpRequest::getHeaders() const {
+std::map<std::string, std::vector<std::string> > HttpRequest::getHeaders() const {
     return _headers;
 }
 

@@ -1,7 +1,6 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-
 // PLACEHOLDER: using this until linus creates spec for response type
 class Response {
     private:
