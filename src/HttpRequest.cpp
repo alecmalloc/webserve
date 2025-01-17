@@ -41,7 +41,7 @@ HttpError HttpRequest::parse(void) {
     // validate uri TODO
     if (_version.substr(5, 3) != "1.1")
         return HTTP_VERSION_NOT_SUPPORTED;
-    
+
     // get rest of request
     while (getline(iss, line)) {
         // break for body

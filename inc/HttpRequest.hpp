@@ -28,12 +28,12 @@ enum HttpError {
 
 class HttpRequest {
     private:
-    int                                     _fd;
-    std::string                             _method;
-    std::string                             _uri;
-    std::string                             _version;
-    std::map<std::string, std::string>      _headers;
-    std::vector<std::string>                _body;
+    int                                                  _fd;
+    std::string                                          _method;
+    std::string                                          _uri;
+    std::string                                          _version;
+    std::map<std::string, std::vector<std::string>>      _headers;
+    std::string                                          _body;
     public:
         HttpRequest() {};
         HttpRequest(int fd);

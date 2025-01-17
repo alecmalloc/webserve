@@ -80,7 +80,7 @@ static int	createSocket( const char* ip, int port ){
 		close( socket_fd );
 		return( -1 );
 	}
-	
+
 	//set addr stuct for socket to ip and port given in config
 	memset( &addr, 0, sizeof( addr ) );
 	addr.sin_family = AF_INET;	
@@ -186,7 +186,7 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 			}
 
 			//Read http request
-			else if ( events[i].events & EPOLLIN ){
+			else if ( events[i].events & EPOLLIN ) {
 				std::cout << BLUE << "Ready to read from: " << END << \
 					event_fd << std::endl;
 				//TODO: ending conections handeld by http request handler??
@@ -194,7 +194,7 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 			}
 
 			//write http request
-			else if( events[i].events & EPOLLOUT ){
+			else if( events[i].events & EPOLLOUT ) {
 				std::cout << BLUE << "Ready to write to: " << event_fd \
 					<< std::endl;
 				//TODO: ending conections handeld by http request handler??
@@ -223,7 +223,7 @@ static void	setupServer( Config& conf, int& epoll_fd, std::vector< int >& listen
 	//create Epoll
 	epoll_fd = createEpoll();	
 
-	//travers through each port of ips from each server block
+	//traverse through each port of ips from each server block
 	for( std::vector< ServerConf >::const_iterator it = server.begin(); \
 		it != server.end(); it++ ){
 		std::map< std::string, std::set< int > >	ip = it->getIpPort();
