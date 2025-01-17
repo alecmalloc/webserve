@@ -3,6 +3,14 @@
 #include "../inc/Config.hpp"
 
 HttpRequest::HttpRequest(int fd, Config& conf): _fd(fd), _conf(conf) {
+    ;
+}
+
+HttpRequest::HttpRequest(const HttpRequest& other) {
+    
+}
+
+HttpRequest& HttpRequest::operator =(const HttpRequest& other) {
 
 }
 
@@ -12,13 +20,12 @@ void HttpRequest::parse() {
     char buffer[1024];
     ssize_t bytes_read;
     std::string request_data;
-    
+
     while ((bytes_read = read(_fd, buffer, sizeof(buffer) - 1)) > 0) {
-        buffer[bytes_read] = '\0';
         request_data += buffer;
     }
 
-    if (bytes_read < 0) {
+    if (bytes_read < 0 || request_data.empty()) {
         // return SERVER_ERROR;
     }
 
