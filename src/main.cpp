@@ -9,9 +9,9 @@ int main(int argc, char *argv[]) {
 		confFile = argv[ 1 ];
 	else if ( argc == 1 )	
 		confFile = DEFAULT_CONF;	
-	else{
+	else {
 		std::cerr << RED << \
-			"Too much Arguments. Usage:\n" << "\033[0;5m"  << \
+			"Too many Arguments. Usage:\n" << "\033[0;5m"  << \
 			"./webserv confFile" << END << std::endl;
 		return( 1 );
 	}
