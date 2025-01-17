@@ -12,34 +12,32 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-enum HttpError {
-    OK = 200,
-    BAD_REQUEST = 400, // malformed request syntax, invalid request message framing
-    METHOD_NOT_ALLOWED = 405, // method is not among GET, POST, or DELETE
-    URI_TOO_LONG = 414, // uri exceeds server limits
-    HEADER_FIELDS_TOO_LARGE = 431, // header fields are too large
-    HTTP_VERSION_NOT_SUPPORTED = 505, // version is not HTTP/1.1
-    PAYLOAD_TOO_LARGE = 413, // request body exceeds configured client_body_size
-    LENGTH_REQUIRED = 411, // content-Length header is missing for POST requests
-    NOT_FOUND = 404, // requested resource doesn't exist
-    FORBIDDEN = 403, // access to resource is forbidden
-    UNAUTHORIZED = 401 // authentication is required
-};
+#include "../inc/Response.hpp"
+#include "../inc/Server.hpp"
 
 class HttpRequest {
     private:
-    int                                                  _fd;
-    std::string                                          _method;
-    std::string                                          _uri;
-    std::string                                          _version;
-    std::map<std::string, std::vector<std::string>>      _headers;
-    std::string                                          _body;
+        // request attributes
+        std::string                                          _method;
+        std::string                                          _uri;
+        std::string                                          _version;
+        std::map<std::string, std::vector<std::string>>      _headers;
+        std::string                                          _body;
+
+        // other member vars
+        const int                                            _fd;
+        const Config&                                        _conf;
+        Response                                             _response;
+
+        // TODO reference to which server/ server block i have matched
+        // const ServerConf&                                   _server;
+
     public:
-        HttpRequest() {};
-        HttpRequest(int fd);
+        HttpRequest(int fd, Config& conf);
         ~HttpRequest() {};
 
-        HttpError parse(void);
+        void parse();
+        const Response& getResponse();
 };
 
 #endif

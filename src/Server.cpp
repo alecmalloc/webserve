@@ -190,7 +190,7 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 				std::cout << BLUE << "Ready to read from: " << END << \
 					event_fd << std::endl;
 				//TODO: ending conections handeld by http request handler??
-					// Alec TODO: functioncall(eventfd, Config& conf)
+					// Alec TODO: functioncall(event_fd, Config& conf)
 			}
 
 			//write http request

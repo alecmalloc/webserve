@@ -1,30 +1,29 @@
 #include "../inc/HttpRequest.hpp"
 #include "../inc/StrUtils.hpp"
+#include "../inc/Config.hpp"
 
-HttpRequest::HttpRequest(int fd): _fd(fd) {
-    HttpError error = parse();
+HttpRequest::HttpRequest(int fd, Config& conf): _fd(fd), _conf(conf) {
 
-    if (error != 200) {
-        std::stringstream output;
-        output << error;
-        throw std::runtime_error(output.str());
-    }
 }
 
-HttpError HttpRequest::parse(void) {
-
+void HttpRequest::parse() {
+    
     // read from fd and poll for fd to be ready (c stuff)
     char buffer[1024];
     ssize_t bytes_read;
-    struct pollfd fds[1];
-    fds[0].fd = _fd;
-    fds[0].events = POLLIN;
-    // 5 second time out
-    int timeout = 5000;
-    if (poll(fds, 1, timeout) > 0) {
-        bytes_read = read(_fd, buffer, sizeof(buffer) - 1);
-        if (bytes_read > 0)
-            buffer[bytes_read] = '\0';
+    std::string request_data;
+    
+    while ((bytes_read = read(_fd, buffer, sizeof(buffer) - 1)) > 0) {
+        buffer[bytes_read] = '\0';
+        request_data += buffer;
+    }
+
+    if (bytes_read < 0) {
+        // return SERVER_ERROR;
+    }
+
+    if (request_data.empty()) {
+        // return BAD_REQUEST;
     }
 
     // traverse using an iss (cpp way)
@@ -66,6 +65,8 @@ HttpError HttpRequest::parse(void) {
         while(getline(iss, line))
             _body.push_back(ft_trim(line));
     }
+}
 
-    return OK;
+const Response& HttpRequest::getResponse() {
+    return _response;
 }
