@@ -26,8 +26,8 @@ class HttpRequest {
         std::string                                          _body;
 
         // other member vars
-        const int                                            _fd;
-        const Config&                                        _conf;
+        int                                                  _fd;
+        Config&                                              _conf;
         Response                                             _response;
 
         // TODO reference to which server/ server block i have matched
@@ -35,14 +35,22 @@ class HttpRequest {
 
     public:
         HttpRequest(int fd, Config& conf);
-
         HttpRequest(const HttpRequest& other);
         HttpRequest& operator =(const HttpRequest& other);
-
         ~HttpRequest() {};
 
-        void parse();
-        const Response& getResponse();
+        int                                                     getFd() const;
+        Config&                                                 getConf() const;
+        Response                                                getResponse() const;
+        std::string                                             getUri() const;
+        std::string                                             getMethod() const;
+        std::string                                             getUrl() const;
+        std::string                                             getVersion() const;
+        std::map<std::string, std::vector<std::string>>         getHeaders() const;
+        std::string                                             getBody() const;
+
+        void                                                    parse();
+        const Response&                                         getResponse();
 };
 
 #endif
