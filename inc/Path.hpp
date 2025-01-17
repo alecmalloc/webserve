@@ -4,7 +4,6 @@
 #include <string>
 #include <sys/stat.h> // file stat to check existence and properties
 
-
 // save path for operations on files
 class PathInfo {
     private:
