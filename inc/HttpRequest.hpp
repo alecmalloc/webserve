@@ -48,6 +48,7 @@ class HttpRequest {
         std::string                                             getVersion() const;
         std::map<std::string, std::vector<std::string>>         getHeaders() const;
         std::string                                             getBody() const;
+        // todo getServer
 
         void                                                    parse();
         const Response&                                         getResponse();

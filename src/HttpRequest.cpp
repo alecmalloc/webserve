@@ -73,29 +73,85 @@ std::string HttpRequest::getBody() const {
 }
 
 void HttpRequest::parse() {
-    
-    // read from fd and poll for fd to be ready (c stuff)
+
+    // read from fd and poll for fd to be ready
     char buffer[1024];
     ssize_t bytes_read;
     std::string request_data;
-
+    // read out bytes from poll event_fd
     while ((bytes_read = read(_fd, buffer, sizeof(buffer) - 1)) > 0) {
         request_data += buffer;
     }
-
+    // in case we didnt read anything return a server error
     if (bytes_read < 0 || request_data.empty()) {
         _response.setStatus(500);
         return;
     }
 
-    if (request_data.empty()) {
+    // split request data into lines
+    std::stringstream ss(request_data);
+    std::string line;
+    // make sure first line exists again (just to be sure)
+    if (!std::getline(ss, line)) {
         _response.setStatus(400);
         return;
     }
+    // parse request line (METHOD URI HTTP/VERSION)
+    std::istringstream request_line(line);
+    std::string method, uri, version;
+    request_line >> method >> uri >> version;
+    // check if method uri and version exist
+    if (method.empty() || uri.empty() || version.empty()) {
+        _response.setStatus(400);
+        return;
+    }
+    // set ss to member variables
+    _method = method;
+    _uri = uri;
+    _version = version;
 
-    // traverse using an iss
-    std::string line;
-    std::istringstream iss(buffer);
+    while (std::getline(ss, line) && !line.empty() && line != "\r") {
+        if (line[line.length()-1] == '\r')
+            line = line.substr(0, line.length()-1);
+    
+        size_t colon = line.find(':');
+        if (colon != std::string::npos) {
+            std::string key = line.substr(0, colon);
+            std::string value = line.substr(colon + 2); // skip ": "
+            
+            std::vector<std::string> values;
+            
+            // special handling for Cookie header
+            if (key == "Cookie") {
+                std::stringstream valueStream(value);
+                std::string item;
+                while (std::getline(valueStream, item, ';')) {
+                    // trim leading/trailing whitespace
+                    item.erase(0, item.find_first_not_of(" "));
+                    item.erase(item.find_last_not_of(" ") + 1);
+                    values.push_back(item);
+                }
+            } else {
+                // normal comma-separated header handling
+                std::stringstream valueStream(value);
+                std::string item;
+                while (std::getline(valueStream, item, ',')) {
+                    item.erase(0, item.find_first_not_of(" "));
+                    item.erase(item.find_last_not_of(" ") + 1);
+                    values.push_back(item);
+                }
+            }
+            
+            _headers[key] = values;
+        }
+    }
 
-   
+    // get body if present (everything after empty line)
+    std::string body;
+    while (std::getline(ss, line)) {
+        body += line + "\n";
+    }
+    if (!body.empty()) {
+        _body = body;
+    }
 }
