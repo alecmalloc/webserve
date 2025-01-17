@@ -24,11 +24,11 @@
 - Server block parsing
 - Location block interpretation
 - Process management for CGI
+- Configuration file parsing
 
 **Integration Points:** Will need to work closely with others on request handling and CGI implementation
 
 ### Alec
-- Configuration file parsing
 - HTTP request parsing
 - Method validation
 - Header extraction and processing
@@ -36,6 +36,10 @@
 - File system operations
 - MIME type detection
 - Directory listing
+
+comments cheat sheet: TODO, DELETE
+
+- [HTTP] (https://developer.mozilla.org/en-US/docs/Web/HTTP)
 
 **Integration Points:** Will coordinate with Moritz on request handling and Linus for error responses
 
