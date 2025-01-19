@@ -191,6 +191,7 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 			if ( events[i].events & EPOLLIN ){
 				std::cout << BLUE << "Ready to read from: " << END << \
 					event_fd << std::endl;
+
 				char	buffer[ BUFFERSIZE ];
 				int	bytes_read;
 
@@ -205,6 +206,8 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 					}
 				} while( bytes_read > 0 || \
 						( bytes_read == -1 && errno == EINTR ) );
+				//TODO: ending conections handeld by http request handler??
+					// Alec TODO: functioncall(eventfd, Config& conf)
 			}
 
 			//write http request

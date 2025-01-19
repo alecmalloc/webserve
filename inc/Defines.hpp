@@ -1,6 +1,7 @@
 #ifndef DEFINES_HPP
 # define DEFINES_HPP
 
+
 //define defaults
 #define DEFAULT_CONF		"conf/default.conf"
 #define DEFAULT_IP		"0.0.0.0"
@@ -36,5 +37,8 @@
 # define BOLD		"\x1B[1m"
 # define GRAY		"\x1B[90m"
 # define END		"\x1B[0m"
+
+// defines for file operations
+#define DEFAULT_FILES       { "index.html","index.htm","default.html", "default.htm", "home.html", "home.htm" }
 
 #endif
