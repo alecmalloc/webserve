@@ -82,7 +82,7 @@ static int	createSocket( const char* ip, int port ){
 		close( socket_fd );
 		return( -1 );
 	}
-	
+
 	//set addr stuct for socket to ip and port given in config
 	memset( &addr, 0, sizeof( addr ) );
 	addr.sin_family = AF_INET;	
@@ -155,9 +155,21 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 
 		//handle events one after another
 		for( int i = 0; i < num_events; i++ ){
-			
+			// TODO
+			// Check for errors first
+			// if ((events[i].events & EPOLLERR) || 
+			// 	(events[i].events & EPOLLHUP) || 
+			// 	(events[i].events & EPOLLRDHUP)) {
+			// 	std::cerr << "Error condition on fd: " << event_fd << std::endl;
+			// 	close(event_fd);
+			// 	continue;
+			// }
+
 			//start with events 
 			event_fd = events[i].data.fd;
+
+			// create http request obj
+			HttpRequest request(event_fd, conf);
 
 			//check if event is a new connection
 			if( std::find( listen_fds.begin(), listen_fds.end(), event_fd ) \
@@ -174,7 +186,7 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 						END << std::endl;
 					continue;
 				}
-				
+
 				//set Client NonBlocking and adding to epoll	
 				if( setNonBlocking( client_fd ) == -1 ){
 					std::cerr << RED << "Setting Client to non Blocking failed" \
@@ -231,7 +243,7 @@ static void	setupServer( Config& conf, int& epoll_fd, std::vector< int >& listen
 	//create Epoll
 	epoll_fd = createEpoll();	
 
-	//travers through each port of ips from each server block
+	//traverse through each port of ips from each server block
 	for( std::vector< ServerConf >::const_iterator it = server.begin(); \
 		it != server.end(); it++ ){
 		std::map< std::string, std::set< int > >	ip = it->getIpPort();

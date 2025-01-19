@@ -1,71 +1,155 @@
-#include "../inc/HttpRequest.hpp"
-#include "../inc/StrUtils.hpp"
+#include "webserv.hpp"
 
-HttpRequest::HttpRequest(int fd): _fd(fd) {
-    HttpError error = parse();
-
-    if (error != 200) {
-        std::stringstream output;
-        output << error;
-        throw std::runtime_error(output.str());
-    }
+HttpRequest::HttpRequest(int fd, Config& conf): _fd(fd), _conf(conf) {
+    ;
 }
 
-HttpError HttpRequest::parse(void) {
+HttpRequest::HttpRequest(const HttpRequest& other): 
+    _fd(other._fd), 
+    _conf(other._conf),
+    _response(other._response),
+    _method(other._method),
+    _uri(other._uri),
+    _url(other._url),
+    _version(other._version),
+    _headers(other._headers),
+    _body(other._body)
+{
+    ;
+}
 
-    // read from fd and poll for fd to be ready (c stuff)
+HttpRequest& HttpRequest::operator =(const HttpRequest& other) {
+    if (this != &other) {
+        _fd = other.getFd();
+        _conf = other.getConf();
+        _method = other.getMethod();
+        _uri = other.getUri();
+        _url = other.getUrl();
+        _version = other.getVersion();
+        _headers = other.getHeaders();
+        _body = other.getBody();
+        _response = other.getResponse();
+    }
+
+    return (*this);
+}
+
+int HttpRequest::getFd() const {
+    return _fd;
+}
+
+Config& HttpRequest::getConf() const {
+    return _conf;
+}
+
+const Response HttpRequest::getResponse() const {
+    return _response;
+}
+
+std::string HttpRequest::getUri() const {
+    return _uri;
+}
+
+std::string HttpRequest::getUrl() const {
+    return _url;
+}
+
+std::string HttpRequest::getVersion() const {
+    return _version;
+}
+
+std::string HttpRequest::getMethod() const {
+    return _method;
+}
+
+std::map<std::string, std::vector<std::string> > HttpRequest::getHeaders() const {
+    return _headers;
+}
+
+std::string HttpRequest::getBody() const {
+    return _body;
+}
+
+void HttpRequest::parse() {
+
+    // read from fd and poll for fd to be ready
     char buffer[1024];
     ssize_t bytes_read;
-    struct pollfd fds[1];
-    fds[0].fd = _fd;
-    fds[0].events = POLLIN;
-    // 5 second time out
-    int timeout = 5000;
-    if (poll(fds, 1, timeout) > 0) {
-        bytes_read = read(_fd, buffer, sizeof(buffer) - 1);
-        if (bytes_read > 0)
-            buffer[bytes_read] = '\0';
+    std::string request_data;
+    // read out bytes from poll event_fd
+    while ((bytes_read = read(_fd, buffer, sizeof(buffer) - 1)) > 0) {
+        request_data += buffer;
+    }
+    // in case we didnt read anything return a server error
+    if (bytes_read < 0 || request_data.empty()) {
+        _response.setStatus(500);
+        return;
     }
 
-    // traverse using an iss (cpp way)
+    // split request data into lines
+    std::stringstream ss(request_data);
     std::string line;
-    std::istringstream iss(buffer);
+    // make sure first line exists again (just to be sure)
+    if (!std::getline(ss, line)) {
+        _response.setStatus(400);
+        return;
+    }
+    // parse request line (METHOD URI HTTP/VERSION)
+    std::istringstream request_line(line);
+    std::string method, uri, version;
+    request_line >> method >> uri >> version;
+    // check if method uri and version exist
+    if (method.empty() || uri.empty() || version.empty()) {
+        _response.setStatus(400);
+        return;
+    }
+    // set ss to member variables
+    _method = method;
+    _uri = uri;
+    _version = version;
 
-    // get first line (METHOD, URI, VERSION)
-    getline(iss, line);
-    std::istringstream lineStream(line);
-    if (!(lineStream >> _method >> _uri >> _version))
-        return BAD_REQUEST;
-    if (_method != "GET" && _method != "POST" && _method != "DELETE")
-        return METHOD_NOT_ALLOWED;
-    // validate uri TODO
-    if (_version.substr(5, 3) != "1.1")
-        return HTTP_VERSION_NOT_SUPPORTED;
+    while (std::getline(ss, line) && !line.empty() && line != "\r") {
+        if (line[line.length()-1] == '\r')
+            line = line.substr(0, line.length()-1);
     
-    // get rest of request
-    while (getline(iss, line)) {
-        // break for body
-        if (line.empty())
-            break;
-        // find position of colon
         size_t colon = line.find(':');
-        if (colon == std::string::npos)
-            return BAD_REQUEST;
-        // extract key and value
-        std::string key = ft_trim(line.substr(0, colon));
-        std::string value = ft_trim(line.substr(colon + 1));
-        _headers.insert(std::make_pair(key, value));
+        if (colon != std::string::npos) {
+            std::string key = line.substr(0, colon);
+            std::string value = line.substr(colon + 2); // skip ": "
+            
+            std::vector<std::string> values;
+            
+            // special handling for Cookie header
+            if (key == "Cookie") {
+                std::stringstream valueStream(value);
+                std::string item;
+                while (std::getline(valueStream, item, ';')) {
+                    // trim leading/trailing whitespace
+                    item.erase(0, item.find_first_not_of(" "));
+                    item.erase(item.find_last_not_of(" ") + 1);
+                    values.push_back(item);
+                }
+            } else {
+                // normal comma-separated header handling
+                std::stringstream valueStream(value);
+                std::string item;
+                while (std::getline(valueStream, item, ',')) {
+                    item.erase(0, item.find_first_not_of(" "));
+                    item.erase(item.find_last_not_of(" ") + 1);
+                    values.push_back(item);
+                }
+            }
+            
+            _headers[key] = values;
+        }
     }
 
-    // add body to http request
-    std::map<std::string, std::string>::iterator contentLenIt;
-    contentLenIt = _headers.find("Content-Length");
-    // if content-length is provided there is a body
-    // store each line of body vector to
-    if (contentLenIt != _headers.end()) {
-        while(getline(iss, line))
-            _body.push_back(ft_trim(line));
+    // get body if present (everything after empty line)
+    std::string body;
+    while (std::getline(ss, line)) {
+        body += line + "\n";
     }
-
-    return OK;
+    if (!body.empty()) {
+        _body = body;
+    }
 }

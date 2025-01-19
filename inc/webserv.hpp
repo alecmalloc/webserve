@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <poll.h>
 
 //cpp header
 #include <cstdio>
@@ -28,7 +29,10 @@
 #include "Location.hpp"
 #include "Config.hpp"
 #include "Defines.hpp"
-
+#include "HttpRequest.hpp"
+#include "StrUtils.hpp"
+#include "Response.hpp"
+#include "Server.hpp"
 
 void	runServer( Config& conf );
 
