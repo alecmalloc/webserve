@@ -17,8 +17,8 @@ class HttpRequest {
         std::map<std::string, std::vector<std::string> >      _headers;
         std::string                                          _body;
 
-        // TODO reference to which server/ server block i have matched
-        // const ServerConf&                                   _server;
+        // reference to which server/ server block i have matched
+        ServerConf&                                   _server;
 
     public:
         HttpRequest(int fd, Config& conf);
@@ -39,7 +39,6 @@ class HttpRequest {
 
         void                                                    parse();
 };
-
 
 // << overload for printing
 std::ostream& operator<<(std::ostream& os, HttpRequest& request);

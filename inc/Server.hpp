@@ -39,7 +39,6 @@ class ServerConf {
 
 		//member functions
 
-
 	private: 
 		//store ip address and port 
 		std::map< std::string, std::set< int > >		_ipPort;
