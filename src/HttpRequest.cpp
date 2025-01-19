@@ -70,21 +70,37 @@ std::string HttpRequest::getBody() const {
     return _body;
 }
 
+// overload for printing
+std::ostream& operator<<(std::ostream& os, HttpRequest& request) {
+    os << "Version: " << request.getVersion() << "\n";
+    os << "Method: " << request.getMethod() << "\n";
+    os << "Headers: \n";
+    const std::map<std::string, std::vector<std::string> >& headers = request.getHeaders();
+    for (std::map<std::string, std::vector<std::string> >::const_iterator header = headers.begin(); header != headers.end(); ++header) {
+        os << "  " << header->first << ": ";
+        for (std::vector<std::string>::const_iterator value = header->second.begin(); value != header->second.end(); ++value) {
+            os << *value << " ";
+        }
+        os << "\n";
+    }
+    os << "Body: " << request.getBody() << "\n";
+    return os;
+}
+
 void HttpRequest::parse() {
 
-    // read from fd and poll for fd to be ready
-    char buffer[1024];
+    char buffer[BUFFERSIZE];
     ssize_t bytes_read;
     std::string request_data;
-    // read out bytes from poll event_fd
-    while ((bytes_read = read(_fd, buffer, sizeof(buffer) - 1)) > 0) {
-        request_data += buffer;
-    }
-    // in case we didnt read anything return a server error
-    if (bytes_read < 0 || request_data.empty()) {
-        _response.setStatus(500);
-        return;
-    }
+    
+    // Read data from the file descriptor
+    do {
+        bytes_read = read(_fd, buffer, BUFFERSIZE - 1);
+        if (bytes_read > 0) {
+            buffer[bytes_read] = '\0';
+            request_data += buffer;
+        }
+    } while (bytes_read > 0 || (bytes_read == -1 && errno == EINTR));
 
     // split request data into lines
     std::stringstream ss(request_data);

@@ -1,6 +1,7 @@
 #ifndef DEFINES_HPP
 # define DEFINES_HPP
 
+#define BUFFERSIZE 100
 
 //define defaults
 #define DEFAULT_CONF		"conf/default.conf"

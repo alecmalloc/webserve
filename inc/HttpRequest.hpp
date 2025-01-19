@@ -26,6 +26,7 @@ class HttpRequest {
         HttpRequest& operator =(const HttpRequest& other);
         ~HttpRequest() {};
 
+        // getters
         int                                                     getFd() const;
         Config&                                                 getConf() const;
         const Response                                          getResponse() const;
@@ -35,9 +36,12 @@ class HttpRequest {
         std::string                                             getVersion() const;
         std::map<std::string, std::vector<std::string> >         getHeaders() const;
         std::string                                             getBody() const;
-        // todo getServer
 
         void                                                    parse();
 };
+
+
+// << overload for printing
+std::ostream& operator<<(std::ostream& os, HttpRequest& request);
 
 #endif

@@ -1,6 +1,7 @@
 #include "webserv.hpp"
 
 int main(int argc, char *argv[]) {
+
 	std::string	confFile;	
 	Config config;
 
@@ -16,12 +17,24 @@ int main(int argc, char *argv[]) {
 		return( 1 );
 	}
 
+	// // ALEC TESTING
+	// FILE* file = fopen("assets/get.example", "r");
+	// if (!file) {
+	// 	std::cerr << "Failed to open the file." << std::endl;
+	// 	return 1;
+	// }
+	// int fd = fileno(file);
+	// HttpRequest request(fd, config);
+	// request.parse();
+	// std::cout << request << std::endl;
+	// fclose(file);
+
 	// Parse Config File 
 	try {
 		config.parse( confFile );
 	}
 	catch ( std::runtime_error &e ){
-		std::cerr <<  RED << \
+		std::cerr <<  RED << 
 			"ERROR: " << e.what() << END << std::endl;
 		return( 1 );
 	}
