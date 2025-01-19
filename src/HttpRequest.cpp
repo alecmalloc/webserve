@@ -74,6 +74,9 @@ std::string HttpRequest::getBody() const {
 std::ostream& operator<<(std::ostream& os, HttpRequest& request) {
     os << "Version: " << request.getVersion() << "\n";
     os << "Method: " << request.getMethod() << "\n";
+    os << "Uri: " << request.getUri() << "\n";
+    // TODO: something is wrong with URL -> i dont see one parsed out am i never parsing it -> check
+    os << "Url: " << request.getUrl() << "\n";
     os << "Headers: \n";
     const std::map<std::string, std::vector<std::string> >& headers = request.getHeaders();
     for (std::map<std::string, std::vector<std::string> >::const_iterator header = headers.begin(); header != headers.end(); ++header) {
@@ -120,6 +123,7 @@ void HttpRequest::parse() {
         _response.setStatus(400);
         return;
     }
+    // TODO: if no host return 400
     // set ss to member variables
     _method = method;
     _uri = uri;
@@ -170,15 +174,15 @@ void HttpRequest::parse() {
         _body = body;
     }
 
-    // TODO match server block from conf
-    std::vector<ServerConf> server_list;
-    server_list = _conf.getServerConfs();
+    // // TODO match server block from conf
+    // std::vector<ServerConf> server_list;
+    // server_list = _conf.getServerConfs();
 
-    // somehow use .find() to match using these attributes of the servers in server_list
-    std::map< std::string, std::set< int > > server_ips_ports;
-    server_list.
-    std::vector< std::string >	server_names;
+    // // somehow use .find() to match using these attributes of the servers in server_list
+    // std::map< std::string, std::set< int > > server_ips_ports;
+    // server_list.
+    // std::vector< std::string >	server_names;
 
-    auto name_it = std::find(server_names.begin(), server_names.end(), target_server_name);
+    // auto name_it = std::find(server_names.begin(), server_names.end(), target_server_name);
 
 }

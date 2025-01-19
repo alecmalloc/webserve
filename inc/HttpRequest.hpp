@@ -18,7 +18,7 @@ class HttpRequest {
         std::string                                          _body;
 
         // reference to which server/ server block i have matched
-        ServerConf&                                   _server;
+        // ServerConf&                                   _server;
 
     public:
         HttpRequest(int fd, Config& conf);
