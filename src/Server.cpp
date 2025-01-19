@@ -136,6 +136,8 @@ static void	addSocketEpoll( int epoll_fd, int socket_fd, uint32_t events ){
 		throw( std::runtime_error( "Adding socket to Epoll failed" ) );
 }
 
+
+
 static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& listen_fds ){
 	int				num_events;
 	int				event_fd;
@@ -158,6 +160,20 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 			
 			//start with events 
 			event_fd = events[i].data.fd;
+
+			//check if client hangs or error occured
+			if( events[i].events & ( EPOLLRDHUP | EPOLLHUP | EPOLLERR ) ){
+				std::cerr << RED <<  "Client: " << event_fd << \
+					" disconnected or error" << END << std::endl;
+
+				//remove fd from epoll
+				epoll_ctl( epoll_fd, EPOLL_CTL_DEL, event_fd, NULL );
+
+				//Close the Fd
+				close( event_fd );
+
+				continue;
+			}
 
 			//check if event is a new connection
 			if( std::find( listen_fds.begin(), listen_fds.end(), event_fd ) \
@@ -182,7 +198,8 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 					close( client_fd );
 					continue;
 				}
-				addSocketEpoll( epoll_fd, client_fd, EPOLLIN | EPOLLET );
+				addSocketEpoll( epoll_fd, client_fd, \
+						EPOLLIN | EPOLLET | EPOLLRDHUP );
 				std::cout << GREEN << "New Client connected: " << \
 					END << client_fd << std::endl;
 			}
@@ -200,6 +217,7 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 				do{
 					bytes_read = \
 						read( event_fd, buffer, BUFFERSIZE - 1);
+					//print buffer
 					if( bytes_read > 0 ){
 						buffer[ BUFFERSIZE ] = '\0';
 						std::cout << buffer;
