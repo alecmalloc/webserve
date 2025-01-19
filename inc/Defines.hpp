@@ -25,7 +25,7 @@
 #define CLIENT			"client_max_body_size"
 
 //defines for epoll
-#define	MAX_EVENTS 	100
+#define	MAX_EVENTS 	1000
 
 //color codes for output
 # define RED		"\x1B[31m"

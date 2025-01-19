@@ -1,6 +1,8 @@
 #include "webserv.hpp"
 #include <algorithm>
 
+#define BUFFERSIZE 100
+
 //global variable for signalhandling
 static volatile bool running = true;
 
@@ -147,8 +149,8 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 	while( running ){
 
 		//wait for events to que
-		if( ( ( num_events = epoll_wait( epoll_fd, events, MAX_EVENTS, -1 ) ) == -1 ) && \
-		 	( errno != EINTR ) )
+		if( ( ( num_events = epoll_wait( epoll_fd, events, MAX_EVENTS, -1 ) ) \
+				== -1 ) && ( errno != EINTR ) )
 			throw( std::runtime_error( "Epoll wait failed" ) );
 
 		//handle events one after another
@@ -198,28 +200,35 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 			}
 
 			//Read http request
-			if ( events[i].events & EPOLLIN ) {
+			if ( events[i].events & EPOLLIN ){
 				std::cout << BLUE << "Ready to read from: " << END << \
 					event_fd << std::endl;
-				request.parse();
+
+				char	buffer[ BUFFERSIZE ];
+				int	bytes_read;
+
+				//read sended stuff 
+				//TODO:: moving to http request handler??
+				do{
+					bytes_read = \
+						read( event_fd, buffer, BUFFERSIZE - 1);
+					if( bytes_read > 0 ){
+						buffer[ BUFFERSIZE ] = '\0';
+						std::cout << buffer;
+					}
+				} while( bytes_read > 0 || \
+						( bytes_read == -1 && errno == EINTR ) );
+				//TODO: ending conections handeld by http request handler??
+					// Alec TODO: functioncall(eventfd, Config& conf)
 			}
 
 			//write http request
-			if( events[i].events & EPOLLOUT ) {
+			if( events[i].events & EPOLLOUT ){
 				std::cout << BLUE << "Ready to write to: " << event_fd \
 					<< std::endl;
 				//TODO: ending conections handeld by http request handler??
 			}
-
 			//TODO:: add other events
-
-			//unexpected event
-			else {
-				std::cerr << RED << "unexpected event on: " << event_fd \
-					<< END << std::endl;
-				close( event_fd );
-			}
-				
 		}
 
 	}
