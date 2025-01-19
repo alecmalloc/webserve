@@ -94,6 +94,7 @@ void HttpRequest::parse() {
     std::string request_data;
     
     // Read data from the file descriptor
+    // TODO error handling
     do {
         bytes_read = read(_fd, buffer, BUFFERSIZE - 1);
         if (bytes_read > 0) {
