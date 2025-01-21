@@ -166,10 +166,14 @@ void HttpRequest::parse() {
     }
 
     // check to make sure host is in headers -> these are standard and sent with every req in modern tools, however just to be safe
-    if (_headers.find("Headers") == _headers.end()) {
+    if (_headers.find("Host") == _headers.end()) {
         _response.setStatus(400);
         return;
     }
+
+    // todo HTTPS requests -> blank rn
+    // set url from host header + uri
+    _url = _headers["Host"][0] + _uri;
 
     // TODO only accept certain requests and check for certain requirements on those requests ie POST -> content length
 
