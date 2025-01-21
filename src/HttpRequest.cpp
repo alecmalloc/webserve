@@ -227,4 +227,5 @@ void HttpRequest::parse() {
         if (ipPorts.find(hostname) != ipPorts.end())
             _server = &(*it);
     }
+    // TODO return if above fails and return response? 
 }
