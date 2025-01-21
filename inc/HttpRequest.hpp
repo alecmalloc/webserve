@@ -17,8 +17,8 @@ class HttpRequest {
         std::map<std::string, std::vector<std::string> >      _headers;
         std::string                                          _body;
 
-        // reference to which server/ server block i have matched
-        // ServerConf&                                   _server;
+        // reference to which serverConf i have matched from request
+        ServerConf*                                         _server;
 
     public:
         HttpRequest(int fd, Config& conf);
@@ -36,6 +36,7 @@ class HttpRequest {
         std::string                                             getVersion() const;
         std::map<std::string, std::vector<std::string> >         getHeaders() const;
         std::string                                             getBody() const;
+        ServerConf*                                             getServer() const;
 
         void                                                    parse();
 };

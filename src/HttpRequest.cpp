@@ -13,7 +13,8 @@ HttpRequest::HttpRequest(const HttpRequest& other):
     _url(other._url),
     _version(other._version),
     _headers(other._headers),
-    _body(other._body)
+    _body(other._body),
+    _server(NULL)
 {
     ;
 }
@@ -28,10 +29,15 @@ HttpRequest& HttpRequest::operator =(const HttpRequest& other) {
         _version = other.getVersion();
         _headers = other.getHeaders();
         _body = other.getBody();
-        _response = other.getResponse();
+        _response = other.getResponse(),
+        _server = other.getServer();
     }
 
     return (*this);
+}
+
+ServerConf* HttpRequest::getServer() const {
+    return _server;
 }
 
 int HttpRequest::getFd() const {
@@ -75,7 +81,6 @@ std::ostream& operator<<(std::ostream& os, HttpRequest& request) {
     os << "Version: " << request.getVersion() << "\n";
     os << "Method: " << request.getMethod() << "\n";
     os << "Uri: " << request.getUri() << "\n";
-    // TODO: something is wrong with URL -> i dont see one parsed out am i never parsing it -> check
     os << "Url: " << request.getUrl() << "\n";
     os << "Headers: \n";
     const std::map<std::string, std::vector<std::string> >& headers = request.getHeaders();
@@ -96,7 +101,7 @@ void HttpRequest::parse() {
     ssize_t bytes_read;
     std::string request_data;
     
-    // Read data from the file descriptor
+    // read data from the file descriptor
     // TODO error handling
     do {
         bytes_read = read(_fd, buffer, BUFFERSIZE - 1);
@@ -123,7 +128,6 @@ void HttpRequest::parse() {
         _response.setStatus(400);
         return;
     }
-    // TODO: if no host return 400
     // set ss to member variables
     _method = method;
     _uri = uri;
@@ -171,11 +175,30 @@ void HttpRequest::parse() {
         return;
     }
 
-    // todo HTTPS requests -> blank rn
-    // set url from host header + uri
-    _url = _headers["Host"][0] + _uri;
+    // set url from host header + uri and set host (ip + port)
+    std::string host = _headers["Host"][0];
+    _url = host + _uri;
 
-    // TODO only accept certain requests and check for certain requirements on those requests ie POST -> content length
+    // only handle GET POST DELETE
+    if (_method != "GET" && _method != "POST" && _method != "DELETE") {
+        _response.setStatus(405);
+        return;
+    }
+
+    // POST specific validation
+    if (_method == "POST") {
+        // check for Content-Length or Transfer-Encoding header
+        if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end()) {
+            _response.setStatus(411); // Length Required
+            return;
+        }
+
+        // verify body exists for POST
+        if (_body.empty()) {
+            _response.setStatus(400); // Bad Request
+            return;
+        }
+    }
 
     // get body if present (everything after empty line)
     std::string body;
@@ -186,15 +209,22 @@ void HttpRequest::parse() {
         _body = body;
     }
 
-    // // TODO match server block from conf
-    // std::vector<ServerConf> server_list;
-    // server_list = _conf.getServerConfs();
+    // //  match server block from conf
+    std::vector<ServerConf> server_list;
+    server_list = _conf.getServerConfs();
+    // hostname = remove port from host if present
+    size_t colon = host.find(":");
+    std::string hostname;
+    if (colon != std::string::npos)
+        hostname = host.substr(0, colon);
+    // loop over serverConfs and match server names and ips
+    for (std::vector<ServerConf>::iterator it = server_list.begin(); it != server_list.end(); ++it) {
+        std::vector<std::string> server_names = it->getServerConfNames();
+        std::map<std::string, std::set<int> > ipPorts = it->getIpPort();
 
-    // // somehow use .find() to match using these attributes of the servers in server_list
-    // std::map< std::string, std::set< int > > server_ips_ports;
-    // server_list.
-    // std::vector< std::string >	server_names;
-
-    // auto name_it = std::find(server_names.begin(), server_names.end(), target_server_name);
-
+        if (std::find(server_names.begin(), server_names.end(), hostname) != server_names.end())
+            _server = &(*it);
+        if (ipPorts.find(hostname) != ipPorts.end())
+            _server = &(*it);
+    }
 }

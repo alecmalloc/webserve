@@ -22,6 +22,7 @@
 #include <string>
 #include <iostream>
 #include <stdexcept>
+#include <algorithm> 
 #include <vector>
 #include <map>
 
