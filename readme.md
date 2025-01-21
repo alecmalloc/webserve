@@ -37,8 +37,6 @@
 - MIME type detection
 - Directory listing
 
-comments cheat sheet: TODO, DELETE
-
 **CGI variables**
 DOCUMENT_ROOT: The root directory of your server.
 HTTP_COOKIE: The visitor’s cookie, if one is set.

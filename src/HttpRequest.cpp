@@ -165,6 +165,14 @@ void HttpRequest::parse() {
         }
     }
 
+    // check to make sure host is in headers -> these are standard and sent with every req in modern tools, however just to be safe
+    if (_headers.find("Headers") == _headers.end()) {
+        _response.setStatus(400);
+        return;
+    }
+
+    // TODO only accept certain requests and check for certain requirements on those requests ie POST -> content length
+
     // get body if present (everything after empty line)
     std::string body;
     while (std::getline(ss, line)) {
