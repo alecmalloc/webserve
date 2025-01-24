@@ -1,0 +1,254 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/StrUtils.o",
+      "src/StrUtils.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/StrUtils.cpp",
+    "output": "/home/mo/42/webserv/obj/StrUtils.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/FileServer.o",
+      "src/FileServer.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/FileServer.cpp",
+    "output": "/home/mo/42/webserv/obj/FileServer.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/HttpHelpers.o",
+      "src/HttpHelpers.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/HttpHelpers.cpp",
+    "output": "/home/mo/42/webserv/obj/HttpHelpers.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/Path.o",
+      "src/Path.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/Path.cpp",
+    "output": "/home/mo/42/webserv/obj/Path.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/HttpRequest.o",
+      "src/HttpRequest.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/HttpRequest.cpp",
+    "output": "/home/mo/42/webserv/obj/HttpRequest.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/main.o",
+      "src/main.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/main.cpp",
+    "output": "/home/mo/42/webserv/obj/main.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/trynewrunServer.o",
+      "src/trynewrunServer.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/trynewrunServer.cpp",
+    "output": "/home/mo/42/webserv/obj/trynewrunServer.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/Config/Config.o",
+      "src/Config/Config.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/Config/Config.cpp",
+    "output": "/home/mo/42/webserv/obj/Config/Config.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/Config/ServerConf.o",
+      "src/Config/ServerConf.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/Config/ServerConf.cpp",
+    "output": "/home/mo/42/webserv/obj/Config/ServerConf.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/Config/LocationConf.o",
+      "src/Config/LocationConf.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/Config/LocationConf.cpp",
+    "output": "/home/mo/42/webserv/obj/Config/LocationConf.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/Server/ServerInit.o",
+      "src/Server/ServerInit.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/Server/ServerInit.cpp",
+    "output": "/home/mo/42/webserv/obj/Server/ServerInit.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/Server/Server.o",
+      "src/Server/Server.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/Server/Server.cpp",
+    "output": "/home/mo/42/webserv/obj/Server/Server.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/Server/ServerRun.o",
+      "src/Server/ServerRun.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/Server/ServerRun.cpp",
+    "output": "/home/mo/42/webserv/obj/Server/ServerRun.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-I./inc",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-g3",
+      "-std=c++98",
+      "-c",
+      "-o",
+      "obj/Server/Client.o",
+      "src/Server/Client.cpp"
+    ],
+    "directory": "/home/mo/42/webserv",
+    "file": "/home/mo/42/webserv/src/Server/Client.cpp",
+    "output": "/home/mo/42/webserv/obj/Server/Client.o"
+  }
+]

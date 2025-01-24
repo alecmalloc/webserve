@@ -1,71 +1,232 @@
-#include "../inc/HttpRequest.hpp"
-#include "../inc/StrUtils.hpp"
+#include "webserv.hpp"
 
-HttpRequest::HttpRequest(int fd): _fd(fd) {
-    HttpError error = parse();
-
-    if (error != 200) {
-        std::stringstream output;
-        output << error;
-        throw std::runtime_error(output.str());
-    }
+HttpRequest::HttpRequest(int fd, Config& conf): _fd(fd), _conf(conf) {
+    ;
 }
 
-HttpError HttpRequest::parse(void) {
+HttpRequest::HttpRequest(const HttpRequest& other): 
+    _fd(other._fd), 
+    _conf(other._conf),
+    _response(other._response),
+    _method(other._method),
+    _uri(other._uri),
+    _url(other._url),
+    _version(other._version),
+    _headers(other._headers),
+    _body(other._body),
+    _server(NULL)
+{
+    ;
+}
 
-    // read from fd and poll for fd to be ready (c stuff)
-    char buffer[1024];
+HttpRequest& HttpRequest::operator =(const HttpRequest& other) {
+    if (this != &other) {
+        _fd = other.getFd();
+        _conf = other.getConf();
+        _method = other.getMethod();
+        _uri = other.getUri();
+        _url = other.getUrl();
+        _version = other.getVersion();
+        _headers = other.getHeaders();
+        _body = other.getBody();
+        _response = other.getResponse(),
+        _server = other.getServer();
+    }
+
+    return (*this);
+}
+
+ServerConf* HttpRequest::getServer() const {
+    return _server;
+}
+
+int HttpRequest::getFd() const {
+    return _fd;
+}
+
+Config& HttpRequest::getConf() const {
+    return _conf;
+}
+
+const Response HttpRequest::getResponse() const {
+    return _response;
+}
+
+std::string HttpRequest::getUri() const {
+    return _uri;
+}
+
+std::string HttpRequest::getUrl() const {
+    return _url;
+}
+
+std::string HttpRequest::getVersion() const {
+    return _version;
+}
+
+std::string HttpRequest::getMethod() const {
+    return _method;
+}
+
+std::map<std::string, std::vector<std::string> > HttpRequest::getHeaders() const {
+    return _headers;
+}
+
+std::string HttpRequest::getBody() const {
+    return _body;
+}
+
+// overload for printing
+std::ostream& operator<<(std::ostream& os, HttpRequest& request) {
+    os << "Version: " << request.getVersion() << "\n";
+    os << "Method: " << request.getMethod() << "\n";
+    os << "Uri: " << request.getUri() << "\n";
+    os << "Url: " << request.getUrl() << "\n";
+    os << "Headers: \n";
+    const std::map<std::string, std::vector<std::string> >& headers = request.getHeaders();
+    for (std::map<std::string, std::vector<std::string> >::const_iterator header = headers.begin(); header != headers.end(); ++header) {
+        os << "  " << header->first << ": ";
+        for (std::vector<std::string>::const_iterator value = header->second.begin(); value != header->second.end(); ++value) {
+            os << *value << " ";
+        }
+        os << "\n";
+    }
+    os << "Body: " << request.getBody() << "\n";
+    return os;
+}
+
+void HttpRequest::parse() {
+
+    char buffer[BUFFERSIZE];
     ssize_t bytes_read;
-    struct pollfd fds[1];
-    fds[0].fd = _fd;
-    fds[0].events = POLLIN;
-    // 5 second time out
-    int timeout = 5000;
-    if (poll(fds, 1, timeout) > 0) {
-        bytes_read = read(_fd, buffer, sizeof(buffer) - 1);
-        if (bytes_read > 0)
+    std::string request_data;
+
+    // read data from the file descriptor
+    // TODO error handling
+    do {
+        bytes_read = read(_fd, buffer, BUFFERSIZE - 1);
+        if (bytes_read > 0) {
             buffer[bytes_read] = '\0';
-    }
+            request_data += buffer;
+        }
+    } while (bytes_read > 0 || (bytes_read == -1 && errno == EINTR));
 
-    // traverse using an iss (cpp way)
+    // split request data into lines
+    std::stringstream ss(request_data);
     std::string line;
-    std::istringstream iss(buffer);
+    // make sure first line exists again (just to be sure)
+    if (!std::getline(ss, line)) {
+        _response.setStatus(400);
+        return;
+    }
+    // parse request line (METHOD URI HTTP/VERSION)
+    std::istringstream request_line(line);
+    std::string method, uri, version;
+    request_line >> method >> uri >> version;
+    // check if method uri and version exist
+    if (method.empty() || uri.empty() || version.empty()) {
+        _response.setStatus(400);
+        return;
+    }
+    // set ss to member variables
+    _method = method;
+    _uri = uri;
+    _version = version;
 
-    // get first line (METHOD, URI, VERSION)
-    getline(iss, line);
-    std::istringstream lineStream(line);
-    if (!(lineStream >> _method >> _uri >> _version))
-        return BAD_REQUEST;
-    if (_method != "GET" && _method != "POST" && _method != "DELETE")
-        return METHOD_NOT_ALLOWED;
-    // validate uri TODO
-    if (_version.substr(5, 3) != "1.1")
-        return HTTP_VERSION_NOT_SUPPORTED;
+    while (std::getline(ss, line) && !line.empty() && line != "\r") {
+        if (line[line.length()-1] == '\r')
+            line = line.substr(0, line.length()-1);
     
-    // get rest of request
-    while (getline(iss, line)) {
-        // break for body
-        if (line.empty())
-            break;
-        // find position of colon
         size_t colon = line.find(':');
-        if (colon == std::string::npos)
-            return BAD_REQUEST;
-        // extract key and value
-        std::string key = ft_trim(line.substr(0, colon));
-        std::string value = ft_trim(line.substr(colon + 1));
-        _headers.insert(std::make_pair(key, value));
+        if (colon != std::string::npos) {
+            std::string key = line.substr(0, colon);
+            std::string value = line.substr(colon + 2); // skip ": "
+            
+            std::vector<std::string> values;
+            
+            // special handling for Cookie header
+            if (key == "Cookie") {
+                std::stringstream valueStream(value);
+                std::string item;
+                while (std::getline(valueStream, item, ';')) {
+                    // trim leading/trailing whitespace
+                    item.erase(0, item.find_first_not_of(" "));
+                    item.erase(item.find_last_not_of(" ") + 1);
+                    values.push_back(item);
+                }
+            } else {
+                // normal comma-separated header handling
+                std::stringstream valueStream(value);
+                std::string item;
+                while (std::getline(valueStream, item, ',')) {
+                    item.erase(0, item.find_first_not_of(" "));
+                    item.erase(item.find_last_not_of(" ") + 1);
+                    values.push_back(item);
+                }
+            }
+            
+            _headers[key] = values;
+        }
     }
 
-    // add body to http request
-    std::map<std::string, std::string>::iterator contentLenIt;
-    contentLenIt = _headers.find("Content-Length");
-    // if content-length is provided there is a body
-    // store each line of body vector to
-    if (contentLenIt != _headers.end()) {
-        while(getline(iss, line))
-            _body.push_back(ft_trim(line));
+    // check to make sure host is in headers -> these are standard and sent with every req in modern tools, however just to be safe
+    if (_headers.find("Host") == _headers.end()) {
+        _response.setStatus(400);
+        return;
     }
 
-    return OK;
+    // set url from host header + uri and set host (ip + port)
+    std::string host = _headers["Host"][0];
+    _url = host + _uri;
+
+    // only handle GET POST DELETE
+    if (_method != "GET" && _method != "POST" && _method != "DELETE") {
+        _response.setStatus(405);
+        return;
+    }
+
+    // POST specific validation
+    if (_method == "POST") {
+        // check for Content-Length or Transfer-Encoding header
+        if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end()) {
+            _response.setStatus(411); // Length Required
+            return;
+        }
+
+        // verify body exists for POST
+        if (_body.empty()) {
+            _response.setStatus(400); // Bad Request
+            return;
+        }
+    }
+
+    // get body if present (everything after empty line)
+    std::string body;
+    while (std::getline(ss, line)) {
+        body += line + "\n";
+    }
+    if (!body.empty()) {
+        _body = body;
+    }
+
+    // //  match server block from conf
+    // TODO this only creates a local obj i think. make sure it links to the actual serverBlocj
+    std::vector<ServerConf> server_list;
+    server_list = _conf.getServerConfs();
+    // hostname = remove port from host if present
+    size_t colon = host.find(":");
+    std::string hostname;
+    if (colon != std::string::npos)
+        hostname = host.substr(0, colon);
+    // loop over serverConfs and match server names and ips
+    for (std::vector<ServerConf>::iterator it = server_list.begin(); it != server_list.end(); ++it) {
+        std::vector<std::string> server_names = it->getServerConfNames();
+        std::map<std::string, std::set<int> > ipPorts = it->getIpPort();
+
+        if (std::find(server_names.begin(), server_names.end(), hostname) != server_names.end())
+            _server = &(*it);
+        if (ipPorts.find(hostname) != ipPorts.end())
+            _server = &(*it);
+    }
+    // TODO return if above fails and return response? 
 }

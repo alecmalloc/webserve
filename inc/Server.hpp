@@ -4,65 +4,60 @@
 #include <ostream>
 #include <vector>
 #include <set>
+#include <list>
 #include <map>
 #include <string>
 #include <cstddef>
-#include "Location.hpp"
+#include <netdb.h>
 
-class ServerConf {
+#include "Location.hpp"
+#include "Config.hpp"
+#include "Client.hpp"
+
+
+
+class	Server{
 	public:
 		//constructors
-		ServerConf( void );
-		ServerConf( const ServerConf& og );
-		~ServerConf( void );
+		Server( const Config& );
+		Server( const Server& );
+		~Server( void );
 
 		//operator overloads
-		ServerConf&		operator =( const ServerConf& og );
+		Server&	operator =( const Server& );
 
-		//getter functions
-		const std::map< std::string, std::set< int > >	getIpPort( void ) const;
-		const std::vector< std::string >		getServerConfNames( void ) const ;
-		const std::vector< LocationConf >		getLocationConfs( void ) const ;
-		const std::map< int, std::string >		getErrorPages( void ) const ;
-		size_t 						getBodySize( void ) const ;
-		const std::string				getRootDir( void ) const;
-		const std::vector< std::string >		getIndex( void ) const;
+		//getters
+		std::map< int, std::pair< std::string, int > >	getSockets( void ) const;
+		int			getEpollFd( void ) const;
+		Config			getConf( void ) const;
+		std::list< Client >&	getClients( void );
 
-		//setter functions
-		void	setIpPort( std::string ip, int port );
-		void	setServerConfName( const std::string name );
-		void	setLocationConf( LocationConf location );
-		void	setErrorPage( int errorCode, std::string path );
-		void	setBodySize( size_t size );
-		void	setRootDir( std::string tmp );
-		void	setIndex( std::string );
-
-		//member functions
-		void	checkAccess( void );
-
-
-	private: 
-		//store ip address and port 
-		std::map< std::string, std::set< int > >		_ipPort;
-
-		//store server names -> stores server names as strings
-		std::vector< std::string >	_serverNames;
-
-		//store location diretives -> stores LocationConfConfig class
-		std::vector< LocationConf >	_locations;
-
-		//store defaullt error pages -> error code, location
-		std::map< int, std::string >	_errorPages;
+		//setters
+		void	setSockets( std::map< int, std::pair< std::string, int > > );
+		void	setEpollFd( int );
+		void	setConf( Config );
+		void	setClient( std::list<Client > );
 		
-		//limit of client body size for RFC
-		size_t				_bodySize;
+		//member functions
+		void		runServer( void );
+		void		removeClient( Client* );
 
-		//root directory -> dir
-		std::string			_rootDir;
+	private:
+		//stores sockets fds, their according ip and port
+		std::map< int, std::pair< std::string, int > >		_sockets;
 
-		//store indexes
-		std::vector< std::string >	_index;
+		//stores epollfd
+		int							_epollFd;
+
+		//stores config file
+		Config							_conf;
+
+		//stores connected clients
+		std::list< Client >					_clients;
+
+		//private member functions
+		void		_initServer( void );				
 };
 
-	std::ostream&	operator <<( std::ostream& os, const ServerConf& server );
+std::ostream&	operator <<( std::ostream& os, const ServerConf& server );
 #endif

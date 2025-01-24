@@ -1,45 +1,47 @@
 #ifndef HTTP_REQUEST
 #define HTTP_REQUEST
 
-#include <iostream>
-#include <map>
-#include <sstream>
-#include <vector>
-
-// c functions
-#include <poll.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <unistd.h>
-
-enum HttpError {
-    OK = 200,
-    BAD_REQUEST = 400, // malformed request syntax, invalid request message framing
-    METHOD_NOT_ALLOWED = 405, // method is not among GET, POST, or DELETE
-    URI_TOO_LONG = 414, // uri exceeds server limits
-    HEADER_FIELDS_TOO_LARGE = 431, // header fields are too large
-    HTTP_VERSION_NOT_SUPPORTED = 505, // version is not HTTP/1.1
-    PAYLOAD_TOO_LARGE = 413, // request body exceeds configured client_body_size
-    LENGTH_REQUIRED = 411, // content-Length header is missing for POST requests
-    NOT_FOUND = 404, // requested resource doesn't exist
-    FORBIDDEN = 403, // access to resource is forbidden
-    UNAUTHORIZED = 401 // authentication is required
-};
+#include "Response.hpp"
 
 class HttpRequest {
     private:
-    int                                     _fd;
-    std::string                             _method;
-    std::string                             _uri;
-    std::string                             _version;
-    std::map<std::string, std::string>      _headers;
-    std::vector<std::string>                _body;
+        // main member vars
+        int                                                  _fd;
+        Config&                                              _conf;
+        Response                                             _response;
+        // http request attributes
+        std::string                                          _method;
+        std::string                                          _uri;
+        std::string                                          _url;
+        std::string                                          _version;
+        std::map<std::string, std::vector<std::string> >      _headers;
+        std::string                                          _body;
+
+        // reference to which serverConf i have matched from request
+        ServerConf*                                         _server;
+
     public:
-        HttpRequest() {};
-        HttpRequest(int fd);
+        HttpRequest(int fd, Config& conf);
+        HttpRequest(const HttpRequest& other);
+        HttpRequest& operator =(const HttpRequest& other);
         ~HttpRequest() {};
 
-        HttpError parse(void);
+        // getters
+        int                                                     getFd() const;
+        Config&                                                 getConf() const;
+        const Response                                          getResponse() const;
+        std::string                                             getUri() const;
+        std::string                                             getMethod() const;
+        std::string                                             getUrl() const;
+        std::string                                             getVersion() const;
+        std::map<std::string, std::vector<std::string> >         getHeaders() const;
+        std::string                                             getBody() const;
+        ServerConf*                                             getServer() const;
+
+        void                                                    parse();
 };
+
+// << overload for printing
+std::ostream& operator<<(std::ostream& os, HttpRequest& request);
 
 #endif
