@@ -210,6 +210,7 @@ void HttpRequest::parse() {
     }
 
     // //  match server block from conf
+    // TODO this only creates a local obj i think. make sure it links to the actual serverBlocj
     std::vector<ServerConf> server_list;
     server_list = _conf.getServerConfs();
     // hostname = remove port from host if present
