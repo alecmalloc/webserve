@@ -100,7 +100,7 @@ void HttpRequest::parse() {
     char buffer[BUFFERSIZE];
     ssize_t bytes_read;
     std::string request_data;
-    
+
     // read data from the file descriptor
     // TODO error handling
     do {
