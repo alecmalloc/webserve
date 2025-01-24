@@ -209,7 +209,7 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 				std::cout << GREEN << "New Client connected: " << \
 					END << client_fd << std::endl;
 			}
-
+		
 			//Read http request
 			if ( events[i].events & EPOLLIN ){
 				std::cout << BLUE << "Ready to read from: " << END << \
@@ -217,7 +217,7 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 
 				//read sended stuff 
 				//TODO:: moving to http request handler??
-				do{
+				do {
 					bytes_read = \
 						read( event_fd, buffer, BUFFERSIZE - 1);
 					//print buffer
