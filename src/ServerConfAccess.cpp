@@ -1,4 +1,5 @@
 #include "webserv.hpp"
+#include <string>
 
 static std::string	cutEnding( std::string tmp ){
 	//if string ends on ; cut it

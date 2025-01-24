@@ -12,6 +12,14 @@ static std::string	cutEnding( std::string tmp ){
 	return( tmp );
 }
 
+static std::string	makePath( std::string tmp, int root ){
+	if( tmp.at( 0 ) != '/' && !root )
+		tmp = "/" + tmp;
+	if( tmp.at( tmp.size() - 1 ) == '/' )
+		tmp = tmp.substr( 0, tmp.size() - 1 );
+	return( tmp );
+}
+
 static bool	validRedirect( std::string tmp ) {
 	//check if redirect is alloewd
 	std::string	allowedRedirects[] = ALLOWED_REDIRECTS;
@@ -31,7 +39,7 @@ void	parsePath( LocationConf& location, std::stringstream& ss ){
 
 	while( ss >> tmp ){
 		if( tmp.find( '{' ) == tmp.npos ){
-			location.setPath( cutEnding( tmp ) );
+			location.setPath( makePath( cutEnding( tmp ), 0 ) );
 		}
 	}
 }
@@ -47,7 +55,7 @@ void	parseAllowedRedirects( LocationConf& location, std::stringstream& ss ){
 			throw( std::runtime_error( "Redirect Code " + error \
 				+ " not allowed" ) );
 		ss >> tmp;
-		location.setAllowedRedirects( error, cutEnding( tmp ) );
+		location.setAllowedRedirects( error, makePath( cutEnding( tmp ), 0 ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
@@ -78,7 +86,7 @@ void	parseRootDir( T& temp, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp )
-		temp.setRootDir( cutEnding( tmp ) );
+		temp.setRootDir( makePath( cutEnding( tmp ), 1 ) );
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
@@ -103,7 +111,7 @@ void	parseIndex( T& temp, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp )
-		temp.setIndex( cutEnding( tmp ) );
+		temp.setIndex( makePath( cutEnding( tmp ), 0 ) );
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
@@ -134,7 +142,7 @@ void	parseUploadDir( LocationConf& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp )
-		location.setUploadDir( cutEnding( tmp ) );
+		location.setUploadDir( makePath( cutEnding( tmp ), 0 ) );
 	if( tmp.at( tmp.size() - 1) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
