@@ -1,7 +1,5 @@
 #include "webserv.hpp"
 
-#define BUFFERSIZE 100
-
 //global variable for signalhandling
 static volatile bool running = true;
 
