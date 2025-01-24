@@ -28,12 +28,22 @@ int main(int argc, char *argv[]) {
 
 	//start server
 	try {
-		runServer( config );
+		Server	server( config );
+		server.runServer();
 	}
 	catch ( std::runtime_error &e ){
 		std::cerr << RED << "ERROR: " << e.what() << END << std::endl;
 		return( 1 );
 	}
+
+
+
+
+
+
+
+
+
 
 	// *** TESTING PARSER
 	//std::vector< ServerConf > tmp = config.getServerConfs();

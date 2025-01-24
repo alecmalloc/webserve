@@ -26,6 +26,7 @@
 
 //defines for epoll
 #define	MAX_EVENTS 	1000
+#define BUFFERSIZE	1000
 
 //color codes for output
 # define RED		"\x1B[31m"
