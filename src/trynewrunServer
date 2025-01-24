@@ -1,5 +1,4 @@
 #include "webserv.hpp"
-#include <algorithm>
 
 #define BUFFERSIZE 100
 
@@ -85,10 +84,20 @@ static int	createSocket( const char* ip, int port ){
 	
 	//set addr stuct for socket to ip and port given in config
 	memset( &addr, 0, sizeof( addr ) );
-	addr.sin_family = AF_INET;	
+
+
+	struct addrinfo hints, *res;
+	memset( &hints, 0, sizeof( hints ) );
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+
+	getaddrinfo( ip, NULL, &hints, &res );
+	
+	addr = *(struct sockaddr_in* )res->ai_addr;
 	//TODO:::. create inet_pton and htons
-	inet_pton( AF_INET, ip, &addr.sin_addr.s_addr );
 	addr.sin_port = htons( port );
+
+	freeaddrinfo( res ); 
 
 	//bind socket to address
 	if( bind( socket_fd, ( struct sockaddr* )&addr, sizeof( addr) ) == -1 ){
@@ -274,8 +283,9 @@ static void	setupServer( Config& conf, int& epoll_fd, std::vector< int >& listen
 }
 
 void	runServer( Config& conf ){
-	std::vector<int>				listen_fds;
-	int						epoll_fd;
+
+	int			epoll_fd;
+	std::vector< int >	listen_fds;
 
 	//start signal hander
 	setupSignalHandling();
