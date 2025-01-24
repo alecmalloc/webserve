@@ -6,7 +6,8 @@
 #include <vector>
 #include <unistd.h>
 #include <sys/stat.h>
-#include "Server.hpp"
+
+#include "ServerConf.hpp"
 #include "Location.hpp"
 #include "Defines.hpp"
 

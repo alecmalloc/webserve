@@ -1,5 +1,6 @@
 #include "webserv.hpp"
-#include <algorithm>
+
+#define BUFFERSIZE 100
 
 //global variable for signalhandling
 static volatile bool running = true;
@@ -80,13 +81,23 @@ static int	createSocket( const char* ip, int port ){
 		close( socket_fd );
 		return( -1 );
 	}
-
+	
 	//set addr stuct for socket to ip and port given in config
 	memset( &addr, 0, sizeof( addr ) );
-	addr.sin_family = AF_INET;	
+
+
+	struct addrinfo hints, *res;
+	memset( &hints, 0, sizeof( hints ) );
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+
+	getaddrinfo( ip, NULL, &hints, &res );
+	
+	addr = *(struct sockaddr_in* )res->ai_addr;
 	//TODO:::. create inet_pton and htons
-	inet_pton( AF_INET, ip, &addr.sin_addr.s_addr );
 	addr.sin_port = htons( port );
+
+	freeaddrinfo( res ); 
 
 	//bind socket to address
 	if( bind( socket_fd, ( struct sockaddr* )&addr, sizeof( addr) ) == -1 ){
@@ -134,6 +145,8 @@ static void	addSocketEpoll( int epoll_fd, int socket_fd, uint32_t events ){
 		throw( std::runtime_error( "Adding socket to Epoll failed" ) );
 }
 
+
+
 static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& listen_fds ){
 	int				num_events;
 	int				event_fd;
@@ -153,21 +166,23 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 
 		//handle events one after another
 		for( int i = 0; i < num_events; i++ ){
-			// TODO
-			// Check for errors first
-			// if ((events[i].events & EPOLLERR) || 
-			// 	(events[i].events & EPOLLHUP) || 
-			// 	(events[i].events & EPOLLRDHUP)) {
-			// 	std::cerr << "Error condition on fd: " << event_fd << std::endl;
-			// 	close(event_fd);
-			// 	continue;
-			// }
-
+			
 			//start with events 
 			event_fd = events[i].data.fd;
 
-			// create http request obj
-			HttpRequest request(event_fd, conf);
+			//check if client hangs or error occured
+			if( events[i].events & ( EPOLLRDHUP | EPOLLHUP | EPOLLERR ) ){
+				std::cerr << RED <<  "Client: " << event_fd << \
+					" disconnected or error" << END << std::endl;
+
+				//remove fd from epoll
+				epoll_ctl( epoll_fd, EPOLL_CTL_DEL, event_fd, NULL );
+
+				//Close the Fd
+				close( event_fd );
+
+				continue;
+			}
 
 			//check if event is a new connection
 			if( std::find( listen_fds.begin(), listen_fds.end(), event_fd ) \
@@ -184,7 +199,7 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 						END << std::endl;
 					continue;
 				}
-
+				
 				//set Client NonBlocking and adding to epoll	
 				if( setNonBlocking( client_fd ) == -1 ){
 					std::cerr << RED << "Setting Client to non Blocking failed" \
@@ -192,7 +207,8 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 					close( client_fd );
 					continue;
 				}
-				addSocketEpoll( epoll_fd, client_fd, EPOLLIN | EPOLLET );
+				addSocketEpoll( epoll_fd, client_fd, \
+						EPOLLIN | EPOLLET | EPOLLRDHUP );
 				std::cout << GREEN << "New Client connected: " << \
 					END << client_fd << std::endl;
 			}
@@ -202,11 +218,22 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 				std::cout << BLUE << "Ready to read from: " << END << \
 					event_fd << std::endl;
 
+				char	buffer[ BUFFERSIZE ];
+				int	bytes_read;
+
 				//read sended stuff 
 				//TODO:: moving to http request handler??
+				do{
+					bytes_read = \
+						read( event_fd, buffer, BUFFERSIZE - 1);
+					//print buffer
+					if( bytes_read > 0 ){
+						buffer[ BUFFERSIZE ] = '\0';
+						std::cout << buffer;
+					}
+				} while( bytes_read > 0 || \
+						( bytes_read == -1 && errno == EINTR ) );
 				//TODO: ending conections handeld by http request handler??
-				request.parse();
-				std::cout << request << '\n';
 					// Alec TODO: functioncall(eventfd, Config& conf)
 			}
 
@@ -231,7 +258,7 @@ static void	setupServer( Config& conf, int& epoll_fd, std::vector< int >& listen
 	//create Epoll
 	epoll_fd = createEpoll();	
 
-	//traverse through each port of ips from each server block
+	//travers through each port of ips from each server block
 	for( std::vector< ServerConf >::const_iterator it = server.begin(); \
 		it != server.end(); it++ ){
 		std::map< std::string, std::set< int > >	ip = it->getIpPort();
@@ -256,8 +283,9 @@ static void	setupServer( Config& conf, int& epoll_fd, std::vector< int >& listen
 }
 
 void	runServer( Config& conf ){
-	std::vector<int>				listen_fds;
-	int						epoll_fd;
+
+	int			epoll_fd;
+	std::vector< int >	listen_fds;
 
 	//start signal hander
 	setupSignalHandling();

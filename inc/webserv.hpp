@@ -4,8 +4,10 @@
 //sys header
 #include <sys/epoll.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 
 //c header
 #include <fcntl.h>
@@ -25,9 +27,14 @@
 #include <algorithm> 
 #include <vector>
 #include <map>
+#include <algorithm>
+#include <stdexcept>
 
 //webserv header
 #include "Location.hpp"
+#include "Server.hpp"
+#include "ServerConf.hpp"
+#include "Client.hpp"
 #include "Config.hpp"
 #include "Defines.hpp"
 #include "HttpRequest.hpp"
