@@ -39,7 +39,7 @@ class LocationConf {
 		void	setUploadDir( std::string );
 
 		//member functions
-
+		void	checkAccess( std::string );
 
 	private: 
 		//location Path
