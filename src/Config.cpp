@@ -182,7 +182,7 @@ void	parsePath( LocationConf& location, std::stringstream& ss ){
 	while( ss >> tmp ){
 		if( tmp.find( '{' ) == tmp.npos ){
 			if( accessibleDir( tmp ) )
-				location.setRootDir( cutEnding( tmp ) );
+				location.setPath( cutEnding( tmp ) );
 			else
 				throw( std::runtime_error( "Locationn Dir " + tmp \
 							+ " not accessable" ) );
@@ -292,7 +292,7 @@ void	parseCgiExt( LocationConf& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
-		//check for endings
+		//TODO:check for endings
 		location.setCgiExt( cutEnding( tmp ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
@@ -384,6 +384,7 @@ void	Config::parseServerConfBlock( ServerConf& server ){
 		}
 		getline( _configFile, tmp );
 	}
+	//TODO: check accurate accesability 
 }
 
 void	Config::parse( std::string& filename ){
