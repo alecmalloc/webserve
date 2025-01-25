@@ -68,6 +68,47 @@ std::string HttpRequest::getMethod() const {
     return _method;
 }
 
+void	HttpRequest::setMethod( std::string tmp ){
+	_method = tmp;
+}
+
+void	HttpRequest::setUri( std::string tmp ){
+	_uri = tmp;
+}
+
+void	HttpRequest::setUrl( std::string tmp ){
+	_url = tmp;
+}
+
+void	HttpRequest::setVersion( std::string tmp ){
+	_version = tmp;
+	
+}
+
+void	HttpRequest::setBody( std::string tmp ){
+	_body = tmp;
+}
+
+void	HttpRequest::setHeader( std::string tmp1, std::string tmp2 ){
+	_headers[ tmp1 ].push_back( tmp2 );
+}
+
+void	HttpRequest::setFd( int tmp ){
+	_fd = tmp;
+}
+
+void	HttpRequest::setConfig( Config& tmp ){
+	_conf = tmp;
+}
+
+void	HttpRequest::setResponse( Response& tmp ){
+	_response = tmp;
+}
+
+void	HttpRequest::setServer( ServerConf& tmp ){
+	_server = &tmp;
+}
+
 std::map<std::string, std::vector<std::string> > HttpRequest::getHeaders() const {
     return _headers;
 }
