@@ -1,11 +1,10 @@
 #include "webserv.hpp"
 
-HttpRequest::HttpRequest(int fd, Config& conf): _fd(fd), _conf(conf) {
+HttpRequest::HttpRequest(void): {
     ;
 }
 
 HttpRequest::HttpRequest(const HttpRequest& other): 
-    _fd(other._fd), 
     _conf(other._conf),
     _response(other._response),
     _method(other._method),
@@ -21,7 +20,6 @@ HttpRequest::HttpRequest(const HttpRequest& other):
 
 HttpRequest& HttpRequest::operator =(const HttpRequest& other) {
     if (this != &other) {
-        _fd = other.getFd();
         _conf = other.getConf();
         _method = other.getMethod();
         _uri = other.getUri();
@@ -38,10 +36,6 @@ HttpRequest& HttpRequest::operator =(const HttpRequest& other) {
 
 ServerConf* HttpRequest::getServer() const {
     return _server;
-}
-
-int HttpRequest::getFd() const {
-    return _fd;
 }
 
 Config& HttpRequest::getConf() const {
@@ -95,24 +89,10 @@ std::ostream& operator<<(std::ostream& os, HttpRequest& request) {
     return os;
 }
 
-void HttpRequest::parse() {
-
-    char buffer[BUFFERSIZE];
-    ssize_t bytes_read;
-    std::string request_data;
-
-    // read data from the file descriptor
-    // TODO error handling
-    do {
-        bytes_read = read(_fd, buffer, BUFFERSIZE - 1);
-        if (bytes_read > 0) {
-            buffer[bytes_read] = '\0';
-            request_data += buffer;
-        }
-    } while (bytes_read > 0 || (bytes_read == -1 && errno == EINTR));
+void HttpRequest::parse(const std::string& rawRequest, const Conf& config) {
 
     // split request data into lines
-    std::stringstream ss(request_data);
+    std::stringstream ss(rawRequest);
     std::string line;
     // make sure first line exists again (just to be sure)
     if (!std::getline(ss, line)) {
@@ -212,7 +192,7 @@ void HttpRequest::parse() {
     // //  match server block from conf
     // TODO this only creates a local obj i think. make sure it links to the actual serverBlocj
     std::vector<ServerConf> server_list;
-    server_list = _conf.getServerConfs();
+    server_list = config.getServerConfs();
     // hostname = remove port from host if present
     size_t colon = host.find(":");
     std::string hostname;

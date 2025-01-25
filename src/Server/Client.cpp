@@ -1,6 +1,6 @@
 #include "webserv.hpp"
 
-Client::Client( void ) : _eventFd( -1 ), _socketFd( -1 ), _closed( false ), _error( false ){
+Client::Client( void ) : _eventFd( -1 ), _socketFd( -1 ), _closed( false ), _error( false ) {
 	;
 }
 

@@ -6,7 +6,6 @@
 class HttpRequest {
     private:
         // main member vars
-        int                                                  _fd;
         Config&                                              _conf;
         Response                                             _response;
         // http request attributes
@@ -21,13 +20,12 @@ class HttpRequest {
         ServerConf*                                         _server;
 
     public:
-        HttpRequest(int fd, Config& conf);
+        HttpRequest(void);
         HttpRequest(const HttpRequest& other);
         HttpRequest& operator =(const HttpRequest& other);
         ~HttpRequest() {};
 
         // getters
-        int                                                     getFd() const;
         Config&                                                 getConf() const;
         const Response                                          getResponse() const;
         std::string                                             getUri() const;
@@ -38,7 +36,7 @@ class HttpRequest {
         std::string                                             getBody() const;
         ServerConf*                                             getServer() const;
 
-        void                                                    parse();
+        void                                                    parse(const std::string& rawRequest);
 };
 
 // << overload for printing

@@ -181,14 +181,15 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 	//check if Clients stopped sending data
 	if( event.events & EPOLLRDHUP || completeHttpRequest( client->getContent() ) ){
-		std::cout << client->getContent() << std::endl;
-		//TODO: Mr Alecs http parsing function
-		//TODO: Always close after sending?!???!??
+		//std::cout << client->getContent() << std::endl;
+		// TODO @HERE
+		HttpRequest requestTMP(server.getConf());
+		requestTMP.parse(client->getContent());
 		client->setClosed( true );
 	}
 
 	//check for error
-	if( event.events & EPOLLERR || client->getError() ){
+	if( event.events & EPOLLERR || client->getError() ) {
 		//close client
 		closeClient( server, client );
 		std::cerr << RED << "ERROR:	Client: fd:	" << END << \
@@ -212,7 +213,7 @@ static void	mainLoop( Server& server ){
 
 	//saving open clients
 	std::vector< Client >	clients;
-	
+
 	while( running ){
 		//register new events with epoll wait
 		activeEvents = epoll_wait( server.getEpollFd(), events, MAX_EVENTS, -1 );
