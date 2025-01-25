@@ -10,7 +10,7 @@ Client::Client( int eventFd, int socketFd ) : _eventFd( eventFd), _socketFd( soc
 }
 
 Client::Client( const Client& og ) : _eventFd( og._eventFd ), _socketFd( og._socketFd ), \
-		_closed( og._closed ), _error( og._error),  _content( og._content ){
+		_closed( og._closed ), _error( og._error),  _content( og._content ), _request(og._request){
 	;
 }
 
@@ -26,6 +26,7 @@ Client&	Client::operator =( const Client& og ){
 		_closed = og._closed;
 		_error = og._error;
 		_content = og._content;
+		_request = og._request;
 	}
 	return( *this );
 }

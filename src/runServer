@@ -209,8 +209,8 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 				std::cout << GREEN << "New Client connected: " << \
 					END << client_fd << std::endl;
 			}
-		
-			//Read http request
+
+			// Read http request
 			if ( events[i].events & EPOLLIN ){
 				std::cout << BLUE << "Ready to read from: " << END << \
 					event_fd << std::endl;
@@ -241,7 +241,6 @@ static void	mainLoopServer( Config& conf, int epoll_fd, const std::vector<int>& 
 			}
 			//TODO:: add other events
 		}
-
 	}
 }
 

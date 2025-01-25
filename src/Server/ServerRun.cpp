@@ -124,7 +124,7 @@ static void	closeClient( Server& server, Client* client ){
 	server.removeClient( client );
 }
 
-static void	readFromClient( Client* client ){
+static void	readFromClient( Client* client ) {
 	//create Buffer and Zero it
 	char	buffer[ BUFFERSIZE ];
 	std::memset( buffer, '\0', BUFFERSIZE );
@@ -182,10 +182,10 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 	//check if Clients stopped sending data
 	if( event.events & EPOLLRDHUP || completeHttpRequest( client->getContent() ) ){
 		std::cout << client->getContent() << std::endl;
-		//TODO: Mr Alecs http parsing function	
+		//TODO: Mr Alecs http parsing function
 		//TODO: Always close after sending?!???!??
 		client->setClosed( true );
-	}	
+	}
 
 	//check for error
 	if( event.events & EPOLLERR || client->getError() ){

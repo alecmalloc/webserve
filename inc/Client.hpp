@@ -42,6 +42,9 @@ class	Client{
 
 		//stores read content
 		std::string	_content;
+
+		// all parsed data from request
+		HttpRequest	_request;
 };
 
 #endif
