@@ -13,8 +13,11 @@ _conf( og._conf ), _clients( og._clients ){
 }
 
 Server::~Server( void ){
-	//TODO:: cleanup sockets and epollfd
-	;
+	//cleanup sockets and epollfd
+	for( std::map< int, std::pair< std::string, int > >::iterator it = _sockets.begin();
+			it != _sockets.end(); it++ )
+		close( it->first );
+	close( _epollFd );
 }
 
 //operator overlaods

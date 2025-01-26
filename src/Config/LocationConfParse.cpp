@@ -131,7 +131,6 @@ void	parseCgiExt( LocationConf& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
-		//TODO:check for endings
 		location.setCgiExt( cutEnding( tmp ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )

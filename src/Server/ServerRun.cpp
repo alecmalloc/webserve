@@ -1,6 +1,5 @@
 #include "webserv.hpp"
 
-//TODO: shutdown gracefully with shutdown() ??
 static volatile bool running = true;
 
 static void	handleSignal( int signal ){
@@ -182,6 +181,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 	//check if Clients stopped sending data
 	if( event.events & EPOLLRDHUP || completeHttpRequest( client->getContent() ) ){
 		std::cout << client->getContent() << std::endl;
+		cgimain( server.getConf() );
 		//TODO: Mr Alecs http parsing function	
 		//TODO: Always close after sending?!???!??
 		client->setClosed( true );

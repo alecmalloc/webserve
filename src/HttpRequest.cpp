@@ -13,8 +13,7 @@ HttpRequest::HttpRequest(const HttpRequest& other):
     _url(other._url),
     _version(other._version),
     _headers(other._headers),
-    _body(other._body),
-    _server(NULL)
+    _body(other._body)
 {
     ;
 }
@@ -36,7 +35,7 @@ HttpRequest& HttpRequest::operator =(const HttpRequest& other) {
     return (*this);
 }
 
-ServerConf* HttpRequest::getServer() const {
+ServerConf HttpRequest::getServer() const {
     return _server;
 }
 
@@ -105,8 +104,8 @@ void	HttpRequest::setResponse( Response& tmp ){
 	_response = tmp;
 }
 
-void	HttpRequest::setServer( ServerConf& tmp ){
-	_server = &tmp;
+void	HttpRequest::setServer( ServerConf tmp ){
+	_server = tmp;
 }
 
 std::map<std::string, std::vector<std::string> > HttpRequest::getHeaders() const {
@@ -265,9 +264,9 @@ void HttpRequest::parse() {
         std::map<std::string, std::set<int> > ipPorts = it->getIpPort();
 
         if (std::find(server_names.begin(), server_names.end(), hostname) != server_names.end())
-            _server = &(*it);
+            _server = (*it);
         if (ipPorts.find(hostname) != ipPorts.end())
-            _server = &(*it);
+            _server = (*it);
     }
     // TODO return if above fails and return response? 
 }

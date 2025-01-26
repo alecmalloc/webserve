@@ -4,5 +4,6 @@
 #include "HttpRequest.hpp"
 
 int	handleCgi( HttpRequest& );
+int	cgimain( Config );
 
 #endif

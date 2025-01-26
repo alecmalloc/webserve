@@ -1,4 +1,4 @@
-#include "../inc/webserv.hpp"
+#include "webserv.hpp"
 
 //helper functions
 
@@ -148,6 +148,8 @@ void	Server::_initServer( void ){
 					std::cerr << RED << \
 						"ERROR:	Socket: failed on:	" << END \
 					       	<< it2->first << ":" << *it3 << std::endl;
+						throw( std::runtime_error( \
+							"Server Start Failed" ) );
 
 					continue;
 				}

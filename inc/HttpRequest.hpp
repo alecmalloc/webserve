@@ -19,7 +19,7 @@ class HttpRequest {
         std::string                                          _body;
 
         // reference to which serverConf i have matched from request
-        ServerConf*                                         _server;
+        ServerConf                                         _server;
 
     public:
         HttpRequest(int fd, Config& conf);
@@ -37,7 +37,7 @@ class HttpRequest {
         std::string                                             getVersion() const;
         std::map<std::string, std::vector<std::string> >         getHeaders() const;
         std::string                                             getBody() const;
-        ServerConf*                                             getServer() const;
+        ServerConf						getServer() const;
 
 	//setters
 	void	setMethod( std::string );
@@ -49,7 +49,7 @@ class HttpRequest {
 	void	setFd( int );
 	void	setConfig( Config& );
 	void	setResponse( Response& );
-	void	setServer( ServerConf& );
+	void	setServer( ServerConf );
 
 	//member funcitons
         void                                                    parse();
