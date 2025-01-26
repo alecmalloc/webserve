@@ -181,9 +181,12 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 	//check if Clients stopped sending data
 	if( event.events & EPOLLRDHUP || completeHttpRequest( client->getContent() ) ){
 		std::cout << client->getContent() << std::endl;
-		cgimain( server.getConf() );
 		//TODO: Mr Alecs http parsing function	
-		//TODO: Always close after sending?!???!??
+		//TODO: do we want to be an keep-alive server or not? 
+		//Http1.1 also supports connection:closed i guess we decide :)
+		//rn its closing after sending the data which will hapen here 
+		//so TODO add httpparsing and response handler here -> unchunking chunking,
+		//sending etc -_-> integrate cgi with" cgihandler( HttpRequest ) "
 		client->setClosed( true );
 	}	
 
