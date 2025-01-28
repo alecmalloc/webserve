@@ -12,8 +12,7 @@ HttpRequest::HttpRequest(const HttpRequest& other):
     _url(other._url),
     _version(other._version),
     _headers(other._headers),
-    _body(other._body),
-    _server(NULL)
+    _body(other._body)
 {
     ;
 }
@@ -34,7 +33,7 @@ HttpRequest& HttpRequest::operator =(const HttpRequest& other) {
     return (*this);
 }
 
-ServerConf* HttpRequest::getServer() const {
+ServerConf HttpRequest::getServer() const {
     return _server;
 }
 
@@ -60,6 +59,47 @@ std::string HttpRequest::getVersion() const {
 
 std::string HttpRequest::getMethod() const {
     return _method;
+}
+
+void	HttpRequest::setMethod( std::string tmp ){
+	_method = tmp;
+}
+
+void	HttpRequest::setUri( std::string tmp ){
+	_uri = tmp;
+}
+
+void	HttpRequest::setUrl( std::string tmp ){
+	_url = tmp;
+}
+
+void	HttpRequest::setVersion( std::string tmp ){
+	_version = tmp;
+	
+}
+
+void	HttpRequest::setBody( std::string tmp ){
+	_body = tmp;
+}
+
+void	HttpRequest::setHeader( std::string tmp1, std::string tmp2 ){
+	_headers[ tmp1 ].push_back( tmp2 );
+}
+
+void	HttpRequest::setFd( int tmp ){
+	_fd = tmp;
+}
+
+void	HttpRequest::setConfig( Config& tmp ){
+	_conf = tmp;
+}
+
+void	HttpRequest::setResponse( Response& tmp ){
+	_response = tmp;
+}
+
+void	HttpRequest::setServer( ServerConf tmp ){
+	_server = tmp;
 }
 
 std::map<std::string, std::vector<std::string> > HttpRequest::getHeaders() const {
@@ -206,9 +246,9 @@ void HttpRequest::parse(const std::string& rawRequest, const Conf& config) {
         std::map<std::string, std::set<int> > ipPorts = it->getIpPort();
 
         if (std::find(server_names.begin(), server_names.end(), hostname) != server_names.end())
-            _server = &(*it);
+            _server = (*it);
         if (ipPorts.find(hostname) != ipPorts.end())
-            _server = &(*it);
+            _server = (*it);
     }
     // TODO return if above fails and return response? 
 }

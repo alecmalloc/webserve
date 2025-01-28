@@ -14,7 +14,7 @@ webserv
 .idea/
 *.swp
 *~
-.cache
+.cache/
 compile_commands.json
 
 # OS specific
@@ -28,5 +28,3 @@ Thumbs.db
 
 # Debug files
 *.dSYM/
-
-compile_commands.json

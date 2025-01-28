@@ -5,6 +5,7 @@
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -41,6 +42,7 @@
 #include "StrUtils.hpp"
 #include "Response.hpp"
 #include "Server.hpp"
+#include "Cgi.hpp"
 
 void	runServer( Config& conf );
 

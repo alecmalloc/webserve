@@ -38,7 +38,7 @@ class ServerConf {
 		void	setIndex( std::string );
 
 		//member functions
-
+		void	checkAccess( void );
 
 	private: 
 		//store ip address and port 
