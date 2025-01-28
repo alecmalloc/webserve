@@ -205,6 +205,9 @@ static int	childProcess( HttpRequest& req, int* inputPipe, int* outputPipe, \
 }
 
 static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid_t pid ){
+	//status for childs
+	int	status;
+
 	//close unused pipe ends
 	close( inputPipe[0] );
 	close( outputPipe[1] );
@@ -229,15 +232,16 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 		std::cerr << RED << "ERROR: Poll: " << strerror( errno ) << END << std::endl;
 		close( outputPipe[0] );
 		kill( pid, SIGKILL );
+		waitpid( pid, &status, 0 );
 		return( -1 );
 	}
 
 	//if return == TIMEOUT
 	if( pollRet == 0 ){
 		std::cout << BLUE << "INFO: Cgi: Timeout" << END << std::endl;
-
 		close( outputPipe[0] );
 		kill( pid, SIGKILL );
+		waitpid( pid, &status, 0 );
 		return( -1 );
 	}
 
@@ -259,7 +263,6 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 	close( outputPipe[0] );
 
 	//wait and get status
-	int	status;
 	waitpid( pid, &status, 0 );
 
 	if( WIFEXITED( status ) && WEXITSTATUS( status ) != 0 )
