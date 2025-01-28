@@ -1,6 +1,7 @@
 #ifndef HTTP_REQUEST
 #define HTTP_REQUEST
 
+#include "Config.hpp"
 #include "Response.hpp"
 
 class HttpRequest {
@@ -18,7 +19,7 @@ class HttpRequest {
         std::string                                          _body;
 
         // reference to which serverConf i have matched from request
-        ServerConf*                                         _server;
+        ServerConf                                         _server;
 
     public:
         HttpRequest(int fd, Config& conf);
@@ -36,8 +37,21 @@ class HttpRequest {
         std::string                                             getVersion() const;
         std::map<std::string, std::vector<std::string> >         getHeaders() const;
         std::string                                             getBody() const;
-        ServerConf*                                             getServer() const;
+        ServerConf						getServer() const;
 
+	//setters
+	void	setMethod( std::string );
+	void	setUri( std::string );
+	void	setUrl( std::string );
+	void	setVersion( std::string );
+	void	setBody( std::string );
+	void	setHeader( std::string, std::string);
+	void	setFd( int );
+	void	setConfig( Config& );
+	void	setResponse( Response& );
+	void	setServer( ServerConf );
+
+	//member funcitons
         void                                                    parse();
 };
 

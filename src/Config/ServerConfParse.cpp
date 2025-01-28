@@ -165,7 +165,7 @@ void	Config::parseServerConfBlock( ServerConf& server ){
 		std::stringstream	ss( tmp );
 		std::string		key;
 		ss >> key;
-		for( int i = 0; i < 7; i++ ){
+		for( int i = 0; i < 6; i++ ){
 			if( !key.empty() && key.at( 0 ) == '#' ){
 				break;
 			}
@@ -177,7 +177,7 @@ void	Config::parseServerConfBlock( ServerConf& server ){
 				parseLocationConfBlock( server, ss );
 				break;
 			}
-			else if ( i == 6 && !key.empty() ){
+			else if ( i == 5 && !key.empty() ){
 				throw( std::runtime_error( "Not an valid configuration "\
 							+ tmp ) );
 
