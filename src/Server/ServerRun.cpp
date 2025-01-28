@@ -123,7 +123,7 @@ static void	closeClient( Server& server, Client* client ){
 	server.removeClient( client );
 }
 
-static void	readFromClient( Client* client ){
+static void	readFromClient( Client* client ) {
 	//create Buffer and Zero it
 	char	buffer[ BUFFERSIZE ];
 	std::memset( buffer, '\0', BUFFERSIZE );
@@ -180,21 +180,23 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 	//check if Clients stopped sending data
 	if( event.events & EPOLLRDHUP || completeHttpRequest( client->getContent() ) ){
-		std::cout << client->getContent() << std::endl;
+		//std::cout << client->getContent() << std::endl;
 		//test cgi
 		//cgimain( server.getConf() );
-		
-		//TODO: Mr Alecs http parsing function	
+		Config confTMP = server.getConf();
+		HttpRequest request(confTMP);
+		request.parse(client->getContent());
+		// std::cout << request << '\n';
 		//TODO: do we want to be an keep-alive server or not? 
 		//Http1.1 also supports connection:closed i guess we decide :)
 		//rn its closing after sending the data which will hapen here 
 		//so TODO add httpparsing and response handler here -> unchunking chunking,
 		//sending etc -_-> integrate cgi with" cgihandler( HttpRequest ) "
 		client->setClosed( true );
-	}	
+	}
 
 	//check for error
-	if( event.events & EPOLLERR || client->getError() ){
+	if( event.events & EPOLLERR || client->getError() ) {
 		//close client
 		closeClient( server, client );
 		std::cerr << RED << "ERROR:	Client: fd:	" << END << \
@@ -218,7 +220,7 @@ static void	mainLoop( Server& server ){
 
 	//saving open clients
 	std::vector< Client >	clients;
-	
+
 	while( running ){
 		//register new events with epoll wait
 		activeEvents = epoll_wait( server.getEpollFd(), events, MAX_EVENTS, -1 );

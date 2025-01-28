@@ -2,6 +2,10 @@
 # define CLIENT_HPP
 
 #include <string>
+
+// forward declaration
+class HttpRequest;
+
 class	Client{
 	public:
 		//constructor
@@ -42,6 +46,9 @@ class	Client{
 
 		//stores read content
 		std::string	_content;
+
+		// all parsed data from request
+		HttpRequest*	_request;
 };
 
 #endif

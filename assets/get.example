@@ -1,4 +1,4 @@
-GET /articles/news?category=tech&id=123 HTTP/1.1
+POST /articles/news?category=tech&id=123 HTTP/1.1
 
 Host: www.example.com
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)

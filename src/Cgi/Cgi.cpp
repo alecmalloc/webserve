@@ -88,26 +88,27 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 	return( 0 );
 }
 
-static void	setIpPort( HttpRequest& req, std::string& ip, std::string& port ){
-	struct sockaddr_in	serverAddr;
-	socklen_t		addrLen = sizeof( serverAddr );	
+// COMMENTED OUT BECAUSE WE DONT NEED AND REQUEST DOESNT HAVE FD ANYMORE
+// static void	setIpPort( HttpRequest& req, std::string& ip, std::string& port ){
+// 	struct sockaddr_in	serverAddr;
+// 	socklen_t		addrLen = sizeof( serverAddr );	
 
-	if( getsockname( req.getFd(), ( struct sockaddr* ) &serverAddr, &addrLen ) == 0){
-		ip = inet_ntoa( serverAddr.sin_addr );
-		port = toString( ntohs( serverAddr.sin_port ) );
-	}
-	else {
-		ip = "127.0.0.1";
-		port = "80";
-	}
-}
+// 	if( getsockname( req.getFd(), ( struct sockaddr* ) &serverAddr, &addrLen ) == 0){
+// 		ip = inet_ntoa( serverAddr.sin_addr );
+// 		port = toString( ntohs( serverAddr.sin_port ) );
+// 	}
+// 	else {
+// 		ip = "127.0.0.1";
+// 		port = "80";
+// 	}
+// }
 
 //TODO: check if other env variables needed?
 static void	setEnv( HttpRequest& req, char*** env ){
 	//get SERVER_IP and SERVER_PORT for env
 	std::string ip, port;
 
-	setIpPort( req, ip, port );
+	// setIpPort( req, ip, port );
 
 
 	//set env via strings 
