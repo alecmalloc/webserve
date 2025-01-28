@@ -22,6 +22,7 @@ class PathInfo {
         bool parsePath();
 
     public:
+        PathInfo();
         PathInfo(const std::string& path);
         ~PathInfo();
 

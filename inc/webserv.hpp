@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <poll.h>
+#include <dirent.h>
 
 //cpp header
 #include <cstdio>
@@ -40,6 +41,7 @@
 #include "Defines.hpp"
 #include "HttpRequest.hpp"
 #include "StrUtils.hpp"
+#include "PathInfo.hpp"
 #include "Response.hpp"
 #include "Server.hpp"
 #include "Cgi.hpp"
