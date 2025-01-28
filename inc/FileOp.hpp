@@ -1,20 +1,7 @@
-#ifndef FILESERVER_HPP
-#define FILESERVER_HPP
+#ifndef FILEOP_HPP
+#define FILEOP_HPP
 
-#include "./Path.hpp"
-#include <vector>
-#include <string>
-
-// PLACEHOLDER: using this until linus creates spec for response type
-class Response {
-    private:
-        int m_statusCode; // http status code
-    public:
-        Response(): m_statusCode(200) {};
-        ~Response() {};
-
-        void setStatus(int statusCode) {m_statusCode = statusCode;};
-};
+#include "webserv.hpp"
 
 // not sure if i need a FileServer class rn, going to keep it simple until i need state management
 Response serveDirectory(const PathInfo& path);

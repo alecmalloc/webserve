@@ -233,7 +233,6 @@ void HttpRequest::parse(const std::string& rawRequest) {
     }
 
     // //  match server block from conf
-    // TODO this only creates a local obj i think. make sure it links to the actual serverBlocj
     std::vector<ServerConf> server_list;
     server_list = _conf.getServerConfs();
     // hostname = remove port from host if present
@@ -251,5 +250,5 @@ void HttpRequest::parse(const std::string& rawRequest) {
         if (ipPorts.find(hostname) != ipPorts.end())
             _server = (*it);
     }
-    // TODO return if above fails and return response? 
+    // TODO return if above fails and return response? -> cant remember what i meant with this lol
 }
