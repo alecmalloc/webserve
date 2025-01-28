@@ -8,7 +8,7 @@ class HttpRequest {
     private:
         // main member vars
         Config&                                              _conf;
-        Response                                             _response;
+        int                                                  _response_code;
         // http request attributes
         std::string                                          _method;
         std::string                                          _uri;
@@ -28,7 +28,7 @@ class HttpRequest {
 
         // getters
         Config&                                                 getConf() const;
-        const Response                                          getResponse() const;
+        int                                                     getResponseCode() const;
         std::string                                             getUri() const;
         std::string                                             getMethod() const;
         std::string                                             getUrl() const;
@@ -45,7 +45,7 @@ class HttpRequest {
         void	setBody( std::string );
         void	setHeader( std::string, std::string);
         void	setConfig( Config& );
-        void	setResponse( Response& );
+        void	setResponseCode( int tmp );
         void	setServer( ServerConf );
 
 	//member funcitons

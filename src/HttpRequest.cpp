@@ -6,7 +6,7 @@ HttpRequest::HttpRequest(Config& conf): _conf(conf) {
 
 HttpRequest::HttpRequest(const HttpRequest& other): 
     _conf(other._conf),
-    _response(other._response),
+    _response_code(other._response_code),
     _method(other._method),
     _uri(other._uri),
     _url(other._url),
@@ -26,7 +26,7 @@ HttpRequest& HttpRequest::operator =(const HttpRequest& other) {
         _version = other.getVersion();
         _headers = other.getHeaders();
         _body = other.getBody();
-        _response = other.getResponse(),
+        _response_code = other.getResponseCode(),
         _server = other.getServer();
     }
 
@@ -41,8 +41,8 @@ Config& HttpRequest::getConf() const {
     return _conf;
 }
 
-const Response HttpRequest::getResponse() const {
-    return _response;
+int HttpRequest::getResponseCode() const {
+    return _response_code;
 }
 
 std::string HttpRequest::getUri() const {
@@ -90,8 +90,8 @@ void	HttpRequest::setConfig( Config& tmp ){
 	_conf = tmp;
 }
 
-void	HttpRequest::setResponse( Response& tmp ){
-	_response = tmp;
+void	HttpRequest::setResponseCode( int tmp ){
+	_response_code = tmp;
 }
 
 void	HttpRequest::setServer( ServerConf tmp ){
@@ -132,7 +132,7 @@ void HttpRequest::parse(const std::string& rawRequest) {
     std::string line;
     // make sure first line exists again (just to be sure)
     if (!std::getline(ss, line)) {
-        _response.setStatus(400);
+        setResponseCode(400);
         return;
     }
     // parse request line (METHOD URI HTTP/VERSION)
@@ -141,7 +141,7 @@ void HttpRequest::parse(const std::string& rawRequest) {
     request_line >> method >> uri >> version;
     // check if method uri and version exist
     if (method.empty() || uri.empty() || version.empty()) {
-        _response.setStatus(400);
+        setResponseCode(400);
         return;
     }
     // TODO VERSION check
@@ -189,7 +189,7 @@ void HttpRequest::parse(const std::string& rawRequest) {
 
     // check to make sure host is in headers -> these are standard and sent with every req in modern tools, however just to be safe
     if (_headers.find("Host") == _headers.end()) {
-        _response.setStatus(400);
+        setResponseCode(400);
         return;
     }
 
@@ -199,7 +199,7 @@ void HttpRequest::parse(const std::string& rawRequest) {
 
     // only handle GET POST DELETE
     if (_method != "GET" && _method != "POST" && _method != "DELETE") {
-        _response.setStatus(405);
+        setResponseCode(405);
         return;
     }
 
@@ -207,13 +207,13 @@ void HttpRequest::parse(const std::string& rawRequest) {
     if (_method == "POST") {
         // check for Content-Length or Transfer-Encoding header
         if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end()) {
-            _response.setStatus(411); // Length Required
+            setResponseCode(411); // Length Required
             return;
         }
 
         // verify body exists for POST
         if (_body.empty()) {
-            _response.setStatus(400); // Bad Request
+            setResponseCode(400); // Bad Request
             return;
         }
     }
