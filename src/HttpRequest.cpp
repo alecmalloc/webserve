@@ -1,6 +1,6 @@
 #include "webserv.hpp"
 
-HttpRequest::HttpRequest(void): {
+HttpRequest::HttpRequest(Config& conf): _conf(conf) {
     ;
 }
 
@@ -86,10 +86,6 @@ void	HttpRequest::setHeader( std::string tmp1, std::string tmp2 ){
 	_headers[ tmp1 ].push_back( tmp2 );
 }
 
-void	HttpRequest::setFd( int tmp ){
-	_fd = tmp;
-}
-
 void	HttpRequest::setConfig( Config& tmp ){
 	_conf = tmp;
 }
@@ -129,7 +125,7 @@ std::ostream& operator<<(std::ostream& os, HttpRequest& request) {
     return os;
 }
 
-void HttpRequest::parse(const std::string& rawRequest, const Conf& config) {
+void HttpRequest::parse(const std::string& rawRequest) {
 
     // split request data into lines
     std::stringstream ss(rawRequest);
@@ -234,7 +230,7 @@ void HttpRequest::parse(const std::string& rawRequest, const Conf& config) {
     // //  match server block from conf
     // TODO this only creates a local obj i think. make sure it links to the actual serverBlocj
     std::vector<ServerConf> server_list;
-    server_list = config.getServerConfs();
+    server_list = _conf.getServerConfs();
     // hostname = remove port from host if present
     size_t colon = host.find(":");
     std::string hostname;

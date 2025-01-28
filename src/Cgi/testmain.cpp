@@ -5,7 +5,7 @@
 #include <string>
 
 int cgimain( Config config ) {
-    HttpRequest req(1, config);	
+    HttpRequest req(config);
 
     //change to work in cgihandler with server from request
     req.setServer( config.getServerConfs()[0] );

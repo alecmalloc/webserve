@@ -183,7 +183,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		std::cout << client->getContent() << std::endl;
 		//test cgi
 		//cgimain( server.getConf() );
-		
+
 		//TODO: Mr Alecs http parsing function	
 		//TODO: do we want to be an keep-alive server or not? 
 		//Http1.1 also supports connection:closed i guess we decide :)

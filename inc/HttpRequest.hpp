@@ -18,10 +18,10 @@ class HttpRequest {
         std::string                                          _body;
 
         // reference to which serverConf i have matched from request
-        ServerConf                                         _server;
+        ServerConf                                          _server;
 
     public:
-        HttpRequest(void);
+        HttpRequest(Config& conf);
         HttpRequest(const HttpRequest& other);
         HttpRequest& operator =(const HttpRequest& other);
         ~HttpRequest() {};
@@ -37,20 +37,19 @@ class HttpRequest {
         std::string                                             getBody() const;
         ServerConf						getServer() const;
 
-	//setters
-	void	setMethod( std::string );
-	void	setUri( std::string );
-	void	setUrl( std::string );
-	void	setVersion( std::string );
-	void	setBody( std::string );
-	void	setHeader( std::string, std::string);
-	void	setFd( int );
-	void	setConfig( Config& );
-	void	setResponse( Response& );
-	void	setServer( ServerConf );
+        //setters
+        void	setMethod( std::string );
+        void	setUri( std::string );
+        void	setUrl( std::string );
+        void	setVersion( std::string );
+        void	setBody( std::string );
+        void	setHeader( std::string, std::string);
+        void	setConfig( Config& );
+        void	setResponse( Response& );
+        void	setServer( ServerConf );
 
 	//member funcitons
-        void                                                    parse();
+        void                                                    parse(const std::string& rawRequest);
 };
 
 // << overload for printing
