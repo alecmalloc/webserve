@@ -186,8 +186,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		Config confTMP = server.getConf();
 		HttpRequest request(confTMP);
 		request.parse(client->getContent());
-		std::cout << request << '\n';
-		//TODO: Mr Alecs http parsing function	
+		// std::cout << request << '\n';
 		//TODO: do we want to be an keep-alive server or not? 
 		//Http1.1 also supports connection:closed i guess we decide :)
 		//rn its closing after sending the data which will hapen here 
