@@ -180,10 +180,13 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 	//check if Clients stopped sending data
 	if( event.events & EPOLLRDHUP || completeHttpRequest( client->getContent() ) ){
-		std::cout << client->getContent() << std::endl;
+		//std::cout << client->getContent() << std::endl;
 		//test cgi
 		//cgimain( server.getConf() );
-
+		Config confTMP = server.getConf();
+		HttpRequest request(confTMP);
+		request.parse(client->getContent());
+		std::cout << request << '\n';
 		//TODO: Mr Alecs http parsing function	
 		//TODO: do we want to be an keep-alive server or not? 
 		//Http1.1 also supports connection:closed i guess we decide :)
