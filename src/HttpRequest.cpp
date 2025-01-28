@@ -144,7 +144,12 @@ void HttpRequest::parse(const std::string& rawRequest) {
         setResponseCode(400);
         return;
     }
-    // TODO VERSION check
+    
+    // check if http version is 1.1 (correct version)
+    if (version != "HTTP/1.1") {
+        setResponseCode(505);
+        return;
+    }
 
     // set ss to member variables
     _method = method;
