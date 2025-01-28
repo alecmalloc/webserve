@@ -108,6 +108,8 @@ void HttpRequest::parse(const std::string& rawRequest, const Conf& config) {
         _response.setStatus(400);
         return;
     }
+    // TODO VERSION check
+
     // set ss to member variables
     _method = method;
     _uri = uri;
