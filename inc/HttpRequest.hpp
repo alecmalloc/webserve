@@ -1,8 +1,7 @@
 #ifndef HTTP_REQUEST
 #define HTTP_REQUEST
 
-#include "Config.hpp"
-#include "Response.hpp"
+#include "PathInfo.hpp"
 
 class HttpRequest {
     private:
@@ -11,7 +10,9 @@ class HttpRequest {
         int                                                  _response_code;
         // http request attributes
         std::string                                          _method;
+        // uri: /articles/posts1.html
         std::string                                          _uri;
+        // url: example.com/
         std::string                                          _url;
         std::string                                          _version;
         std::map<std::string, std::vector<std::string> >      _headers;
@@ -19,6 +20,9 @@ class HttpRequest {
 
         // reference to which serverConf i have matched from request
         ServerConf                                          _server;
+
+        // path variables
+        PathInfo                                            _pathInfo;
 
     public:
         HttpRequest(Config& conf);
@@ -33,9 +37,10 @@ class HttpRequest {
         std::string                                             getMethod() const;
         std::string                                             getUrl() const;
         std::string                                             getVersion() const;
-        std::map<std::string, std::vector<std::string> >         getHeaders() const;
+        std::map<std::string, std::vector<std::string> >        getHeaders() const;
         std::string                                             getBody() const;
-        ServerConf						getServer() const;
+        ServerConf						                        getServer() const;
+        PathInfo                                                getPathInfo() const;
 
         //setters
         void	setMethod( std::string );
@@ -47,9 +52,15 @@ class HttpRequest {
         void	setConfig( Config& );
         void	setResponseCode( int tmp );
         void	setServer( ServerConf );
+        void    setPathInfo( PathInfo );
 
-	//member funcitons
-        void                                                    parse(const std::string& rawRequest);
+        // request Handlers (GET, POST, DELETE)
+        void    handleRequest(const std::string& rawRequest);
+        // void    handleRequest();
+        bool    validateRequestPath();
+
+	    // member funcitons
+        void    parse(const std::string& rawRequest);
 };
 
 // << overload for printing

@@ -1,10 +1,4 @@
-#include "../inc/FileServer.hpp"
-#include "../inc/Defines.hpp"
-
-#include <dirent.h>
-#include <fstream>
-#include <sstream>
-#include <cstddef>
+#include "webserv.hpp"
 
 Response serveDirectory(const PathInfo& path) {
     Response response;
@@ -73,7 +67,6 @@ Response serveDirectory(const PathInfo& path) {
 
     return response;
 }
-
 
 Response serveFile(const PathInfo& path) {
     Response response;

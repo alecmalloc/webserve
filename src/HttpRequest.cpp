@@ -1,6 +1,6 @@
 #include "webserv.hpp"
 
-HttpRequest::HttpRequest(Config& conf): _conf(conf), _response_code(200) {
+HttpRequest::HttpRequest(Config& conf): _conf(conf), _response_code(200), _pathInfo() {
     ;
 }
 
@@ -12,7 +12,8 @@ HttpRequest::HttpRequest(const HttpRequest& other):
     _url(other._url),
     _version(other._version),
     _headers(other._headers),
-    _body(other._body)
+    _body(other._body),
+    _pathInfo(other._pathInfo)
 {
     ;
 }
@@ -26,8 +27,9 @@ HttpRequest& HttpRequest::operator =(const HttpRequest& other) {
         _version = other.getVersion();
         _headers = other.getHeaders();
         _body = other.getBody();
-        _response_code = other.getResponseCode(),
+        _response_code = other.getResponseCode();
         _server = other.getServer();
+        _pathInfo = other.getPathInfo();
     }
 
     return (*this);
@@ -59,6 +61,10 @@ std::string HttpRequest::getVersion() const {
 
 std::string HttpRequest::getMethod() const {
     return _method;
+}
+
+PathInfo HttpRequest::getPathInfo() const {
+    return _pathInfo;
 }
 
 void	HttpRequest::setMethod( std::string tmp ){
@@ -96,6 +102,10 @@ void	HttpRequest::setResponseCode( int tmp ){
 
 void	HttpRequest::setServer( ServerConf tmp ){
 	_server = tmp;
+}
+
+void    HttpRequest::setPathInfo( PathInfo tmp ) {
+    _pathInfo = tmp;
 }
 
 std::map<std::string, std::vector<std::string> > HttpRequest::getHeaders() const {
@@ -233,7 +243,6 @@ void HttpRequest::parse(const std::string& rawRequest) {
     }
 
     // //  match server block from conf
-    // TODO this only creates a local obj i think. make sure it links to the actual serverBlocj
     std::vector<ServerConf> server_list;
     server_list = _conf.getServerConfs();
     // hostname = remove port from host if present
@@ -251,5 +260,23 @@ void HttpRequest::parse(const std::string& rawRequest) {
         if (ipPorts.find(hostname) != ipPorts.end())
             _server = (*it);
     }
-    // TODO return if above fails and return response? 
+    // TODO return if above fails and return response? -> cant remember what i meant with this lol
 }
+
+void HttpRequest::handleRequest(const std::string& rawRequest) {
+    // parse http request
+    parse(rawRequest);
+    if (_response_code != 200)
+        return ;
+    // validate and load into PathInfo obj
+    // validateRequestPath();
+}
+
+// bool HttpRequest::validateRequestPath(void) {
+//     if (getMethod() == "GET")
+//         // check if file or folder exists?
+//     if (getMethod() == "POST")
+//         // validate path for writing
+//     if (getMethod() == "DELETE")
+//         // check if file exists
+// }

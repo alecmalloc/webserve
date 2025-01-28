@@ -183,13 +183,20 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		//std::cout << client->getContent() << std::endl;
 		//test cgi
 		//cgimain( server.getConf() );
+
+		// create temp config file for request construction
 		Config confTMP = server.getConf();
 		HttpRequest request(confTMP);
-		request.parse(client->getContent());
-		// std::cout << request << '\n';
-		//TODO: do we want to be an keep-alive server or not? 
-		//Http1.1 also supports connection:closed i guess we decide :)
-		//rn its closing after sending the data which will hapen here 
+
+		// FOR @LINUS:
+		// handle http request all sub functions and check response code after
+		request.handleRequest(client->getContent());
+		std::cout << request << std::endl;
+		// int response_code = request.getResponseCode();
+		// if request code isnt 200
+		// check PathInfo specs // ask alec if path info is done yet
+		// ex: request.getPathInfo().isFile();
+
 		//so TODO add httpparsing and response handler here -> unchunking chunking,
 		//sending etc -_-> integrate cgi with" cgihandler( HttpRequest ) "
 		client->setClosed( true );

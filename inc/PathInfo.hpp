@@ -1,28 +1,28 @@
-#ifndef PATH_HPP
-#define PATH_HPP
+#ifndef PATHINFO_HPP
+#define PATHINFO_HPP
 
-#include <string>
-#include <sys/stat.h> // file stat to check existence and properties
+#include "webserv.hpp"
 
 // save path for operations on files
 class PathInfo {
     private:
-        std::string m_fullPath; // /home/users/report.txt
-        std::string m_dirName;  // /home/users
-        std::string m_baseName; // report
-        std::string m_extension; // .txt
-        std::string m_fileName; // report.txt
+        std::string _fullPath; // /home/users/report.txt
+        std::string _dirName;  // /home/users
+        std::string _baseName; // report
+        std::string _extension; // .txt
+        std::string _fileName; // report.txt
 
         // used m_ prefix to avoid conflict with function names
-        bool m_isDirectory;
-        bool m_isFile;
-        bool m_hasExtension;
+        bool _isDirectory;
+        bool _isFile;
+        bool _hasExtension;
 
         // moved to private because we only need at beginning
         bool validatePath();
         bool parsePath();
 
     public:
+        PathInfo();
         PathInfo(const std::string& path);
         ~PathInfo();
 
