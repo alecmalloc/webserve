@@ -117,7 +117,6 @@ void Response::generateErrorResponse(HttpRequest &reqObj){
 	//if ittarate thrugg list found custom page
     // else {
 
-
 		// Generate a default error page if custom error page is not found
         std::string defaultErrorPage =  "<html><body><h1>" + Response::intToString(reqObj.getResponseCode()) + " Error</h1></body></html>" + "\n";
         setBody(defaultErrorPage);
