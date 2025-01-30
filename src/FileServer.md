@@ -20,9 +20,9 @@ Response serveDirectory(const PathInfo& path) {
         }
     }
 
-    // TODO check if directory listing is enabled ask @ moritz
+    // check if directory listing is enabled ask @ moritz
 
-    // TODO maybe move this part into validatePath so that we can error handle properly
+    // maybe move this part into validatePath so that we can error handle properly
     DIR* dir = opendir(path.getFullPath().c_str());
     if (dir == NULL) {
         throw std::runtime_error("Failed to open directory");
@@ -42,7 +42,7 @@ Response serveDirectory(const PathInfo& path) {
     }
     closedir(dir);
 
-    // TODO convert entries to html
+    // convert entries to html
         // get template from ./html/templates/directoryListing.html
         // fill in placeholders and store in a new html file ./html/static
         // serveFile

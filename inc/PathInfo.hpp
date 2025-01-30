@@ -17,16 +17,15 @@ class PathInfo {
         bool _isFile;
         bool _hasExtension;
 
-        // moved to private because we only need at beginning
-        bool validatePath();
-        bool parsePath();
-
     public:
         PathInfo();
         PathInfo(const std::string& path);
+        PathInfo(const PathInfo& other);
+        PathInfo& operator=(const PathInfo& other);
         ~PathInfo();
 
-        // not using str references as return due to no guarantee of lifecycle
+        // not using str references as return due to no guarantee of use in lifecycle
+        // getters
         std::string getFullPath() const;
         std::string getDirName() const;
         std::string getBaseName() const;
@@ -35,9 +34,19 @@ class PathInfo {
         bool isDirectory() const;
         bool isFile() const;
         bool hasExtension() const;
-};
 
-// TODO:
-// Validate final path is within server root
+        // setters
+        void setFullPath(const std::string& path);
+        void setDirName(const std::string& dirName);
+        void setBaseName(const std::string& baseName); 
+        void setExtension(const std::string& extension);
+        void setFilename(const std::string& filename);
+        void setIsDirectory(bool isDir);
+        void setIsFile(bool isFile);
+
+        int validatePath();
+
+
+};
 
 #endif

@@ -36,6 +36,10 @@ bool PathInfo::hasExtension() const {
 
 PathInfo::PathInfo(void):
     _fullPath(""),
+    _dirName(""),
+    _baseName(""),
+    _extension(""),
+    _fileName(""),
     _isDirectory(false),
     _isFile(false),
     _hasExtension(false)
@@ -45,36 +49,57 @@ PathInfo::PathInfo(void):
 
 PathInfo::PathInfo(const std::string& path):
     _fullPath(path),
+    _dirName(""),
+    _baseName(""),
+    _extension(""),
+    _fileName(""),
     _isDirectory(false),
     _isFile(false),
     _hasExtension(false)
 {
-    if (!validatePath())
-        throw std::runtime_error("Invalid path detected");
-    // parse all other path properties
-    if (!parsePath())
-        throw std::runtime_error("Invalid path detected");
+    ;
+}
+
+PathInfo::PathInfo(const PathInfo& other):
+    _fullPath(other._fullPath),
+    _dirName(other._dirName),
+    _baseName(other._baseName),
+    _extension(other._extension),
+    _fileName(other._fileName),
+    _isDirectory(other._isDirectory),
+    _isFile(other._isFile),
+    _hasExtension(other._hasExtension)
+{
+    ;
+}
+
+PathInfo& PathInfo::operator=(const PathInfo& other) {
+    if (this != &other) {
+        _fullPath = other._fullPath;
+        _dirName = other._dirName;
+        _baseName = other._baseName;
+        _extension = other._extension;
+        _isDirectory = other._isDirectory;
+        _isFile = other._isFile;
+        _hasExtension = other._hasExtension;
+    }
+    return *this;
 }
 
 PathInfo::~PathInfo() {
     
 }
 
-bool PathInfo::validatePath() {
-
-    // check for empty path
-    if (_fullPath.empty())
-        return false;
+int PathInfo::validatePath() {
 
     // check for invalid path traversal ie -> "../../"
     if (_fullPath.find("..") != std::string::npos)
-        return false;
+        return 403;
 
     struct stat statbuf;
-    // check file existence
-    if (stat(_fullPath.c_str(), &statbuf) != 0)
-        return false;
-
+    if (stat(_fullPath.c_str(), &statbuf) != 0) {
+        return 404; // path doesn't exist or error accessing it
+    }
     // set file properties
     _isDirectory = S_ISDIR(statbuf.st_mode);
     _isFile = S_ISREG(statbuf.st_mode);
@@ -83,47 +108,48 @@ bool PathInfo::validatePath() {
     if (_isDirectory) {
         DIR* dir = opendir(_fullPath.c_str());
         if (dir == NULL) {
-            return false;
+            return 404;
         }
+        closedir(dir);
     }
 
     // check permissions
     if (_isDirectory) {
         // directory needs read and execute permissions
         if (!(statbuf.st_mode & S_IRUSR) || !(statbuf.st_mode & S_IXUSR))
-            return false;
+            return 403;
     } else if (_isFile) {
         // regular file needs read permission
         if (!(statbuf.st_mode & S_IRUSR))
-            return false;
+            return 403;
     }
-
-    return true;
+    
+    return 200;
 }
 
-bool PathInfo::parsePath() {
+// bool PathInfo::parsePath() {
 
-    // find the last directory separator
-    size_t lastSlash = _fullPath.find_last_of("/\\");
-    if (lastSlash != std::string::npos) {
-        _dirName = _fullPath.substr(0, lastSlash);
-        _fileName = _fullPath.substr(lastSlash + 1);
-    } else {
-        _fileName = _fullPath;
-    }
+//     // find the last directory separator
+//     size_t lastSlash = _fullPath.find_last_of("/\\");
+//     if (lastSlash != std::string::npos) {
+//         _dirName = _fullPath.substr(0, lastSlash);
+//         _fileName = _fullPath.substr(lastSlash + 1);
+//     } else {
+//         _fileName = _fullPath;
+//     }
 
-    // find the last dot to get the file extension
-    size_t lastDot = _fileName.find_last_of('.');
-    if (lastDot != std::string::npos) {
-        _extension = _fileName.substr(lastDot + 1);
-        _fileName = _fileName.substr(0, lastDot);
-    }
+//     // find the last dot to get the file extension
+//     size_t lastDot = _fileName.find_last_of('.');
+//     if (lastDot != std::string::npos) {
+//         _extension = _fileName.substr(lastDot + 1);
+//         _fileName = _fileName.substr(0, lastDot);
+//     }
 
-    // additional validation for directory and filename
-    if (_dirName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\._-") != std::string::npos)
-        return false;
-    if (_fileName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-") != std::string::npos) 
-        return false;
+//     // additional validation for directory and filename
+//     if (_dirName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\._-") != std::string::npos)
+//         return false;
+//     if (_fileName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-") != std::string::npos) 
+//         return false;
 
-    return true;
-}
+//     return true;
+// }

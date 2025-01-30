@@ -5,7 +5,6 @@
 
 // not sure if i need a FileServer class rn, going to keep it simple until i need state management
 Response serveDirectory(const PathInfo& path);
-    // TODO
     // X 1. Check if Path is a Directory: Verify that the provided path is a directory.
     // X 2. Check for Default Files: Look for default files like index.html to serve.
     // 3. Check if Directory Listing is Enabled: Ensure that directory listing is allowed.
@@ -14,7 +13,6 @@ Response serveDirectory(const PathInfo& path);
     // 7. Return Response: Return a Response object with the generated HTML content and appropriate status code.
 
 Response serveFile(const PathInfo& path);
-    // TODO
     // Open file
     // Get file size
     // Determine MIME type

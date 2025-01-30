@@ -14,8 +14,6 @@
 #include "Config.hpp"
 #include "Client.hpp"
 
-
-
 class	Server{
 	public:
 		//constructors
@@ -37,7 +35,7 @@ class	Server{
 		void	setEpollFd( int );
 		void	setConf( Config );
 		void	setClient( std::list<Client > );
-		
+
 		//member functions
 		void		runServer( void );
 		void		removeClient( Client* );

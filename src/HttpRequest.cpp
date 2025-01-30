@@ -1,6 +1,10 @@
 #include "webserv.hpp"
 
-HttpRequest::HttpRequest(Config& conf): _conf(conf), _response_code(200), _pathInfo() {
+HttpRequest::HttpRequest(Config& conf): 
+    _conf(conf), 
+    _response_code(200), 
+    _pathInfo() 
+{
     ;
 }
 
@@ -13,6 +17,8 @@ HttpRequest::HttpRequest(const HttpRequest& other):
     _version(other._version),
     _headers(other._headers),
     _body(other._body),
+    _hostname(other._hostname),
+    _server(other._server),
     _pathInfo(other._pathInfo)
 {
     ;
@@ -27,6 +33,7 @@ HttpRequest& HttpRequest::operator =(const HttpRequest& other) {
         _version = other.getVersion();
         _headers = other.getHeaders();
         _body = other.getBody();
+        _hostname = other.getHostname();
         _response_code = other.getResponseCode();
         _server = other.getServer();
         _pathInfo = other.getPathInfo();
@@ -37,6 +44,10 @@ HttpRequest& HttpRequest::operator =(const HttpRequest& other) {
 
 ServerConf HttpRequest::getServer() const {
     return _server;
+}
+
+std::string HttpRequest::getHostname() const {
+    return _hostname;
 }
 
 Config& HttpRequest::getConf() const {
@@ -249,18 +260,20 @@ void HttpRequest::parse(const std::string& rawRequest) {
     size_t colon = host.find(":");
     std::string hostname;
     if (colon != std::string::npos)
-        hostname = host.substr(0, colon);
+        _hostname = host.substr(0, colon);
     // loop over serverConfs and match server names and ips
     for (std::vector<ServerConf>::iterator it = server_list.begin(); it != server_list.end(); ++it) {
         std::vector<std::string> server_names = it->getServerConfNames();
         std::map<std::string, std::set<int> > ipPorts = it->getIpPort();
 
-        if (std::find(server_names.begin(), server_names.end(), hostname) != server_names.end())
+        if (std::find(server_names.begin(), server_names.end(), _hostname) != server_names.end()) {
             _server = (*it);
-        if (ipPorts.find(hostname) != ipPorts.end())
+        }
+        if (ipPorts.find(_hostname) != ipPorts.end()) {
             _server = (*it);
+        }
     }
-    // TODO return if above fails and return response? -> cant remember what i meant with this lol
+    // return if above fails and return response? -> cant remember what i meant with this lol
 }
 
 void HttpRequest::handleRequest(const std::string& rawRequest) {
@@ -268,15 +281,47 @@ void HttpRequest::handleRequest(const std::string& rawRequest) {
     parse(rawRequest);
     if (_response_code != 200)
         return ;
+
     // validate and load into PathInfo obj
-    // validateRequestPath();
+    validateRequestPath();
+    if (_response_code != 200)
+        return ;
 }
 
-// bool HttpRequest::validateRequestPath(void) {
-//     if (getMethod() == "GET")
-//         // check if file or folder exists?
-//     if (getMethod() == "POST")
-//         // validate path for writing
-//     if (getMethod() == "DELETE")
-//         // check if file exists
-// }
+void HttpRequest::validateRequestPath(void) {
+    // grab location confs
+
+    // things we need in for loop
+    const std::vector<LocationConf>& locationConfs = _server.getLocationConfs();
+    std::string bestMatch = "";
+    const LocationConf* matchedLoc = NULL;
+    const std::string uri = getUri();
+
+    // loop over location confs
+    for (std::vector<LocationConf>::const_iterator it = locationConfs.begin(); 
+        it != locationConfs.end(); ++it) {
+            const LocationConf& loc = *it;
+            std::string locPath = loc.getPath();
+
+            // Check if URI starts with location path
+            if (uri.substr(0, locPath.length()) == locPath) {
+                // keep longest match (most specific). Ex: /posts/ or posts/articles 
+                if (locPath.length() > bestMatch.length()) {
+                    bestMatch = locPath;
+                    matchedLoc = &loc;
+                }
+            }
+    }
+    // if we couldnt match a location from the locationConfs in the server
+    if (!matchedLoc) {
+        _response_code = 404;
+        return;
+    }
+    
+    // todo set path info to full path
+    std::string fullPath = _server.getRootDir() + bestMatch;
+    std::cout << fullPath  << '\n';
+
+    if ((_response_code = _pathInfo.validatePath() != 200))
+        return;
+}

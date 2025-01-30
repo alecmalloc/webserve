@@ -103,7 +103,7 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 // 	}
 // }
 
-//TODO: check if other env variables needed?
+//check if other env variables needed?
 static void	setEnv( HttpRequest& req, char*** env ){
 	//get SERVER_IP and SERVER_PORT for env
 	std::string ip, port;
