@@ -190,12 +190,16 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 		// FOR @LINUS:
 		// handle http request all sub functions and check response code after
-		request.handleRequest(client->getContent());
-		std::cout << request << std::endl;
-		// int response_code = request.getResponseCode();
-		// if request code isnt 200
-		// check PathInfo specs // ask alec if path info is done yet
-		// ex: request.getPathInfo().isFile();
+		const std::string request_str = client->getContent();
+		request.handleRequest(request_str);
+		int response_code = request.getResponseCode();
+		std::cout << "RESPONSE CODE: " <<  response_code << "\n";
+		// IMPORTANT: IF REQUEST CODE ISN'T 200 PATHINFO WON'T HAVE MUCH BESIDES FULLPATH
+		/// EX: if RESPONSE is 404 it will only have fullPath. we dont do any more checks once one check fails
+		std::cout << request.getPathInfo() << '\n';
+		// Ex: you could check smt like request.getPathInfo().isDirectory() or request.getPathInfo().getFilename()
+		// but read the PathInfo.hpp to get all specs. its really helpful and it already checks all permissions etc
+
 
 		//so TODO add httpparsing and response handler here -> unchunking chunking,
 		//sending etc -_-> integrate cgi with" cgihandler( HttpRequest ) "

@@ -127,29 +127,44 @@ int PathInfo::validatePath() {
     return 200;
 }
 
-// bool PathInfo::parsePath() {
+int PathInfo::parsePath() {
 
-//     // find the last directory separator
-//     size_t lastSlash = _fullPath.find_last_of("/\\");
-//     if (lastSlash != std::string::npos) {
-//         _dirName = _fullPath.substr(0, lastSlash);
-//         _fileName = _fullPath.substr(lastSlash + 1);
-//     } else {
-//         _fileName = _fullPath;
-//     }
+    // find the last directory separator
+    size_t lastSlash = _fullPath.find_last_of("/\\");
+    if (lastSlash != std::string::npos) {
+        _dirName = _fullPath.substr(0, lastSlash);
+        _fileName = _fullPath.substr(lastSlash + 1);
+    } else {
+        _fileName = _fullPath;
+    }
 
-//     // find the last dot to get the file extension
-//     size_t lastDot = _fileName.find_last_of('.');
-//     if (lastDot != std::string::npos) {
-//         _extension = _fileName.substr(lastDot + 1);
-//         _fileName = _fileName.substr(0, lastDot);
-//     }
+    // find the last dot to get the file extension
+    size_t lastDot = _fileName.find_last_of('.');
+    if (lastDot != std::string::npos) {
+        _extension = _fileName.substr(lastDot + 1);
+        _fileName = _fileName.substr(0, lastDot);
+    }
 
-//     // additional validation for directory and filename
-//     if (_dirName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\._-") != std::string::npos)
-//         return false;
-//     if (_fileName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-") != std::string::npos) 
-//         return false;
+    // additional validation for directory and filename
+    if (_dirName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\._-") != std::string::npos)
+        return 400;
+    if (_fileName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-") != std::string::npos) 
+        return 400;
 
-//     return true;
-// }
+    return 200;
+}
+
+
+std::ostream& operator<<(std::ostream& os, const PathInfo& request) {
+    os << "PathInfo {\n"
+    << "  Full Path: " << request.getFullPath() << "\n"
+    << "  Directory: " << request.getDirName() << "\n"
+    << "  File Name: " << request.getFilename() << "\n"
+    << "  Base Name: " << request.getBaseName() << "\n"
+    << "  Extension: " << request.getExtension() << "\n"
+    << "  Is Directory: " << (request.isDirectory() ? "true" : "false") << "\n"
+    << "  Is File: " << (request.isFile() ? "true" : "false") << "\n"
+    << "  Has Extension: " << (request.hasExtension() ? "true" : "false") << "\n"
+    << "}";
+    return os;
+}

@@ -45,8 +45,11 @@ class PathInfo {
         void setIsFile(bool isFile);
 
         int validatePath();
+        int parsePath();
 
 
 };
+
+std::ostream& operator<<(std::ostream& os, const PathInfo& request);
 
 #endif
