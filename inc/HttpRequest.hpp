@@ -17,6 +17,8 @@ class HttpRequest {
         std::string                                          _version;
         std::map<std::string, std::vector<std::string> >      _headers;
         std::string                                          _body;
+        
+        std::string                                          _hostname;
 
         // reference to which serverConf i have matched from request
         ServerConf                                          _server;
@@ -39,6 +41,7 @@ class HttpRequest {
         std::string                                             getVersion() const;
         std::map<std::string, std::vector<std::string> >        getHeaders() const;
         std::string                                             getBody() const;
+        std::string                                             getHostname() const;
         ServerConf						                        getServer() const;
         PathInfo                                                getPathInfo() const;
 
@@ -54,10 +57,10 @@ class HttpRequest {
         void	setServer( ServerConf );
         void    setPathInfo( PathInfo );
 
-        // request Handlers (GET, POST, DELETE)
+        // main handler
         void    handleRequest(const std::string& rawRequest);
         // void    handleRequest();
-        bool    validateRequestPath();
+        void    validateRequestPath();
 
 	    // member funcitons
         void    parse(const std::string& rawRequest);
