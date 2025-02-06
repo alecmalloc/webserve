@@ -13,7 +13,7 @@ static void	handleSignal( int signal ){
 static void	startupSignalHandler( void ){
 	struct sigaction	sa;
 
-	//set struct to zero 
+	//set struct to zero
 	std::memset( &sa, 0, sizeof( sa ) );
 
 	sa.sa_handler = handleSignal;
@@ -64,7 +64,7 @@ static int	createNewClient( int epollFd, int fd ){
 	if( setNonBlocking( clientFd ) == -1 ){
 		close( clientFd );
 		return( -1 );
-	}	
+	}
 
 	if( setToEpoll( epollFd, clientFd ) == -1 ){
 		close( clientFd );
@@ -86,12 +86,12 @@ static Client*	findClient( Server& server, struct epoll_event event ){
 			return( &( *it ) );
 
 	}
-	
+
 	//if client doesn exist already create new one and add to epoll
 	int	clientFd;
 	Client	newClient;
 	clientFd = createNewClient( server.getEpollFd(),  event.data.fd );
-       
+
 	if( clientFd == -1 ){
 		std::cerr << RED << "ERROR:	Client: Connection failed" << \
 				END << std::endl;
@@ -107,7 +107,7 @@ static Client*	findClient( Server& server, struct epoll_event event ){
 
 	std::cout << BLUE << "INFO:	Client: connected:	" << END << clientFd \
 			<< std::endl;
-	
+
 	//return new client
 	return( &clients.back() );
 }
@@ -138,7 +138,7 @@ static void	readFromClient( Client* client ) {
 		std::memset( buffer, '\0', BUFFERSIZE );
 		bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
 	}
-	
+
 	//check recv for closed client connection
 	if( bytesRead == 0 )
 		client->setClosed( true );
@@ -148,14 +148,14 @@ static void	readFromClient( Client* client ) {
 		client->setError( true );
 }
 
-//TODO: Check with alec for his function 
+//TODO: Check with alec for his function
 //this one just for testing an proplably uncomplete / not really read up for http
 static bool	completeHttpRequest( std::string request ){
 	//check if "\r\n\r\n" is in request -> this indicates end of request !?!?!?????
 	return( request.find( "\r\n\r\n" ) != std::string::npos );
 }
 
-static void	checkEvents( Server& server, Client* client,  struct epoll_event& event ){		
+static void	checkEvents( Server& server, Client* client,  struct epoll_event& event ){
 	//check for error
 	if( event.events & EPOLLERR || client->getError() ){
 		//close client
@@ -199,6 +199,10 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		std::cout << request.getPathInfo() << '\n';
 		// Ex: you could check smt like request.getPathInfo().isDirectory() or request.getPathInfo().getFilename()
 		// but read the PathInfo.hpp to get all specs. its really helpful and it already checks all permissions etc
+		request.setResponseCode(500);
+		Response response(request);
+		std::cout << "print response:" << response.getHttpResponse().c_str() << ":\n" ;
+		write(client->getSocketFd(), response.getHttpResponse().c_str(), response.getHttpResponse().size());
 
 
 		//so TODO add httpparsing and response handler here -> unchunking chunking,
@@ -245,7 +249,7 @@ static void	mainLoop( Server& server ){
 			//check if client already exists
 			Client*	tmp = findClient( server, events[i] );
 
-			//check if client was found 
+			//check if client was found
 			if( !tmp )
 				continue;
 
