@@ -27,7 +27,7 @@
 #include <string>
 #include <iostream>
 #include <stdexcept>
-#include <algorithm> 
+#include <algorithm>
 #include <vector>
 #include <map>
 #include <algorithm>
@@ -46,6 +46,7 @@
 #include "Response.hpp"
 #include "Server.hpp"
 #include "Cgi.hpp"
+#include "FileOps.hpp"
 
 void	runServer( Config& conf );
 

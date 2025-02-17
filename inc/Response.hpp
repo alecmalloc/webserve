@@ -24,6 +24,7 @@ class Response {
 		std::string									_body;
 		long                                		_fileSize;
 		std::string									_filename;
+		std::string									_reasonPhrase;
 
         int m_statusCode; // http status code
     public:
@@ -38,8 +39,10 @@ class Response {
 		void generateErrorResponse(HttpRequest &reqObj);
 		void generateHeader(HttpRequest &reqObj);
 		void	generateStatusLine(HttpRequest &reqObj);
-
+		std::string genarateReasonPhrase(HttpRequest &reqObj);
+		void generateHttpresponse(HttpRequest &reqObj);
 		std::string intToString(int number);
+		std::string serveFileContent(const PathInfo& pathInfo);
 
         // Getters
         std::string getHttpResponse() const { return _httpResponse; }
@@ -50,6 +53,7 @@ class Response {
         long getFileSize() const { return _fileSize; }
         std::string getFilename() const { return _filename; }
         int getStatusCode() const { return m_statusCode; }
+		std::string getReasonPhrase() const;
 
         // Setters
         void setHttpResponse(const std::string& httpResponse) { _httpResponse = httpResponse; }
@@ -60,6 +64,8 @@ class Response {
         void setFileSize(long fileSize) { _fileSize = fileSize; }
         void setFilename(const std::string& filename) { _filename = filename; }
         void setStatusCode(int statusCode) { m_statusCode = statusCode; }
+		void setReasonPhrase(const std::string &reasonPhrase);
+
 
 
 

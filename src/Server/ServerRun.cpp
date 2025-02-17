@@ -199,7 +199,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		std::cout << request.getPathInfo() << '\n';
 		// Ex: you could check smt like request.getPathInfo().isDirectory() or request.getPathInfo().getFilename()
 		// but read the PathInfo.hpp to get all specs. its really helpful and it already checks all permissions etc
-		request.setResponseCode(500);
+		//request.setResponseCode(200);
 		Response response(request);
 		std::cout << "print response:" << response.getHttpResponse().c_str() << ":\n" ;
 		write(client->getSocketFd(), response.getHttpResponse().c_str(), response.getHttpResponse().size());

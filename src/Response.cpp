@@ -12,6 +12,16 @@ std::string getCurrentDateTime() {
     return std::string(buf);
 }
 
+
+void Response::setReasonPhrase(const std::string &reasonPhrase) {
+    _reasonPhrase = reasonPhrase;
+}
+
+std::string Response::getReasonPhrase() const {
+    return _reasonPhrase;
+}
+
+
 Response::Response(HttpRequest &reqObj){
     try{
 		if(reqObj.getResponseCode() != 200){
@@ -20,79 +30,20 @@ Response::Response(HttpRequest &reqObj){
 		}
         processResponse(reqObj);
     }
+
     catch(int errror)
     {
 		std::cerr << "Caught error: "<< std::endl;
 		generateErrorResponse(reqObj);
 		//make error header look for custom errror sites if none genarate one
     }
+	generateHttpresponse(reqObj);
 }
 
-// Mandatory Fields:
-
-
-
-
-
-
-void	Response::generateStatusLine(HttpRequest &reqObj){
-	std::string httpVersion = reqObj.getVersion();
-	std::string statusCode = Response::intToString(reqObj.getResponseCode());
-	std::string reasonPhrase;
-	switch (reqObj.getResponseCode()){
-		case 200:
-			reasonPhrase = "OK";
-			break;
-		case 404:
-            reasonPhrase = "Not Found";
-            break;
-        case 500:
-            reasonPhrase = "Internal Server Error";
-            break;
-        // Add more status codes and reason phrases as needed
-        default:
-            reasonPhrase = "Error";
-            break;
-    }
-	std::stringstream statusLine;
-    statusLine << httpVersion << " " << statusCode << " " << reasonPhrase << "\r\n";
-    setStatusLine(statusLine.str());
-
-}
-
-std::string getServerName(){
-	std::string server;
-	//if()is set in conf
-
-	//else set to default value and return
-	server = "Webserv/1.0";
-	return(server);
-}
-
-void	Response::generateHeader(HttpRequest &reqObj){
-	generateStatusLine(reqObj);
-
-	std::map<std::string, std::string> headerMap;
-	headerMap["Status-Line"] = getStatusLine();
-    headerMap["Date"] = getCurrentDateTime();
-	headerMap["Server"] = getServerName();
-	//headerMap["Content-Type"] = contentType; Type = get from allec or build function that gets from file ending like .jpeg
-	headerMap["Content-Length"] =  intToString(getBody().length());
-	headerMap["Connection"] = "keep alive";//example value set to this default but in reguest could ask for close
-
-	// Optional Fields
-    headerMap["Cache-Control"] = "no-cache"; // Example value
-    headerMap["Set-Cookie"] = "sessionId=abc123; Path=/; HttpOnly"; // Example value
-    headerMap["Last-Modified"] = getCurrentDateTime(); // Example value
-    headerMap["ETag"] = "\"123456789\""; // Example value
-    headerMap["Location"] = "/new-resource"; // Example value
-
-	setHeaderMap(headerMap);
-
-	//for (std::map<std::string, std::string>::const_iterator it = _headerMap.begin(); it != _headerMap.end(); ++it) {
-    //    std::cout << it->first << ": " << it->second << std::endl;
-    //}
-	std::stringstream header;
+void Response::generateHttpresponse(HttpRequest &reqObj){
+	generateHeader(reqObj);
+	std::map<std::string, std::string> headerMap = getHeaderMap();
+	std::stringstream header ;
     header << headerMap["Status-Line"] << "\r\n";
     header << "Date: " << headerMap["Date"] << "\r\n";
     header << "Server: " << headerMap["Server"] << "\r\n";
@@ -112,13 +63,90 @@ void	Response::generateHeader(HttpRequest &reqObj){
 
 
 
+
+
+void	Response::generateStatusLine(HttpRequest &reqObj){
+	std::string httpVersion = reqObj.getVersion();
+	std::string statusCode = Response::intToString(reqObj.getResponseCode());
+	std::string reasonPhrase = genarateReasonPhrase(reqObj);
+
+	std::stringstream statusLine;
+    statusLine << httpVersion << " " << statusCode << " " << reasonPhrase;
+    setStatusLine(statusLine.str());
+
+
+}
+
+std::string getServerName(){
+	std::string server;
+	//if()is set in conf
+
+	//else set to default value and return
+	server = "Webserv/1.0";
+	return(server);
+}
+
+
+std::string getContentType(const std::string& extension) {
+	std::cout << "extetion:" + extension +":\n";
+    static const std::pair<std::string, std::string> contentTypes[] = {
+        std::pair<std::string, std::string>("html", "text/html"),
+        std::pair<std::string, std::string>("htm", "text/html"),
+        std::pair<std::string, std::string>("css", "text/css"),
+        std::pair<std::string, std::string>("js", "application/javascript"),
+        std::pair<std::string, std::string>("json", "application/json"),
+        std::pair<std::string, std::string>("png", "image/png"),
+        std::pair<std::string, std::string>("jpg", "image/jpeg"),
+        std::pair<std::string, std::string>("jpeg", "image/jpeg"),
+        std::pair<std::string, std::string>("gif", "image/gif"),
+        std::pair<std::string, std::string>("svg", "image/svg+xml"),
+        std::pair<std::string, std::string>("ico", "image/x-icon"),
+        std::pair<std::string, std::string>("txt", "text/plain")
+        // Add more content types as needed
+    };
+    static const size_t contentTypesCount = sizeof(contentTypes) / sizeof(contentTypes[0]);
+
+    for (size_t i = 0; i < contentTypesCount; ++i) {
+        if (contentTypes[i].first == extension) {
+            return contentTypes[i].second;
+        }
+    }
+    return "application/octet-stream"; // Default content type
+}
+
+void	Response::generateHeader(HttpRequest &reqObj){
+	generateStatusLine(reqObj);
+
+	std::map<std::string, std::string> headerMap;
+	headerMap["Status-Line"] = getStatusLine();
+    headerMap["Date"] = getCurrentDateTime();
+	headerMap["Server"] = getServerName();
+	// Get the file extension from the PathInfo object
+    std::string extension = reqObj.getPathInfo().getExtension();
+    headerMap["Content-Type"] = getContentType(extension);
+
+	headerMap["Content-Length"] =  intToString(getBody().length());
+	headerMap["Connection"] = "keep alive";//example value set to this default but in reguest could ask for close
+
+	// Optional Fields
+    headerMap["Cache-Control"] = "no-cache"; // Example value
+    headerMap["Set-Cookie"] = "sessionId=abc123; Path=/; HttpOnly"; // Example value
+    headerMap["Last-Modified"] = getCurrentDateTime(); // Example value
+    headerMap["ETag"] = "\"123456789\""; // Example value
+    headerMap["Location"] = "/new-resource"; // Example value
+
+	setHeaderMap(headerMap);
+}
+
+
+
 void Response::generateErrorResponse(HttpRequest &reqObj){
 	//check for custom error page saved by moritz somewhere
 	//if ittarate thrugg list found custom page
     // else {
 
 		// Generate a default error page if custom error page is not found
-        std::string defaultErrorPage =  "<html><body><h1>" + Response::intToString(reqObj.getResponseCode()) + " Error</h1></body></html>" + "\n";
+        std::string defaultErrorPage =  "<html><body><h1>" + Response::intToString(reqObj.getResponseCode()) + " " + genarateReasonPhrase(reqObj)  + " Error</h1></body></html>" + "\n";
         setBody(defaultErrorPage);
 		generateHeader(reqObj);
 }
@@ -128,18 +156,56 @@ void		Response::processResponse(HttpRequest &ReqObj){
     std::cout << std::endl << "IN RESPONSE PROCESSING" <<std::endl << std::endl;
     try{
         //try get body from file and send
-        if(ReqObj.getMethod() == "GET"){
+        // Try to get body from file and send
+        if (ReqObj.getMethod() == "GET") {
             std::cout << "GET REQUEST" << std::endl;
-           // Response.set
-            //check dir or file
-            //check available
-            //check permissions
-            //count len and see if chuncking is needed
+            PathInfo pathInfo = ReqObj.getPathInfo();
+            //std::cout << "Path Information: " << pathInfo << std::endl;
 
+            // Validate and parse the path
+            int validationCode = pathInfo.validatePath();
+            std::cout << "Validation Code: " << validationCode << std::endl;
+            if (validationCode != 200) {
+                std::cerr << "Path validation failed with code: " << validationCode << std::endl;
+                throw validationCode; // Throw the error code if validation fails
+            }
+            pathInfo.parsePath();
+            std::cout << "Parsed Path Information: " << pathInfo << std::endl;
+
+            if (pathInfo.isDirectory()) {
+                std::cout << "Path is a directory" << std::endl;
+                setBody("<html><body><h1>403 Forbidden</h1></body></html>");
+            } else if (pathInfo.isFile()) {
+                std::cout << "Path is a file" << std::endl;
+                std::string fullPath = pathInfo.getFullPath();
+  				std::ifstream file(fullPath.c_str(), std::ios::in | std::ios::binary);
+    			if (!file) {
+        			setBody("<html><body><h1>404 Not Found</h1></body></html>");
+    			}
+
+    			std::ostringstream contents;
+    			contents << file.rdbuf();
+   				file.close();
+                setBody(contents.str());
+            } else {
+                std::cerr << "Path is neither a file nor a directory" << std::endl;
+                throw 404; // Not Found
+            }
         }
 
         if(ReqObj.getMethod() == "POST"){
             std::cout << "POST REQUEST" << std::endl;
+            std::string postData = ReqObj.getBody();
+            std::cout << "Received POST data: " << postData << std::endl;
+
+            // Process the POST data (e.g., save to a file)
+            std::ofstream outFile("post_data.txt");
+            outFile << postData;
+            outFile.close();
+
+            // Generate a response
+            //setResponseCode(200);
+            setBody("<html><body><h1>POST data received and saved</h1></body></html>");
 
         }
 
@@ -154,6 +220,7 @@ void		Response::processResponse(HttpRequest &ReqObj){
     }
     catch(int error)
     {
+		generateErrorResponse(ReqObj);
         //add the error handeling here
         //make error body and send that string to client
     }
@@ -161,8 +228,96 @@ void		Response::processResponse(HttpRequest &ReqObj){
     //return the string i gonna send to the client
 }
 
+
+
+
+
+
+
+
 std::string Response::intToString(int number) {
     std::stringstream ss;
     ss << number;
     return ss.str();
+}
+
+
+
+
+std::string Response::genarateReasonPhrase(HttpRequest &reqObj){
+	std::string statusCode = Response::intToString(reqObj.getResponseCode());
+	std::string reasonPhrase;
+	switch (reqObj.getResponseCode()){
+		 case 100:
+            reasonPhrase = "Continue";
+            break;
+        case 101:
+            reasonPhrase = "Switching Protocols";
+            break;
+
+        // 2xx: Success
+        case 200:
+            reasonPhrase = "OK";
+            break;
+        case 201:
+            reasonPhrase = "Created";
+            break;
+        case 202:
+            reasonPhrase = "Accepted";
+            break;
+        case 204:
+            reasonPhrase = "No Content";
+            break;
+
+        // 3xx: Redirection
+        case 301:
+            reasonPhrase = "Moved Permanently";
+            break;
+        case 302:
+            reasonPhrase = "Found";
+            break;
+        case 304:
+            reasonPhrase = "Not Modified";
+            break;
+
+        // 4xx: Client Error
+        case 400:
+            reasonPhrase = "Bad Request";
+            break;
+        case 401:
+            reasonPhrase = "Unauthorized";
+            break;
+		case 403:
+            reasonPhrase = "Forbidden";
+            break;
+        case 404:
+            reasonPhrase = "Not Found";
+            break;
+        case 405:
+            reasonPhrase = "Method Not Allowed";
+            break;
+		 // 5xx: Server Error
+        case 500:
+            reasonPhrase = "Internal Server Error";
+            break;
+        case 501:
+            reasonPhrase = "Not Implemented";
+            break;
+        case 502:
+            reasonPhrase = "Bad Gateway";
+            break;
+        case 503:
+            reasonPhrase = "Service Unavailable";
+            break;
+        case 505:
+            reasonPhrase = "HTTP Version Not Supported";
+            break;
+
+        // Default case for unknown status codes
+        default:
+            reasonPhrase = "Error";
+            break;
+    }
+	setReasonPhrase(reasonPhrase);
+	return(reasonPhrase);
 }
