@@ -208,7 +208,7 @@ void		Response::processResponse(HttpRequest &ReqObj){
 			}
 		
 			// Generate a unique file name based on the current timestamp
-			std::string filePath = "POST/post_data_" + getCurrentDateTime() + ".txt";
+			std::string filePath = "POST/post_data_" + getCurrentDateTime() + ".txt"; //idk if ok allways gets saved in POST dir ???
 			std::ofstream outFile(filePath.c_str(), std::ios::out | std::ios::app);
 			if (outFile.is_open()) {
 				outFile << postData << std::endl;
@@ -224,9 +224,22 @@ void		Response::processResponse(HttpRequest &ReqObj){
 		}
 
 
-        if(ReqObj.getMethod() == "DELETE"){
+        // Handle DELETE request
+        if (ReqObj.getMethod() == "DELETE") {
             std::cout << "DELETE REQUEST" << std::endl;
-
+            std::string fullPath = pathInfo.getFullPath();
+            if (pathInfo.isFile()) {
+                if (std::remove(fullPath.c_str()) == 0) {
+                    std::cout << "File deleted successfully: " << fullPath << std::endl;
+                    setBody("<html><body><h1>File Deleted Successfully</h1></body></html>");
+                } else {
+                    std::cerr << "Failed to delete file: " << fullPath << std::endl;
+                    throw 500; // Internal Server Error
+                }
+            } else {
+                std::cerr << "Path is not a file or does not exist: " << fullPath << std::endl;
+                throw 404; // Not Found
+            }
         }
 
 
