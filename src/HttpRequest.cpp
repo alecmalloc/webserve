@@ -1,14 +1,14 @@
 #include "webserv.hpp"
 
-HttpRequest::HttpRequest(Config& conf): 
-    _conf(conf), 
-    _response_code(200), 
-    _pathInfo() 
+HttpRequest::HttpRequest(Config& conf):
+    _conf(conf),
+    _response_code(200),
+    _pathInfo()
 {
     ;
 }
 
-HttpRequest::HttpRequest(const HttpRequest& other): 
+HttpRequest::HttpRequest(const HttpRequest& other):
     _conf(other._conf),
     _response_code(other._response_code),
     _method(other._method),
@@ -92,7 +92,7 @@ void	HttpRequest::setUrl( std::string tmp ){
 
 void	HttpRequest::setVersion( std::string tmp ){
 	_version = tmp;
-	
+
 }
 
 void	HttpRequest::setBody( std::string tmp ){
@@ -147,53 +147,47 @@ std::ostream& operator<<(std::ostream& os, HttpRequest& request) {
 }
 
 void HttpRequest::parse(const std::string& rawRequest) {
-
     // split request data into lines
     std::stringstream ss(rawRequest);
     std::string line;
-    // make sure first line exists again (just to be sure)
+
+    // Parse request line (METHOD URI HTTP/VERSION)
     if (!std::getline(ss, line)) {
         setResponseCode(400);
         return;
     }
-    // parse request line (METHOD URI HTTP/VERSION)
     std::istringstream request_line(line);
     std::string method, uri, version;
     request_line >> method >> uri >> version;
-    // check if method uri and version exist
     if (method.empty() || uri.empty() || version.empty()) {
         setResponseCode(400);
         return;
     }
-    
-    // check if http version is 1.1 (correct version)
     if (version != "HTTP/1.1") {
         setResponseCode(505);
         return;
     }
-
-    // set ss to member variables
     _method = method;
     _uri = uri;
     _version = version;
 
+    // Parse headers
     while (std::getline(ss, line) && !line.empty() && line != "\r") {
         if (line[line.length()-1] == '\r')
             line = line.substr(0, line.length()-1);
-    
+
         size_t colon = line.find(':');
         if (colon != std::string::npos) {
             std::string key = line.substr(0, colon);
             std::string value = line.substr(colon + 2); // skip ": "
-            
+
             std::vector<std::string> values;
-            
+
             // special handling for Cookie header
             if (key == "Cookie") {
                 std::stringstream valueStream(value);
                 std::string item;
                 while (std::getline(valueStream, item, ';')) {
-                    // trim leading/trailing whitespace
                     item.erase(0, item.find_first_not_of(" "));
                     item.erase(item.find_last_not_of(" ") + 1);
                     values.push_back(item);
@@ -208,51 +202,56 @@ void HttpRequest::parse(const std::string& rawRequest) {
                     values.push_back(item);
                 }
             }
-            
+
             _headers[key] = values;
         }
     }
 
-    // check to make sure host is in headers -> these are standard and sent with every req in modern tools, however just to be safe
+    // Check to make sure host is in headers
     if (_headers.find("Host") == _headers.end()) {
         setResponseCode(400);
         return;
     }
 
-    // set url from host header + uri and set host (ip + port)
+    // Set URL from host header + URI and set host (IP + port)
     std::string host = _headers["Host"][0];
     _url = host + _uri;
 
-    // only handle GET POST DELETE
+    // Only handle GET, POST, DELETE
     if (_method != "GET" && _method != "POST" && _method != "DELETE") {
         setResponseCode(405);
         return;
     }
 
-    // POST specific validation
-    if (_method == "POST") {
-        // check for Content-Length or Transfer-Encoding header
-        if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end()) {
-            setResponseCode(411); // Length Required
-            return;
-        }
-
-        // verify body exists for POST
-        if (_body.empty()) {
-            setResponseCode(400); // Bad Request
-            return;
-        }
-    }
-
-    // get body if present (everything after empty line)
+    // Get body if present (everything after empty line)
     std::string body;
+    bool bodyStarted = false;
     while (std::getline(ss, line)) {
-        body += line + "\n";
+        if (line.empty() && !bodyStarted) {
+            bodyStarted = true;
+            continue;
+        }
+        if (bodyStarted) {
+            body += line + "\n";
+        }
     }
+	std::cout << "BODYYYYYYYYYY:" << body << ":END OF BODY\n";
     if (!body.empty()) {
         _body = body;
     }
 
+    // POST specific validation
+    if (_method == "POST") {
+        if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end()) {
+            setResponseCode(411); // Length Required
+            return;
+        }
+        if (_body.empty()) {
+            std::cout << "ERROR EMPTY BODY\n";
+            setResponseCode(400); // Bad Request
+            return;
+        }
+    }
     // //  match server block from conf
     std::vector<ServerConf> server_list;
     server_list = _conf.getServerConfs();
@@ -273,7 +272,8 @@ void HttpRequest::parse(const std::string& rawRequest) {
             _server = (*it);
         }
     }
-    // return if above fails and return response? -> cant remember what i meant with this lol
+	//std::Cout << "parse Body:" + body  + ":\n";
+	// return if above fails and return response? -> cant remember what i meant with this lol
 }
 
 void HttpRequest::handleRequest(const std::string& rawRequest) {
@@ -294,20 +294,20 @@ void HttpRequest::validateRequestPath(void) {
     // things we need in for loop
     const std::vector<LocationConf>& locationConfs = _server.getLocationConfs();
     std::string bestMatch = "";
-    const LocationConf* matchedLoc = NULL; 
+    const LocationConf* matchedLoc = NULL;
     const std::string uri = getUri();
 
     //std::cout << "Debug: URI to match: " << uri << std::endl;
     //std::cout << "Debug: Number of location configs: " << locationConfs.size() << std::endl;
 
     // loop over location confs
-    for (std::vector<LocationConf>::const_iterator it = locationConfs.begin(); 
+    for (std::vector<LocationConf>::const_iterator it = locationConfs.begin();
         it != locationConfs.end(); ++it) {
             const LocationConf& loc = *it;
             std::string locPath = loc.getPath();
             // Check if URI starts with location path
             if (uri.substr(0, locPath.length()) == locPath) {
-                // keep longest match (most specific). Ex: /posts/ or posts/articles 
+                // keep longest match (most specific). Ex: /posts/ or posts/articles
                 if (locPath.length() > bestMatch.length()) {
                     bestMatch = locPath;
                     matchedLoc = &loc;
@@ -325,7 +325,7 @@ void HttpRequest::validateRequestPath(void) {
     size_t question_mark = full_path.find("?");
     if (question_mark != std::string::npos)
         full_path = full_path.substr(0, question_mark);
-   
+
     // std::cout << "Debug fullPath:" << full_path  << '\n';
     // load full path into PathInfo obj
     _pathInfo = PathInfo(full_path);

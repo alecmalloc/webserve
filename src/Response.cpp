@@ -155,14 +155,8 @@ void Response::generateErrorResponse(HttpRequest &reqObj){
 void		Response::processResponse(HttpRequest &ReqObj){
     std::cout << std::endl << "IN RESPONSE PROCESSING" <<std::endl << std::endl;
     try{
-        //try get body from file and send
-        // Try to get body from file and send
-        if (ReqObj.getMethod() == "GET") {
-            std::cout << "GET REQUEST" << std::endl;
-            PathInfo pathInfo = ReqObj.getPathInfo();
-            //std::cout << "Path Information: " << pathInfo << std::endl;
-
-            // Validate and parse the path
+		 PathInfo pathInfo = ReqObj.getPathInfo();
+		 // Validate and parse the path
             int validationCode = pathInfo.validatePath();
             std::cout << "Validation Code: " << validationCode << std::endl;
             if (validationCode != 200) {
@@ -171,6 +165,14 @@ void		Response::processResponse(HttpRequest &ReqObj){
             }
             pathInfo.parsePath();
             std::cout << "Parsed Path Information: " << pathInfo << std::endl;
+
+        //try get body from file and send
+        // Try to get body from file and send
+        if (ReqObj.getMethod() == "GET") {
+            std::cout << "GET REQUEST" << std::endl;
+
+            //std::cout << "Path Information: " << pathInfo << std::endl;
+
 
             if (pathInfo.isDirectory()) {
                 std::cout << "Path is a directory" << std::endl;
@@ -195,18 +197,20 @@ void		Response::processResponse(HttpRequest &ReqObj){
 
         if(ReqObj.getMethod() == "POST"){
             std::cout << "POST REQUEST" << std::endl;
+			std::cout << "req.body:" + ReqObj.getBody() + ":\n";
             std::string postData = ReqObj.getBody();
             std::cout << "Received POST data: " << postData << std::endl;
 
-            // Process the POST data (e.g., save to a file)
-            std::ofstream outFile("post_data.txt");
-            outFile << postData;
-            outFile.close();
-
-            // Generate a response
-            //setResponseCode(200);
-            setBody("<html><body><h1>POST data received and saved</h1></body></html>");
-
+             // Save the POST data to a file in the POST directory
+            std::string filePath = "POST/post_data.txt";
+            std::ofstream outFile(filePath.c_str(), std::ios::out | std::ios::app);
+            if (outFile.is_open()) {
+                outFile << postData << std::endl;
+                outFile.close();
+            } else {
+                std::cerr << "Failed to open file: " << filePath << std::endl;
+                throw 500; // Internal Server Error
+            }
         }
 
 
