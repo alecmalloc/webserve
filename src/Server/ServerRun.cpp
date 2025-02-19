@@ -133,7 +133,8 @@ static void	readFromClient( Client* client ) {
 
 	//recive data from client
 	while( bytesRead > 0 ){
-		buffer[ BUFFERSIZE ] = '\0';
+		buffer[ bytesRead ] = '\0';
+		std::cout << "BUFFER:" << buffer << ":\n";
 		client->setContent( buffer );
 		std::memset( buffer, '\0', BUFFERSIZE );
 		bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
@@ -175,7 +176,9 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 	//check if Clients send data
 	if( event.events & EPOLLIN ){
+		std::cout << "before readfrom client\n" ;
 		readFromClient( client );
+		std::cout << "after readfrom client\n" ;
 	}
 
 	//check if Clients stopped sending data
