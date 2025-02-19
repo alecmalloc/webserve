@@ -133,8 +133,8 @@ static void	readFromClient( Client* client ) {
 
 	//recive data from client
 	while( bytesRead > 0 ){
-		buffer[ bytesRead ] = '\0';
-		std::cout << "BUFFER:" << buffer << ":\n";
+		buffer[ bytesRead ] = '\0'; //fixed from buffersice to buffer[ bytesRead ] 
+		//std::cout << "BUFFER:" << buffer << ":\n";
 		client->setContent( buffer );
 		std::memset( buffer, '\0', BUFFERSIZE );
 		bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
@@ -145,7 +145,7 @@ static void	readFromClient( Client* client ) {
 		client->setClosed( true );
 
 	//check for error on client connection
-	if( bytesRead == -1 && ( errno != EAGAIN || errno != EWOULDBLOCK ) )
+	if( bytesRead == -1 && ( errno != EAGAIN || errno != EWOULDBLOCK ) )//if problem try (bytesRead == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {
 		client->setError( true );
 }
 

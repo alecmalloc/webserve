@@ -64,6 +64,7 @@ class HttpRequest {
 
 	    // member funcitons
         void    parse(const std::string& rawRequest);
+		void	parseBody(std::stringstream& ss);
 };
 
 // << overload for printing

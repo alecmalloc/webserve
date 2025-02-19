@@ -146,6 +146,19 @@ std::ostream& operator<<(std::ostream& os, HttpRequest& request) {
     return os;
 }
 
+
+void HttpRequest::parseBody(std::stringstream& ss) {
+    std::string line;
+    std::string body;
+
+    while (std::getline(ss, line)) {
+        body += line + "\n";
+    }
+    if (!body.empty()) {
+        setBody(body);
+    }
+}
+
 void HttpRequest::parse(const std::string& rawRequest) {
     // split request data into lines
     std::stringstream ss(rawRequest);
@@ -224,21 +237,7 @@ void HttpRequest::parse(const std::string& rawRequest) {
     }
 
     // Get body if present (everything after empty line)
-    std::string body;
-    bool bodyStarted = false;
-    while (std::getline(ss, line)) {
-        if (line.empty() && !bodyStarted) {
-            bodyStarted = true;
-            continue;
-        }
-        if (bodyStarted) {
-            body += line + "\n";
-        }
-    }
-	std::cout << "BODYYYYYYYYYY:" << body << ":END OF BODY\n";
-    if (!body.empty()) {
-        _body = body;
-    }
+    parseBody(ss);
 
     // POST specific validation
     if (_method == "POST") {

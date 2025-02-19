@@ -114,6 +114,7 @@ std::string getContentType(const std::string& extension) {
     return "application/octet-stream"; // Default content type
 }
 
+//need to adjust to use right values
 void	Response::generateHeader(HttpRequest &reqObj){
 	generateStatusLine(reqObj);
 
@@ -195,23 +196,32 @@ void		Response::processResponse(HttpRequest &ReqObj){
             }
         }
 
-        if(ReqObj.getMethod() == "POST"){
-            std::cout << "POST REQUEST" << std::endl;
-			std::cout << "req.body:" + ReqObj.getBody() + ":\n";
-            std::string postData = ReqObj.getBody();
-            std::cout << "Received POST data: " << postData << std::endl;
-
-             // Save the POST data to a file in the POST directory
-            std::string filePath = "POST/post_data.txt";
-            std::ofstream outFile(filePath.c_str(), std::ios::out | std::ios::app);
-            if (outFile.is_open()) {
-                outFile << postData << std::endl;
-                outFile.close();
-            } else {
-                std::cerr << "Failed to open file: " << filePath << std::endl;
-                throw 500; // Internal Server Error
-            }
-        }
+        if (ReqObj.getMethod() == "POST") {
+			std::cout << "POST REQUEST" << std::endl;
+			std::string postData = ReqObj.getBody();
+			std::cout << "Received POST data: " << postData << std::endl;
+		
+			// Validate the POST data
+			if (postData.empty()) {
+				std::cerr << "POST data is empty" << std::endl;
+				throw 400; // Bad Request
+			}
+		
+			// Generate a unique file name based on the current timestamp
+			std::string filePath = "POST/post_data_" + getCurrentDateTime() + ".txt";
+			std::ofstream outFile(filePath.c_str(), std::ios::out | std::ios::app);
+			if (outFile.is_open()) {
+				outFile << postData << std::endl;
+				outFile.close();
+				std::cout << "POST data saved to: " << filePath << std::endl;
+			} else {
+				std::cerr << "Failed to open file: " << filePath << std::endl;
+				throw 500; // Internal Server Error
+			}
+		
+			// Generate a success response
+			setBody("<html><body><h1>POST Data Received</h1></body></html>");
+		}
 
 
         if(ReqObj.getMethod() == "DELETE"){
