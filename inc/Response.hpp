@@ -25,16 +25,16 @@ class Response {
 		long                                		_fileSize;
 		std::string									_filename;
 		std::string									_reasonPhrase;
+		const ServerConf*							_serverConf;
+		bool 										cutom_error;
 
         int m_statusCode; // http status code
     public:
        // Response(): m_statusCode(200) {};
-        ~Response() {};
+        ~Response();
 
-
-
-        Response(void);
-        Response(HttpRequest& reqObj);
+		Response();
+		Response(HttpRequest& reqObj,ServerConf* ServerConf);
         void    processResponse(HttpRequest &ReqObj);
 		void generateErrorResponse(HttpRequest &reqObj);
 		void generateHeader(HttpRequest &reqObj);
@@ -45,6 +45,7 @@ class Response {
 		std::string serveFileContent(const PathInfo& pathInfo);
 
         // Getters
+		const std::map<int, std::string>& getErrorPages() const;
         std::string getHttpResponse() const { return _httpResponse; }
         int getResLen() const { return _ResLen; }
         std::string getStatusLine() const { return _statusLine; }

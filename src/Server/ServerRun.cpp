@@ -156,6 +156,18 @@ static bool	completeHttpRequest( std::string request ){
 	return( request.find( "\r\n\r\n" ) != std::string::npos );
 }
 
+
+//rverConf* selectServerConf(const std::vector<ServerConf>& serverConfs, const std::string& host, int port) {
+//  for (size_t i = 0; i < serverConfs.size(); ++i) {
+//      const ServerConf& conf = serverConfs[i];
+//      // Implement your selection logic here based on host and port
+//      if (conf.getHost() == host && conf.getPort() == port) {
+//           return &serverConfs[i];
+//      }
+//  }
+//  return nullptr; // Return nullptr if no matching configuration is found
+//
+
 static void	checkEvents( Server& server, Client* client,  struct epoll_event& event ){
 	//check for error
 	if( event.events & EPOLLERR || client->getError() ){
@@ -189,6 +201,12 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 		// create temp config file for request construction
 		Config confTMP = server.getConf();
+		
+		std::vector<ServerConf> serverTMPConf = confTMP.getServerConfs();
+		//select the server conf i need with function idk how ???
+		ServerConf* selectedServerConf = &serverTMPConf[0]; // just plce holder value 
+		
+
 		HttpRequest request(confTMP);
 
 		// FOR @LINUS:
@@ -199,14 +217,14 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		std::cout << "RESPONSE CODE: " <<  response_code << "\n";
 		// IMPORTANT: IF REQUEST CODE ISN'T 200 PATHINFO WON'T HAVE MUCH BESIDES FULLPATH
 		/// EX: if RESPONSE is 404 it will only have fullPath. we dont do any more checks once one check fails
-		std::cout << request.getPathInfo() << '\n';
+		//std::cout << request.getPathInfo() << '\n';
 		// Ex: you could check smt like request.getPathInfo().isDirectory() or request.getPathInfo().getFilename()
 		// but read the PathInfo.hpp to get all specs. its really helpful and it already checks all permissions etc
 		//request.setResponseCode(200);
 
-		std::cout << "req.body:" + request.getBody() + ":\n";
-		Response response(request);
-		std::cout << "print response:" << response.getHttpResponse().c_str() << ":\n" ;
+		//std::cout << "req.body:" + request.getBody() + ":\n";
+		Response response(request, selectedServerConf);
+		//std::cout << "print response:" << response.getHttpResponse().c_str() << ":\n" ;
 		write(client->getSocketFd(), response.getHttpResponse().c_str(), response.getHttpResponse().size());
 
 

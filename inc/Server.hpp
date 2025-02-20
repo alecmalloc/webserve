@@ -54,7 +54,7 @@ class	Server{
 		std::list< Client >					_clients;
 
 		//private member functions
-		void		_initServer( void );				
+		void		_initServer( void );
 };
 
 std::ostream&	operator <<( std::ostream& os, const ServerConf& server );

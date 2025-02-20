@@ -3,7 +3,6 @@
 #include <sstream>
 #include <ctime>
 
-Response::Response(void){}
 
 std::string getCurrentDateTime() {
     std::time_t now = std::time(0);
@@ -12,6 +11,12 @@ std::string getCurrentDateTime() {
     return std::string(buf);
 }
 
+Response::~Response(){}
+
+Response::Response()
+    : _serverConf(NULL){
+    // Default constructor implementation
+}
 
 void Response::setReasonPhrase(const std::string &reasonPhrase) {
     _reasonPhrase = reasonPhrase;
@@ -20,25 +25,27 @@ void Response::setReasonPhrase(const std::string &reasonPhrase) {
 std::string Response::getReasonPhrase() const {
     return _reasonPhrase;
 }
-
-
-Response::Response(HttpRequest &reqObj){
-    try{
-		if(reqObj.getResponseCode() != 200){
-			std::cout << "error";
-			throw reqObj.getResponseCode();
+Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
+    : _serverConf(serverConf){
+		try{
+			if(reqObj.getResponseCode() != 200){
+				std::cout << "error";
+				throw reqObj.getResponseCode();
+			}
+			processResponse(reqObj);
 		}
-        processResponse(reqObj);
-    }
+	
+		catch(int errror)
+		{
+			std::cerr << "Caught error: "<< std::endl;
+			generateErrorResponse(reqObj);
+			//make error header look for custom errror sites if none genarate one
+		}
+		generateHttpresponse(reqObj);
 
-    catch(int errror)
-    {
-		std::cerr << "Caught error: "<< std::endl;
-		generateErrorResponse(reqObj);
-		//make error header look for custom errror sites if none genarate one
-    }
-	generateHttpresponse(reqObj);
-}
+	}
+
+
 
 void Response::generateHttpresponse(HttpRequest &reqObj){
 	generateHeader(reqObj);
@@ -54,7 +61,7 @@ void Response::generateHttpresponse(HttpRequest &reqObj){
     header << "Set-Cookie: " << headerMap["Set-Cookie"] << "\r\n";
     header << "Last-Modified: " << headerMap["Last-Modified"] << "\r\n";
     header << "ETag: " << headerMap["ETag"] << "\r\n";
-    header << "Location: " << headerMap["Location"] << "\r\n";
+    //header << "Location: " << headerMap["Location"] << "\r\n";
     header << "\r\n"; // End of headers
 
 	std::string responseString = header.str() + getBody();
@@ -88,7 +95,7 @@ std::string getServerName(){
 
 
 std::string getContentType(const std::string& extension) {
-	std::cout << "extetion:" + extension +":\n";
+	//std::cout << "extetion:" + extension +":\n";
     static const std::pair<std::string, std::string> contentTypes[] = {
         std::pair<std::string, std::string>("html", "text/html"),
         std::pair<std::string, std::string>("htm", "text/html"),
@@ -123,6 +130,7 @@ void	Response::generateHeader(HttpRequest &reqObj){
     headerMap["Date"] = getCurrentDateTime();
 	headerMap["Server"] = getServerName();
 	// Get the file extension from the PathInfo object
+	std::cout << reqObj.getPathInfo() << '\n';
     std::string extension = reqObj.getPathInfo().getExtension();
     headerMap["Content-Type"] = getContentType(extension);
 
@@ -134,21 +142,52 @@ void	Response::generateHeader(HttpRequest &reqObj){
     headerMap["Set-Cookie"] = "sessionId=abc123; Path=/; HttpOnly"; // Example value
     headerMap["Last-Modified"] = getCurrentDateTime(); // Example value
     headerMap["ETag"] = "\"123456789\""; // Example value
-    headerMap["Location"] = "/new-resource"; // Example value
+    //headerMap["Location"] = "/new-resource"; // Example value
 
 	setHeaderMap(headerMap);
 }
 
 
 
+
 void Response::generateErrorResponse(HttpRequest &reqObj){
 	//check for custom error page saved by moritz somewhere
-	//if ittarate thrugg list found custom page
-    // else {
+	 // Retrieve the error pages map
+	 const std::map<int, std::string>& errorPages = _serverConf->getErrorPages();
 
+	 // Loop over the error pages and print them
+	 for (std::map<int, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it) {
+		 std::cout << "Error Code: " << it->first << ", Error Page: " << it->second << std::endl;
+	 }
+	 
+	 // Check if a custom error page exists for the response code
+	 int responseCode = reqObj.getResponseCode();
+	 std::cout << "before cutom PENISSSS " << reqObj.getPathInfo() << '\n';
+	 std::map<int, std::string>::const_iterator customPageIt = errorPages.find(responseCode);
+	 if (customPageIt != errorPages.end()) {
+		 // Custom error page found, load and set it as the response body
+		 std::string errorPagePath = "." + customPageIt->second; // Use relative path
+		 std::ifstream file(errorPagePath.c_str());
+		 if (file) {
+			 std::ostringstream contents;
+			 contents << file.rdbuf();
+			 file.close();
+			 setBody(contents.str());
+			PathInfo errorPath(errorPagePath);
+			errorPath.parsePath();
+			reqObj.setPathInfo(errorPath);
+			
+		 } else {
+			 std::cerr << "Failed to open custom error page: " << customPageIt->second << std::endl;
+			 setBody("<html><body><h1>" + Response::intToString(responseCode) + " " + genarateReasonPhrase(reqObj) + " Error</h1></body></html>\n");
+		 }
+	 } else {
+		 // Generate a default error page if custom error page is not found
+		 std::string defaultErrorPage = "<html><body><h1>" + Response::intToString(responseCode) + " " + genarateReasonPhrase(reqObj) + " Error</h1></body></html>\n";
+		 setBody(defaultErrorPage);
+	 }
 		// Generate a default error page if custom error page is not found
-        std::string defaultErrorPage =  "<html><body><h1>" + Response::intToString(reqObj.getResponseCode()) + " " + genarateReasonPhrase(reqObj)  + " Error</h1></body></html>" + "\n";
-        setBody(defaultErrorPage);
+
 		generateHeader(reqObj);
 }
 
@@ -159,14 +198,17 @@ void		Response::processResponse(HttpRequest &ReqObj){
 		 PathInfo pathInfo = ReqObj.getPathInfo();
 		 // Validate and parse the path
             int validationCode = pathInfo.validatePath();
-            std::cout << "Validation Code: " << validationCode << std::endl;
+            //std::cout << "Validation Code: " << validationCode << std::endl;
             if (validationCode != 200) {
                 std::cerr << "Path validation failed with code: " << validationCode << std::endl;
                 throw validationCode; // Throw the error code if validation fails
             }
             pathInfo.parsePath();
-            std::cout << "Parsed Path Information: " << pathInfo << std::endl;
-
+           // std::cout << "Parsed Path Information: " << pathInfo << std::endl;
+		   // Simulate a 500 Internal Server Error for testing
+		   if (pathInfo.getFullPath() == "/simulate500") {
+			   throw 500; // Internal Server Error
+		   }
         //try get body from file and send
         // Try to get body from file and send
         if (ReqObj.getMethod() == "GET") {
