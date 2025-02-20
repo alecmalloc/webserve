@@ -84,13 +84,16 @@ void	Response::generateStatusLine(HttpRequest &reqObj){
 
 }
 
-std::string getServerName(){
-	std::string server;
-	//if()is set in conf
-
-	//else set to default value and return
-	server = "Webserv/1.0";
-	return(server);
+std::string Response::getServerName(){
+	std::vector<std::string> server = _serverConf->getServerConfNames();
+	
+	// Check if the vector has any elements
+    if (!server.empty()) {
+        // Return the first server name from the vector
+        return server[0];
+    }
+	//else default value and return
+	return("Webserv/1.0");
 }
 
 
@@ -162,7 +165,6 @@ void Response::generateErrorResponse(HttpRequest &reqObj){
 	 
 	 // Check if a custom error page exists for the response code
 	 int responseCode = reqObj.getResponseCode();
-	 std::cout << "before cutom PENISSSS " << reqObj.getPathInfo() << '\n';
 	 std::map<int, std::string>::const_iterator customPageIt = errorPages.find(responseCode);
 	 if (customPageIt != errorPages.end()) {
 		 // Custom error page found, load and set it as the response body
@@ -173,6 +175,7 @@ void Response::generateErrorResponse(HttpRequest &reqObj){
 			 contents << file.rdbuf();
 			 file.close();
 			 setBody(contents.str());
+			//updats the path to the one for the error pages 
 			PathInfo errorPath(errorPagePath);
 			errorPath.parsePath();
 			reqObj.setPathInfo(errorPath);

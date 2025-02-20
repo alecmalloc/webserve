@@ -26,7 +26,6 @@ class Response {
 		std::string									_filename;
 		std::string									_reasonPhrase;
 		const ServerConf*							_serverConf;
-		bool 										cutom_error;
 
         int m_statusCode; // http status code
     public:
@@ -55,6 +54,7 @@ class Response {
         std::string getFilename() const { return _filename; }
         int getStatusCode() const { return m_statusCode; }
 		std::string getReasonPhrase() const;
+		std::string getServerName();
 
         // Setters
         void setHttpResponse(const std::string& httpResponse) { _httpResponse = httpResponse; }
