@@ -26,6 +26,7 @@ class Response {
 		std::string									_filename;
 		std::string									_reasonPhrase;
 		const ServerConf*							_serverConf;
+		LocationConf* 								_locationConf;
 
         int m_statusCode; // http status code
     public:

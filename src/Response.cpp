@@ -14,7 +14,7 @@ std::string getCurrentDateTime() {
 Response::~Response(){}
 
 Response::Response()
-    : _serverConf(NULL){
+    : _serverConf(NULL), _locationConf(NULL){
     // Default constructor implementation
 }
 
@@ -26,19 +26,41 @@ std::string Response::getReasonPhrase() const {
     return _reasonPhrase;
 }
 Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
-    : _serverConf(serverConf){
-		try{
-			processResponse(reqObj);
-		}
-	
-		catch(int errror)
-		{
-			std::cerr << "Caught error: "<< std::endl;
-			generateErrorResponse(reqObj);
-			//make error header look for custom errror sites if none genarate one
-		}
-		generateHttpresponse(reqObj);
+    : _serverConf(serverConf), _locationConf(NULL){
+	// Get locations from server config
+    std::string uri = reqObj.getUri();
 
+	const std::vector<LocationConf>& locations = serverConf->getLocationConfs();
+
+    // Find best matching location (longest prefix match)
+    std::string bestMatch = "";
+    
+    for (std::vector<LocationConf>::const_iterator it = locations.begin();
+         it != locations.end(); ++it) {
+        std::string locPath = it->getPath();
+        
+        if (uri.find(locPath) == 0) {  // URI starts with location path
+            if (locPath.length() > bestMatch.length()) {
+                bestMatch = locPath;
+                _locationConf = const_cast<LocationConf*>(&(*it));
+            }
+        }
+    }
+	if (_locationConf){
+		std::cout << "LOCATION CONF " << *_locationConf ;
+	}
+	
+		//try{
+			processResponse(reqObj);
+		//}
+	
+		//catch(int errror)
+		//{
+		//	std::cerr << "Caught error: "<< std::endl;
+		//	generateErrorResponse(reqObj);
+			//make error header look for custom errror sites if none genarate one
+		//}
+		generateHttpresponse(reqObj);
 	}
 
 
@@ -120,6 +142,51 @@ std::string getContentType(const std::string& extension) {
     return "application/octet-stream"; // Default content type
 }
 
+std::string generateDirectoryListing(const std::string& path) {
+    std::stringstream html;
+    DIR *dir;
+    struct dirent *entry;
+
+    html << "<html>\n<head>\n"
+         << "<title>Index of " << path << "</title>\n"
+         << "<style>table { width: 100%; } th { text-align: left; }</style>\n"
+         << "</head>\n<body>\n"
+         << "<h1>Index of " << path << "</h1>\n"
+         << "<table>\n"
+         << "<tr><th>Name</th><th>Last Modified</th><th>Size</th></tr>\n";
+
+    if ((dir = opendir(path.c_str())) != NULL) {
+        while ((entry = readdir(dir)) != NULL) {
+            std::string name = entry->d_name;
+            std::string fullPath = path + "/" + name;
+            struct stat statbuf;
+            
+            if (stat(fullPath.c_str(), &statbuf) == 0) {
+                // Format last modified time
+                char timeStr[100];
+                strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", 
+                        localtime(&statbuf.st_mtime));
+
+                // Add row to table
+                html << "<tr><td><a href=\"" << name;
+                if (S_ISDIR(statbuf.st_mode))
+                    html << "/";
+                html << "\">" << name;
+                if (S_ISDIR(statbuf.st_mode))
+                    html << "/";
+                html << "</a></td><td>" << timeStr << "</td><td>";
+                if (!S_ISDIR(statbuf.st_mode))
+                    html << statbuf.st_size;
+                html << "</td></tr>\n";
+            }
+        }
+        closedir(dir);
+    }
+
+    html << "</table>\n</body>\n</html>";
+    return html.str();
+}
+
 //need to adjust to use right values
 void	Response::generateHeader(HttpRequest &reqObj){
 	generateStatusLine(reqObj);
@@ -193,7 +260,17 @@ void Response::generateErrorResponse(HttpRequest &reqObj){
 
 void		Response::processResponse(HttpRequest &ReqObj){
     std::cout << std::endl << "IN RESPONSE PROCESSING" <<std::endl << std::endl;
-    try{
+	
+	
+	std::cout << "Current URI: " << ReqObj.getUri() << std::endl;
+	if (_locationConf) {
+		std::cout << "Matched Location: " << _locationConf->getPath() << std::endl;
+	} else {
+		std::cout << "No location configuration matched" << std::endl;
+	}
+	
+	
+	try{
 		 PathInfo pathInfo = ReqObj.getPathInfo();
 		 // Validate and parse the path
             int validationCode = pathInfo.validatePath();
@@ -243,20 +320,25 @@ void		Response::processResponse(HttpRequest &ReqObj){
     		}
 			//else {
         	// Check if autoindex is enabled
-        	//if (_serverConf->getAutoindex()) {
-            	// Generate directory listing
-            	// TODO: Implement directory listing functionality
-            //	setBody("<html><body><h1>Directory Listing</h1></body></html>");
-        	 else {
-           		// Neither index file exists nor autoindex enabled
-            	setBody("<html><body><h1>403 Forbidden</h1></body></html>");
-        	    throw 403;
-   		   		}
+        	 // If no index file and autoindex is on, show directory listing
+			 if (_locationConf) {
+				bool autoIndexEnabled = _locationConf->getAutoIndex();
+				std::cout << "Auto indexing enabled: " << (autoIndexEnabled ? "true" : "false") << "\n";
+				
+				if (autoIndexEnabled) {
+					// If autoindex is ON, show directory listing
+					setBody(generateDirectoryListing(pathInfo.getFullPath()));
+					ReqObj.setResponseCode(200);
+					} 
+				else{
+					// If autoindex is OFF and no index file was found
+					setBody("<html><body><h1>403 Forbidden</h1></body></html>");
+					ReqObj.setResponseCode(403);
+					}
+				}
     		
 				}
 			}
-		
-		
             else if (pathInfo.isFile()) {
                 std::cout << "Path is a file" << std::endl;
                 std::string fullPath = pathInfo.getFullPath();
@@ -346,6 +428,7 @@ std::string Response::intToString(int number) {
     ss << number;
     return ss.str();
 }
+
 
 
 
