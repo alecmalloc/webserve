@@ -336,7 +336,6 @@ void		Response::processResponse(HttpRequest &ReqObj){
 					ReqObj.setResponseCode(403);
 					}
 				}
-    		
 				}
 			}
             else if (pathInfo.isFile()) {
@@ -359,6 +358,39 @@ void		Response::processResponse(HttpRequest &ReqObj){
 
         if (ReqObj.getMethod() == "POST") {
 			std::cout << "POST REQUEST" << std::endl;
+			// Get the Content-Length from the HTTP request headers
+			// With this:
+			    // First check if Content-Length header exists
+				 // Get headers with correct type
+				 std::map<std::string, std::vector<std::string> > headers = ReqObj.getHeaders();
+				 std::map<std::string, std::vector<std::string> >::const_iterator it = headers.find("Content-Length");
+				 
+				 if (it == headers.end() || it->second.empty()) {
+					 std::cerr << "Missing Content-Length header" << std::endl;
+					 throw 411; // Length Required
+				 }
+				 
+				 // Use the first value from the vector
+				 std::istringstream iss(it->second[0]);
+				 size_t contentLength;
+				 iss >> contentLength;
+				 
+				 if (iss.fail()) {
+					 std::cerr << "Failed to parse Content-Length header" << std::endl;
+					 throw 400; // Bad Request
+				 }
+
+			// Determine the maximum allowed body size using ternary operator
+			size_t maxBodySize = _serverConf->getBodySize();
+			std::cout << "MAX BODY SIZE:" << maxBodySize << "CONTENT length :" << contentLength << "\n";
+    		//_locationConf->getClientMaxBodySize() :  // If location config exists, use its limit->> dont have that parsed idk if we wna tto include 
+    		//_serverConf->getClientMaxBodySize();     // Otherwise, use server's default limit
+			
+			// Check size before processing
+            if (contentLength > maxBodySize) {
+                ReqObj.setResponseCode(413); // Entity Too Large
+				throw 413;
+			}
 			std::string postData = ReqObj.getBody();
 			std::cout << "Received POST data: " << postData << std::endl;
 		
@@ -367,17 +399,48 @@ void		Response::processResponse(HttpRequest &ReqObj){
 				std::cerr << "POST data is empty" << std::endl;
 				throw 400; // Bad Request
 			}
+			// Create upload directory if it doesn't exist
+    		std::string uploadDir = "./uploads/";  // Start with relative path
+    if (_locationConf && !_locationConf->getUploadDir().empty()) {
+        uploadDir = "./" + _locationConf->getUploadDir();  // Add ./ prefix
+        if (uploadDir[uploadDir.length() - 1] != '/') {
+            uploadDir += "/";
+        }
+    }
+
+    // Create directories recursively
+    std::string dirPath = uploadDir;
+    size_t pos = 0;
+    while ((pos = dirPath.find('/', pos + 1)) != std::string::npos) {
+        std::string subPath = dirPath.substr(0, pos);
+        if (mkdir(subPath.c_str(), 0755) == -1 && errno != EEXIST) {
+            std::cerr << "Failed to create directory: " << subPath << std::endl;
+            throw 500;
+        }
+    }
+
+    // Generate unique filename with proper path
+    std::string filePath = uploadDir + "upload_" + getCurrentDateTime();
+    std::string::size_type slashPos = 0;
+    while ((slashPos = filePath.find_first_of(" :", slashPos)) != std::string::npos) {
+        filePath[slashPos] = '_';
+    }
 		
-			// Generate a unique file name based on the current timestamp
-			std::string filePath = "POST/post_data_" + getCurrentDateTime() + ".txt"; //idk if ok allways gets saved in POST dir ???
-			std::ofstream outFile(filePath.c_str(), std::ios::out | std::ios::app);
-			if (outFile.is_open()) {
-				outFile << postData << std::endl;
-				outFile.close();
-				std::cout << "POST data saved to: " << filePath << std::endl;
-			} else {
-				std::cerr << "Failed to open file: " << filePath << std::endl;
-				throw 500; // Internal Server Error
+			std::cout << "Saving to path: " << filePath << std::endl;
+			
+			std::ofstream outFile(filePath.c_str(), std::ios::out | std::ios::binary);
+			if (!outFile.is_open()) {
+    		std::cerr << "Failed to open file: " << filePath << std::endl;
+    		throw 500; // Internal Server Error
+			}
+
+			// Write the POST data to file
+			outFile.write(postData.c_str(), postData.length());
+			outFile.close();
+
+			if (outFile.fail()) {
+    		std::cerr << "Failed to write to file: " << filePath << std::endl;
+    		throw 500; // Internal Server Error
 			}
 		
 			// Generate a success response
@@ -485,6 +548,9 @@ std::string Response::genarateReasonPhrase(HttpRequest &reqObj){
         case 405:
             reasonPhrase = "Method Not Allowed";
             break;
+		case 413:
+			reasonPhrase = "413 Request Entity Too Large";
+			break;
 		 // 5xx: Server Error
         case 500:
             reasonPhrase = "Internal Server Error";
