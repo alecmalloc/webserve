@@ -278,14 +278,108 @@ void HttpRequest::parse(const std::string& rawRequest) {
 void HttpRequest::handleRequest(const std::string& rawRequest) {
     // parse http request
     parse(rawRequest);
-    if (_response_code != 200)
-        return ;
-
-    // validate and load into PathInfo obj
+	//std::cout << "raw req string :" << rawRequest << ":\n";
+	// validate and load into PathInfo obj
     validateRequestPath();
     if (_response_code != 200)
         return ;
 }
+
+
+void HttpRequest::validateRequestPath(void) {
+    const std::vector<LocationConf>& locationConfs = _server.getLocationConfs();
+    const std::string uri = getUri();
+    
+    // Add null checks and debugging
+    std::cout << "Processing URI: " << uri << std::endl;
+    std::cout << "Server root: " << _server.getRootDir() << std::endl;
+
+    // Protect against empty/null values
+    if (_server.getRootDir().empty()) {
+        std::cout << "Warning: Server root is empty" << std::endl;
+        _response_code = 500;
+        return;
+    }
+
+    // Create initial PathInfo with safety checks
+    std::string fullPath = _server.getRootDir();
+    if (!uri.empty()) {
+        fullPath += uri;
+    }
+    _pathInfo = PathInfo(fullPath);
+    
+    for (std::vector<LocationConf>::const_iterator it = locationConfs.begin();
+         it != locationConfs.end(); ++it) {
+        // Add null checks before accessing location properties
+        if (it->getPath().empty()) {
+            continue;
+        }
+
+        if (uri.find(it->getPath()) == 0) {
+            if (uri == it->getPath() || uri == it->getPath() + "/") {
+                // Check if index array is not empty before accessing first element
+                if (!it->getIndex().empty()) {
+                    std::string locationPath = it->getRootDir();
+                    locationPath += it->getPath();
+                    locationPath += "/";
+                    locationPath += it->getIndex()[0];
+                    _pathInfo = PathInfo(locationPath);
+                } else {
+                    std::cout << "Warning: Location has no index files" << std::endl;
+                    _response_code = 404;
+                    return;
+                }
+            } else {
+                std::string locationPath = it->getRootDir() + uri;
+                _pathInfo = PathInfo(locationPath);
+            }
+            break;
+        }
+    }
+
+    _pathInfo.parsePath();
+    
+    if ((_response_code = _pathInfo.validatePath()) != 200)
+        return;
+}
+
+/*
+void HttpRequest::validateRequestPath(void) {
+    const std::vector<LocationConf>& locationConfs = _server.getLocationConfs();
+    std::string bestMatch = "";
+    const LocationConf* matchedLoc = NULL;
+    const std::string uri = getUri();
+
+    // Set PathInfo before location matching
+    std::string full_path = _server.getRootDir() + uri;
+    _pathInfo = PathInfo(full_path);
+    _pathInfo.parsePath(); // Parse the path components regardless of validation
+
+    // Loop over location confs
+    for (std::vector<LocationConf>::const_iterator it = locationConfs.begin();
+        it != locationConfs.end(); ++it) {
+            const LocationConf& loc = *it;
+            std::string locPath = loc.getPath();
+            if (uri.substr(0, locPath.length()) == locPath) {
+                if (locPath.length() > bestMatch.length()) {
+                    bestMatch = locPath;
+                    matchedLoc = &loc;
+                }
+            }
+    }
+
+    // If no location match, set 404 but keep path info
+    if (!matchedLoc) {
+        _response_code = 404;
+        return;
+    }
+
+    // Only validate the path exists if we found a matching location
+    if ((_response_code = _pathInfo.validatePath()) != 200)
+        return;
+}
+
+
 
 void HttpRequest::validateRequestPath(void) {
     // grab location confs
@@ -336,3 +430,4 @@ void HttpRequest::validateRequestPath(void) {
     if ((_response_code = _pathInfo.parsePath()) != 200)
         return;
 }
+*/

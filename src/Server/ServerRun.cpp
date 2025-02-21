@@ -217,7 +217,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		std::cout << "RESPONSE CODE: " <<  response_code << "\n";
 		// IMPORTANT: IF REQUEST CODE ISN'T 200 PATHINFO WON'T HAVE MUCH BESIDES FULLPATH
 		/// EX: if RESPONSE is 404 it will only have fullPath. we dont do any more checks once one check fails
-		//std::cout << request.getPathInfo() << '\n';
+		std::cout << request.getPathInfo() << '\n';
 		// Ex: you could check smt like request.getPathInfo().isDirectory() or request.getPathInfo().getFilename()
 		// but read the PathInfo.hpp to get all specs. its really helpful and it already checks all permissions etc
 		//request.setResponseCode(200);
