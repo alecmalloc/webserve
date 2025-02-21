@@ -3,36 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Index Page</title>
+    <title>Webserv Test Suite</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
             margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            padding: 20px;
+            background-color: #f5f5f5;
         }
         .container {
-            background-color: #fff;
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
         h1 {
-            color: #333;
+            color: #2c3e50;
+            text-align: center;
         }
-        p {
-            color: #666;
+        h2 {
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .delete-btn {
+            background-color: #e74c3c;
+        }
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        form {
+            margin: 10px 0;
+        }
+        input[type="file"],
+        input[type="text"] {
+            margin: 10px 0;
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to the Test Index Page</h1>
-        <p>This is a simple HTML page for testing purposes.</p>
+        <h1>Webserv Test Suite</h1>
+
+        <!-- Directory Listing Test -->
+        <div class="test-section">
+            <h2>Directory Listing Test</h2>
+            <a href="/site/" class="btn">Test Directory Listing</a>
+        </div>
+
+        <!-- File Upload Test -->
+        <div class="test-section">
+            <h2>POST Method Test</h2>
+            <form action="/POST/" method="POST" enctype="multipart/form-data">
+                <h3>File Upload</h3>
+                <input type="file" name="file" required>
+                <button type="submit" class="btn">Upload File</button>
+            </form>
+
+            <form action="/POST/" method="POST">
+                <h3>Text Message</h3>
+                <input type="text" name="message" placeholder="Enter a message" required>
+                <button type="submit" class="btn">Send Message</button>
+            </form>
+        </div>
+
+        <!-- DELETE Method Test -->
+        <div class="test-section">
+            <h2>DELETE Method Test</h2>
+            <input type="text" id="deleteUrl" placeholder="Enter path to delete">
+            <button onclick="deleteResource()" class="btn delete-btn">Delete Resource</button>
+        </div>
+
+        <!-- Redirection Test -->
+        <div class="test-section">
+            <h2>Redirection Test</h2>
+            <a href="/redirect/" class="btn">Test Redirection</a>
+        </div>
+
+        <!-- Error Pages Test -->
+        <div class="test-section">
+            <h2>Error Pages Test</h2>
+            <a href="/nonexistent" class="btn">Test 404 Error</a>
+            <a href="/forbidden" class="btn">Test 403 Error</a>
+        </div>
     </div>
+
+    <script>
+        function deleteResource() {
+            const path = document.getElementById('deleteUrl').value;
+            fetch(path, {
+                method: 'DELETE',
+            })
+            .then(response => {
+                alert(`Delete request sent. Status: ${response.status}`);
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
+        }
+    </script>
 </body>
 </html>

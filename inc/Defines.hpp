@@ -2,7 +2,7 @@
 # define DEFINES_HPP
 
 //define defaults
-#define DEFAULT_CONF		"conf/get.conf"
+#define DEFAULT_CONF		"conf/test.conf"
 #define DEFAULT_IP		"0.0.0.0"
 #define DEFAULT_PORT		8080
 #define MAXBODYSIZE		10000

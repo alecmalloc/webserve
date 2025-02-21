@@ -332,8 +332,8 @@ void		Response::processResponse(HttpRequest &ReqObj){
 					} 
 				else{
 					// If autoindex is OFF and no index file was found
-					setBody("<html><body><h1>403 Forbidden</h1></body></html>");
 					ReqObj.setResponseCode(403);
+					throw 403;
 					}
 				}
 				}
