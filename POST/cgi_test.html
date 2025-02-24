@@ -1,9 +1,10 @@
+POST/cgi_test.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Index Page</title>
+    <title>CGI Test Page</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,18 +23,6 @@
         .form-group {
             margin-bottom: 15px;
         }
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        input[type="text"],
-        input[type="file"] {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
         button {
             background-color: #4CAF50;
             color: white;
@@ -42,34 +31,41 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        button:hover {
-            background-color: #45a049;
+        nav {
+            margin-bottom: 20px;
+        }
+        nav a {
+            color: #4CAF50;
+            text-decoration: none;
+            margin-right: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <nav>
+            <a href="index.html">← Back to Upload Test</a>
+        </nav>
+        <h1>CGI Test</h1>
         
-		
-		<h1>File Upload Test</h1>
-        
-        <!-- Form for file upload -->
-        <form action="/POST/" method="POST" enctype="multipart/form-data">
+        <!-- Python CGI Test Form -->
+        <h2>Python CGI Test</h2>
+        <form action="/cgi-bin/test.py" method="POST">
             <div class="form-group">
-                <label for="file">Select a file to upload:</label>
-                <input type="file" id="file" name="file" required>
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
             </div>
-            <button type="submit">Upload File</button>
+            <button type="submit">Test Python CGI</button>
         </form>
 
-        <!-- Form for text data -->
-        <h2>Send Text Data</h2>
-        <form action="/POST/" method="POST">
+        <!-- PHP CGI Test Form -->
+        <h2>PHP CGI Test</h2>
+        <form action="/cgi-bin/test.php" method="POST">
             <div class="form-group">
                 <label for="message">Message:</label>
                 <input type="text" id="message" name="message" required>
             </div>
-            <button type="submit">Send Message</button>
+            <button type="submit">Test PHP CGI</button>
         </form>
     </div>
 </body>

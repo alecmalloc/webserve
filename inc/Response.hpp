@@ -12,11 +12,14 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "PostParser.hpp"
 
 class HttpRequest;
 
+
 class Response {
     private:
+		//PostParser									_postParser;
         std::string 								_httpResponse;
 		int 										_ResLen;
 		std::string									_statusLine;
@@ -43,6 +46,16 @@ class Response {
 		void generateHttpresponse(HttpRequest &reqObj);
 		std::string intToString(int number);
 		std::string serveFileContent(const PathInfo& pathInfo);
+		bool isCgiRequest(const std::string& uri);
+		void handlePostData(const HttpRequest& ReqObj);
+		std::string generateDirectoryListing(const std::string& path);
+		std::string uploadPathhandler(LocationConf* locationConf);
+
+
+
+		void HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo);
+		void HandleDeleteRequest(HttpRequest& ReqObj, PathInfo& pathInfo);
+		void HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo);
 
         // Getters
 		const std::map<int, std::string>& getErrorPages() const;
@@ -56,6 +69,7 @@ class Response {
         int getStatusCode() const { return m_statusCode; }
 		std::string getReasonPhrase() const;
 		std::string getServerName();
+		std::string getCurrentDateTime();
 
         // Setters
         void setHttpResponse(const std::string& httpResponse) { _httpResponse = httpResponse; }

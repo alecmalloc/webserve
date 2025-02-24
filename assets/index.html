@@ -92,7 +92,26 @@
                 <button type="submit" class="btn">Send Message</button>
             </form>
         </div>
+		<!-- CGI Test -->
+        <div class="test-section">
+            <h2>CGI Tests</h2>
+            
+            <!-- Python CGI Test -->
+            <form action="/cgi-bin/test.py" method="POST">
+                <h3>Python CGI Test</h3>
+                <input type="text" name="name" placeholder="Enter your name" required>
+                <button type="submit" class="btn">Test Python CGI</button>
+            </form>
 
+            <!-- PHP CGI Test -->
+            <form action="/cgi-bin/test.php" method="POST">
+                <h3>PHP CGI Test</h3>
+                <input type="text" name="message" placeholder="Enter a message" required>
+                <button type="submit" class="btn">Test PHP CGI</button>
+            </form>
+        </div>
+
+    </div> <!-- container closing div -->
         <!-- DELETE Method Test -->
         <div class="test-section">
             <h2>DELETE Method Test</h2>
