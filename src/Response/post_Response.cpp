@@ -2,22 +2,14 @@
 #include <ctime>
 
 
-void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
-	std::cout << "POST REQUEST" << std::endl;
-	(void)pathinfo;
-	(void)ReqObj;
-	
-	// Get the Content-Length from the HTTP request headers
-	// With this:
-		// First check if Content-Length header exists
-		 // Get headers with correct type
-		 std::map<std::string, std::vector<std::string> > headers = ReqObj.getHeaders();
-		 std::map<std::string, std::vector<std::string> >::const_iterator it = headers.find("Content-Length");
+int Response::checkContentLength(HttpRequest& ReqObj){
+	std::map<std::string, std::vector<std::string> > headers = ReqObj.getHeaders();
+	std::map<std::string, std::vector<std::string> >::const_iterator it = headers.find("Content-Length");
 		 
-		 if (it == headers.end() || it->second.empty()) {
-			 std::cerr << "Missing Content-Length header" << std::endl;
-			 throw 411; // Length Required
-		 }
+	if (it == headers.end() || it->second.empty()) {
+		std::cerr << "Missing Content-Length header" << std::endl;
+		return (411); // Length Required
+	}
 		 
 		 // Use the first value from the vector
 		 std::istringstream iss(it->second[0]);
@@ -26,7 +18,7 @@ void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
 		 
 		 if (iss.fail()) {
 			 std::cerr << "Failed to parse Content-Length header" << std::endl;
-			 throw 400; // Bad Request
+			 return 400; // Bad Request
 		 }
 
 	// Determine the maximum allowed body size using ternary operator
@@ -37,68 +29,26 @@ void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
 	
 	// Check size before processing
 	if (contentLength > maxBodySize) {
-		ReqObj.setResponseCode(413); // Entity Too Large
-		throw 413;
+		//ReqObj.setResponseCode(413); // Entity Too Large
+		return 413;
 	}
+	return(200);
+}
+
+
+void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
+	std::cout << "POST REQUEST" << std::endl;
+	(void)pathinfo;
+	(void)ReqObj;
+	
+	if(checkContentLength(ReqObj) != 200)
+		throw(checkContentLength(ReqObj));
 	std::string postData = ReqObj.getBody();
 	std::cout << "Received POST data: " << postData << std::endl;
 	
 	std::string contentType = ReqObj.getHeaders()["Content-Type"][0];
 	std::cout << "Content-Type" << contentType << "\n";
 
-/*  PostParser parser;
-bool parseSuccess = false;
-
-if (contentType.find("multipart/form-data") != std::string::npos || 
-contentType.find("application/x-www-form-urlencoded") != std::string::npos) {
-
-try {
-	if (_postParser.parse(postData, contentType)) {
-		parseSuccess = true;
-		std::vector<FormPart> parts = _postParser.getParts();
-		
-		for (std::vector<FormPart>::const_iterator it = parts.begin(); 
-			 it != parts.end(); ++it) {
-			
-			if (!it->filename.empty()) {
-				// Handle file upload
-				std::string filePath = uploadPathhandler(_locationConf);
-				std::ofstream outFile(filePath.c_str(), std::ios::binary);
-				
-				if (!outFile.is_open()) {
-					std::cerr << "Failed to open file: " << filePath << std::endl;
-					throw 500;
-				}
-
-				outFile.write(it->content.c_str(), it->content.length());
-				outFile.close();
-
-				if (outFile.fail()) {
-					throw 500;
-				}
-			} else {
-				// Handle form field
-				std::cout << "Form field: " << it->name << " = " << it->content << std::endl;
-			}
-		}
-
-		// Set success response
-		ReqObj.setResponseCode(201);
-		setStatusCode(201);
-		setBody("<html><body>"
-			   "<h1>Upload Successful</h1>"
-			   "<p>Your files and form data have been processed successfully.</p>"
-			   "<a href='/'>Return to home</a>"
-			   "</body></html>");
-	}
-} catch (const std::exception& e) {
-	std::cerr << "Error in POST parser: " << e.what() << std::endl;
-	parseSuccess = false;
-}
-}
-	*/
-// Fallback to existing handling if parsing failed or content type not supported
-//if (!parseSuccess) {
 	// Validate the POST data
 	if (postData.empty()) {
 		std::cerr << "POST data is empty" << std::endl;

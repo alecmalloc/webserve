@@ -51,6 +51,9 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 
 
 void Response::generateHttpresponse(HttpRequest &reqObj){
+	if (getStatusCode() == 0) {
+        setStatusCode(reqObj.getResponseCode());
+    }
 	generateHeader(reqObj);
 	std::map<std::string, std::string> headerMap = getHeaderMap();
 	std::stringstream header ;
@@ -66,8 +69,8 @@ void Response::generateHttpresponse(HttpRequest &reqObj){
 	header << "ETag: " << headerMap["ETag"] << "\r\n";
 	//header << "Location: " << headerMap["Location"] << "\r\n";
 	header << "\r\n"; // End of headers
-
 	std::string responseString = header.str() + getBody();
+					std::cout << "respsonse string :" << responseString << ";;;;;\n";
 	setHttpResponse(responseString);
 }
 
@@ -93,7 +96,7 @@ void Response::generateErrorResponse(HttpRequest &reqObj){
 	 const std::map<int, std::string>& errorPages = _serverConf->getErrorPages();
 
 	 // Loop over the error pages and print them
-	 for (std::map<int, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it) {
+	for (std::map<int, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it) {
 		 std::cout << "Error Code: " << it->first << ", Error Page: " << it->second << std::endl;
 	 }
 	 
@@ -119,6 +122,8 @@ void Response::generateErrorResponse(HttpRequest &reqObj){
 			 setBody("<html><body><h1>" + Response::intToString(responseCode) + " " + genarateReasonPhrase(reqObj) + " Error</h1></body></html>\n");
 		 }
 	 } else {
+
+		std::cout << "no custom errror page make default one :\n";
 		 // Generate a default error page if custom error page is not found
 		 std::string defaultErrorPage = "<html><body><h1>" + Response::intToString(responseCode) + " " + genarateReasonPhrase(reqObj) + " Error</h1></body></html>\n";
 		 setBody(defaultErrorPage);
@@ -204,6 +209,7 @@ void		Response::processResponse(HttpRequest &ReqObj){
 	}
 	catch(int error)
 	{
+		ReqObj.setResponseCode(error);
 		generateErrorResponse(ReqObj);
 	}
 

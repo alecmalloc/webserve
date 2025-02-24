@@ -12,14 +12,11 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "PostParser.hpp"
-
 class HttpRequest;
 
 
 class Response {
     private:
-		//PostParser									_postParser;
         std::string 								_httpResponse;
 		int 										_ResLen;
 		std::string									_statusLine;
@@ -51,7 +48,7 @@ class Response {
 		std::string generateDirectoryListing(const std::string& path);
 		std::string uploadPathhandler(LocationConf* locationConf);
 
-
+		int checkContentLength(HttpRequest& ReqObj);
 
 		void HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo);
 		void HandleDeleteRequest(HttpRequest& ReqObj, PathInfo& pathInfo);
@@ -70,6 +67,7 @@ class Response {
 		std::string getReasonPhrase() const;
 		std::string getServerName();
 		std::string getCurrentDateTime();
+		std::string getContentType(HttpRequest &reqObj, const std::string& extension);
 
         // Setters
         void setHttpResponse(const std::string& httpResponse) { _httpResponse = httpResponse; }

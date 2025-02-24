@@ -23,7 +23,7 @@ std::string Response::getCurrentDateTime() {
 }
 
 
-std::string getContentType(const std::string& extension) {
+std::string Response::getContentType(HttpRequest &reqObj, const std::string& extension) {
 	//std::cout << "extetion:" + extension +":\n";
     static const std::pair<std::string, std::string> contentTypes[] = {
         std::pair<std::string, std::string>("html", "text/html"),
@@ -47,6 +47,8 @@ std::string getContentType(const std::string& extension) {
             return contentTypes[i].second;
         }
     }
+	if(reqObj.getResponseCode() != 200)
+		return "text/html; charset=utf-8"; // might not be correct but if error is html response ?
     return "application/octet-stream"; // Default content type
 }
 
@@ -62,7 +64,7 @@ void	Response::generateHeader(HttpRequest &reqObj){
 	// Get the file extension from the PathInfo object
 	std::cout << reqObj.getPathInfo() << '\n';
     std::string extension = reqObj.getPathInfo().getExtension();
-    headerMap["Content-Type"] = getContentType(extension);
+    headerMap["Content-Type"] = getContentType(reqObj, extension);
 
 	headerMap["Content-Length"] =  intToString(getBody().length());
 	headerMap["Connection"] = "keep alive";//example value set to this default but in reguest could ask for close
