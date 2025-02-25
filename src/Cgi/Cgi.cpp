@@ -18,8 +18,16 @@ static std::string	toString( size_t i ){
 static int	getVectors( ServerConf server, std::vector< std::string >& ext, \
 			std::vector< std::string >& path, std::string uri ){
 
+	std::cerr << "DEBUG: Getting CGI vectors for URI: " << uri << std::endl;
+	
 	//stores all location files from this server block
 	const std::vector< LocationConf >&	locations = server.getLocationConfs();
+
+	// Print all locations for debugging
+    std::cerr << "DEBUG: All locations:" << std::endl;
+    for (std::vector<LocationConf>::const_iterator it = locations.begin(); it != locations.end(); ++it) {
+        std::cerr << "Location Path: " << it->getPath() << ", Root Dir: " << it->getRootDir() << std::endl;
+    }
 
 	//get uri path
 	std::string	uriPath;
@@ -29,28 +37,42 @@ static int	getVectors( ServerConf server, std::vector< std::string >& ext, \
 	if( slash == std::string::npos )
 		return( -1 );
 
-	uriPath = uri.substr( 0, slash );
 
+	uriPath = uri.substr( 0, slash );
+	std::cerr << "DEBUG: Extracted URI path: " << uriPath << std::endl;
 	for( std::vector< LocationConf >::const_iterator it = locations.begin(); it != \
 			locations.end(); it++ ){
 		std::string dir = it->getRootDir().empty() ? ( server.getRootDir() + 
 				it->getPath() ): ( it->getRootDir() + it->getPath() );
-		if( dir == uriPath ){
+		std::string Compare_dir = dir;
+		//to get rid of dot in front 
+		if(dir[0] == '.')
+			Compare_dir = dir.substr(1);
+		if( Compare_dir == uriPath ){
 			ext = it->getCgiExt();
 			path = it->getCgiPath();
+			
+			
+			std::cerr << "DEBUG: Matched location: " << dir << std::endl;
+            std::cerr << "DEBUG: CGI extensions: ";
+           
 			return( 0 );
 		}
 	}
 	return( -1 );
 }
+
 static int	checkFile( HttpRequest& req, std::string& interpreter ){
 	//vectors with stored cgi parameters
 	std::vector< std::string > ext;
 	std::vector< std::string > path;
 
 	//get vectors
-	if( getVectors( req.getServer(), ext, path, req.getUri() ) == -1 )
+	if( getVectors( req.getServer(), ext, path, req.getUri() ) == -1 ){
+		std::cerr << "DEBUG: Failed to get CGI vectors for URI: " << req.getUri() << std::endl;
 		return( -1 );
+	}
+		
 
 	//get ending and compare with cgi ext
 	std::string			end;
@@ -58,20 +80,30 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 	std::string::size_type		dot = uri.rfind( '.', uri.npos );
 
 	//return if no ending is found ".cgi"
-	if( dot == std::string::npos )
+	if( dot == std::string::npos ){
+		std::cerr << "DEBUG: No file extension found in URI: " << uri << std::endl;
 		return( -1 );
+	}
+	
 
 	end = uri.substr( dot, uri.npos );
 	std::vector< std::string >::iterator it = std::find( ext.begin(), ext.end(), end );
 
 	//return if ending is not inside cgiExt
-	if( it == ext.end() )
+	if( it == ext.end() ){
+		std::cerr << "DEBUG: File extension " << end << " not in CGI extensions" << std::endl;
 		return( -1 );
+	}
+	
+	// Construct the full file path by combining the root directory with the URI
+    std::string fullPath = req.getPathInfo().getFullPath();
+    std::cout << "DEBUG: Full path: " << fullPath << std::endl;
 
 	//check if file is accesible
-	if( access( uri.c_str(), X_OK ) == -1 )
-		return( -1 );
-
+	if( access( fullPath.c_str(), X_OK ) == -1 ){
+	std::cerr << "DEBUG: File " << uri << " is not accessible or executable" << std::endl;	
+	return( -1 );
+	}
 	std::vector< std::string >::iterator extIt = ext.begin();
 	std::vector< std::string >::iterator pathIt = path.begin();
 
@@ -83,8 +115,11 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 		extIt++;
 		pathIt++;
 	}
-	if( interpreter.empty() )
+	if( interpreter.empty() ){
+        std::cerr << "DEBUG: No interpreter found for file extension " << end << std::endl;
 		return( -1 );
+	}
+	 std::cerr << "DEBUG: Interpreter for " << uri << " is " << interpreter << std::endl;
 	return( 0 );
 }
 
@@ -185,12 +220,13 @@ static int	childProcess( HttpRequest& req, int* inputPipe, int* outputPipe, \
 	close( inputPipe[1] );
 	close( outputPipe[0] );
 
-	//set args for execve 
-	const std::string path = req.getUrl().c_str();
-	const std::string inter = interpreter.c_str();
-	char* args[] = { const_cast< char* >( inter.c_str() ), \
-				const_cast< char* >( path.c_str() ), NULL };
+	// Construct the full file path by combining the root directory with the URI
+    std::string rootDir = req.getServer().getRootDir();
+    std::string scriptPath = rootDir + req.getUri();
+    const std::string inter = interpreter.c_str();
+    char* args[] = { const_cast<char*>(inter.c_str()), const_cast<char*>(scriptPath.c_str()), NULL };
 
+	//std::cerr << "DEBUG: Executing interpreter: " << inter << " with script: " << path << std::endl;
 	//execute
 	execve( inter.c_str(), args, env );
 
@@ -259,7 +295,7 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 
 	//print response for testing
 	std::cout << "CGI output:\n" <<  response << std::endl;
-	
+	req.setCgiResponseString(response);
 	//close final pipe
 	close( outputPipe[0] );
 
@@ -313,7 +349,10 @@ int	handleCgi( HttpRequest& req ){
 		return( childProcess( req, inputPipe, outputPipe, interpreter ) );
 
 	//handle parent
-	else
+	else{
 		return( parentProcess( req, inputPipe, outputPipe, pid ) );
+	}
 
 }
+
+

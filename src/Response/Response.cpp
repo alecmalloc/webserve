@@ -189,6 +189,11 @@ void		Response::processResponse(HttpRequest &ReqObj){
 		if(isCgiRequest(ReqObj.getUri())){//should be ok but some errro with cgi handler cant find files
 			int result = handleCgi(ReqObj);
 			std::cout << "CGI result" << result << "\n";
+			if(result == 0)
+			{
+				setBody(ReqObj.getCgiResponseString());
+			}
+			return;
 		}
 
 		if (ReqObj.getMethod() == "GET") {

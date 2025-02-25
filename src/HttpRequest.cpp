@@ -5,7 +5,7 @@ HttpRequest::HttpRequest(Config& conf):
     _response_code(200),
     _pathInfo()
 {
-    ;
+    _cgiResponseString = "";
 }
 
 HttpRequest::HttpRequest(const HttpRequest& other):
@@ -42,6 +42,12 @@ HttpRequest& HttpRequest::operator =(const HttpRequest& other) {
     return (*this);
 }
 
+
+std::string HttpRequest::getCgiResponseString() const {
+    return _cgiResponseString;
+}
+
+
 ServerConf HttpRequest::getServer() const {
     return _server;
 }
@@ -77,6 +83,12 @@ std::string HttpRequest::getMethod() const {
 PathInfo HttpRequest::getPathInfo() const {
     return _pathInfo;
 }
+
+
+void HttpRequest::setCgiResponseString(const std::string& cgiResponseString) {
+    _cgiResponseString = cgiResponseString;
+}
+
 
 void	HttpRequest::setMethod( std::string tmp ){
 	_method = tmp;
