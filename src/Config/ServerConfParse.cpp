@@ -126,6 +126,31 @@ void	parseBodySize( ServerConf& server, std::stringstream& ss ){
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
+void parseChunkedEncoding(ServerConf& server, std::stringstream& ss) {
+    std::string tmp;
+    ss >> tmp;
+    if (tmp == "true;") {
+        server.setChunkedTransfer(true);
+    } else if (tmp == "false;") {
+        server.setChunkedTransfer(false);
+    } else {
+        throw(std::runtime_error("Invalid value for use_chunked_encoding: " + tmp));
+    }
+    if (tmp.at(tmp.size() - 1) != ';')
+        throw(std::runtime_error("Line not ended on ; " + tmp));
+}
+
+void parseChunkSize(ServerConf& server, std::stringstream& ss) {
+    std::string tmp;
+    ss >> tmp;
+    std::stringstream sstmp(tmp);
+    size_t size;
+    sstmp >> size;
+    server.setChunkSize(size);
+    if (tmp.at(tmp.size() - 1) != ';')
+        throw(std::runtime_error("Line not ended on ; " + tmp));
+}
+
 template< typename T >
 void	parseRootDir( T& temp, std::stringstream& ss ){
 	std::string	tmp;
@@ -150,11 +175,11 @@ void	parseIndex( T& temp, std::stringstream& ss ){
 
 void	Config::parseServerConfBlock( ServerConf& server ){
 	const std::string	optionsArray[] =  \
-	{ LISTEN, SERVER, ERROR, CLIENT, ROOT, INDEX };
+	{ LISTEN, SERVER, ERROR, CLIENT, ROOT, INDEX, "use_chunked_encoding", "chunk_size"};
 
 	void ( *functionArray[] )( ServerConf&, std::stringstream& ) = \
 	{ parseListen, parseServerConfName, parseErrorPage, parseBodySize, \
-		parseRootDir, parseIndex };
+		parseRootDir, parseIndex, parseChunkedEncoding, parseChunkSize};
 
 	std::string		tmp;
 
@@ -165,7 +190,7 @@ void	Config::parseServerConfBlock( ServerConf& server ){
 		std::stringstream	ss( tmp );
 		std::string		key;
 		ss >> key;
-		for( int i = 0; i < 6; i++ ){
+		for( int i = 0; i < 8; i++ ){
 			if( !key.empty() && key.at( 0 ) == '#' ){
 				break;
 			}
@@ -177,7 +202,7 @@ void	Config::parseServerConfBlock( ServerConf& server ){
 				parseLocationConfBlock( server, ss );
 				break;
 			}
-			else if ( i == 5 && !key.empty() ){
+			else if ( i == 7 && !key.empty() ){
 				throw( std::runtime_error( "Not an valid configuration "\
 							+ tmp ) );
 

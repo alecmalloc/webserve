@@ -111,6 +111,16 @@ std::ostream&	operator <<( std::ostream& os, const ServerConf& server) {
 
 
 //getter functions
+
+bool ServerConf::getChunkedTransfer( void ) const {
+    return _chunkedTransfer;
+}
+
+size_t ServerConf::getChunkSize( void ) const {
+    return _chunkSize;
+}
+
+
 const std::map< std::string, std::set< int > >	ServerConf::getIpPort( void ) const {
 	return( _ipPort );
 }
@@ -142,6 +152,15 @@ const std::vector< std::string >	ServerConf::getIndex( void ) const{
 }
 
 //setter functions
+
+void ServerConf::setChunkedTransfer( bool chunked ) {
+    _chunkedTransfer = chunked;
+}
+
+void ServerConf::setChunkSize( size_t size ) {
+    _chunkSize = size;
+}
+
 void	ServerConf::setIpPort( std::string ip, int port ){
 	_ipPort[ ip ].insert( port );
 }

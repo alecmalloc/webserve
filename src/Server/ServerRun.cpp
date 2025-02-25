@@ -202,30 +202,33 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		// create temp config file for request construction
 		Config confTMP = server.getConf();
 		
-		std::vector<ServerConf> serverTMPConf = confTMP.getServerConfs();
+		//td::vector<ServerConf> serverTMPConf = confTMP.getServerConfs();
 		//select the server conf i need with function idk how ???
-		ServerConf* selectedServerConf = &serverTMPConf[0]; // just plce holder value 
+		//ServerConf* selectedServerConf = &serverTMPConf[0]; // just plce holder value 
 		
 
 		HttpRequest request(confTMP);
-
-		// FOR @LINUS:
-		// handle http request all sub functions and check response code after
+		
 		const std::string request_str = client->getContent();
 		request.handleRequest(request_str);
-		int response_code = request.getResponseCode();
-		std::cout << "RESPONSE CODE: " <<  response_code << "\n";
-		// IMPORTANT: IF REQUEST CODE ISN'T 200 PATHINFO WON'T HAVE MUCH BESIDES FULLPATH
-		/// EX: if RESPONSE is 404 it will only have fullPath. we dont do any more checks once one check fails
+		
 		std::cout << request.getPathInfo() << '\n';
 		// Ex: you could check smt like request.getPathInfo().isDirectory() or request.getPathInfo().getFilename()
 		// but read the PathInfo.hpp to get all specs. its really helpful and it already checks all permissions etc
 		//request.setResponseCode(200);
 
 		//std::cout << "req.body:" + request.getBody() + ":\n";
-		Response response(request, selectedServerConf);
+		ServerConf selectedServerConf = request.getServer();
+		Response response(request, &selectedServerConf);
 		//std::cout << "print response:" << response.getHttpResponse().c_str() << ":\n" ;
-		write(client->getSocketFd(), response.getHttpResponse().c_str(), response.getHttpResponse().size());
+		if(selectedServerConf.getChunkedTransfer()){//chunking is true print chunk size 
+			int chunk_size = selectedServerConf.getChunkSize();
+			std::cout << "CHUNK SIZE:" << chunk_size << ":\n";
+		}
+		else{
+			std::cout << "NO CHUNKING \n\n\n";
+		}
+			write(client->getSocketFd(), response.getHttpResponse().c_str(), response.getHttpResponse().size());
 
 
 		//so TODO add httpparsing and response handler here -> unchunking chunking,
