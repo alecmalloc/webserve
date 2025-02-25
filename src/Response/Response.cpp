@@ -181,12 +181,11 @@ void		Response::processResponse(HttpRequest &ReqObj){
 	try{
 		 PathInfo pathInfo = ReqObj.getPathInfo();
 		 // Validate and parse the path
-			int validationCode = pathInfo.validatePath();
-			std::cout << "Validation Code: " << validationCode << std::endl;
+			pathInfo.validatePath();
 			pathInfo.parsePath();
-			std::cout << "Parsed Path Information: " << pathInfo << std::endl;
+			
 		
-			//FIRST CHECK IF ITS CGI REQUEST 
+		//FIRST CHECK IF ITS CGI REQUEST 
 		if(isCgiRequest(ReqObj.getUri())){//should be ok but some errro with cgi handler cant find files
 			int result = handleCgi(ReqObj);
 			std::cout << "CGI result" << result << "\n";

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <iostream>
 #include <string>
 
 static std::string	cutEnding( std::string tmp ){
@@ -129,6 +130,7 @@ void	parseBodySize( ServerConf& server, std::stringstream& ss ){
 void parseChunkedEncoding(ServerConf& server, std::stringstream& ss) {
     std::string tmp;
     ss >> tmp;
+	std::cout << "CHUNKKKKKKKK" << tmp << "ENDDDDDD\n";
     if (tmp == "true;") {
         server.setChunkedTransfer(true);
     } else if (tmp == "false;") {
@@ -147,6 +149,7 @@ void parseChunkSize(ServerConf& server, std::stringstream& ss) {
     size_t size;
     sstmp >> size;
     server.setChunkSize(size);
+	std::cout << "SIZEEEE" << size << ";\n";
     if (tmp.at(tmp.size() - 1) != ';')
         throw(std::runtime_error("Line not ended on ; " + tmp));
 }

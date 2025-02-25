@@ -62,7 +62,7 @@ void	Response::generateHeader(HttpRequest &reqObj){
     headerMap["Date"] = getCurrentDateTime();
 	headerMap["Server"] = getServerName();
 	// Get the file extension from the PathInfo object
-	std::cout << reqObj.getPathInfo() << '\n';
+	
     std::string extension = reqObj.getPathInfo().getExtension();
     headerMap["Content-Type"] = getContentType(reqObj, extension);
 

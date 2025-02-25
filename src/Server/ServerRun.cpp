@@ -195,7 +195,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 	//check if Clients stopped sending data
 	if( event.events & EPOLLRDHUP || completeHttpRequest( client->getContent() ) ){
-		//std::cout << client->getContent() << std::endl;
+		std::cout << client->getContent() << std::endl;
 		//test cgi
 		//cgimain( server.getConf() );
 
@@ -212,17 +212,21 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		const std::string request_str = client->getContent();
 		request.handleRequest(request_str);
 		
-		std::cout << request.getPathInfo() << '\n';
+		//std::cout << request.getPathInfo() << '\n';
 		// Ex: you could check smt like request.getPathInfo().isDirectory() or request.getPathInfo().getFilename()
 		// but read the PathInfo.hpp to get all specs. its really helpful and it already checks all permissions etc
 		//request.setResponseCode(200);
-
+		
+		
+		std::vector<ServerConf> serverTMPConf = confTMP.getServerConfs();
+		//select the server conf i need with function idk how ???
+		ServerConf* selectedServerConf = &serverTMPConf[0]; // just plce holder value
 		//std::cout << "req.body:" + request.getBody() + ":\n";
-		ServerConf selectedServerConf = request.getServer();
-		Response response(request, &selectedServerConf);
+		//ServerConf selectedServerConf = request.getServer();
+		Response response(request, selectedServerConf);
 		//std::cout << "print response:" << response.getHttpResponse().c_str() << ":\n" ;
-		if(selectedServerConf.getChunkedTransfer()){//chunking is true print chunk size 
-			int chunk_size = selectedServerConf.getChunkSize();
+		if(selectedServerConf->getChunkedTransfer()){//chunking is true print chunk size 
+			int chunk_size = selectedServerConf->getChunkSize();
 			std::cout << "CHUNK SIZE:" << chunk_size << ":\n";
 		}
 		else{
@@ -230,11 +234,12 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		}
 			write(client->getSocketFd(), response.getHttpResponse().c_str(), response.getHttpResponse().size());
 
-
+		
 		//so TODO add httpparsing and response handler here -> unchunking chunking,
 		//sending etc -_-> integrate cgi with" cgihandler( HttpRequest ) "
 		client->setClosed( true );
 	}
+	
 
 	//check for error
 	if( event.events & EPOLLERR || client->getError() ) {
@@ -252,6 +257,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		closeClient( server, client );
 		return;
 	}
+			
 }
 
 static void	mainLoop( Server& server ){
