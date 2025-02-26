@@ -157,7 +157,7 @@ static void	setEnv( HttpRequest& req, char*** env ){
 						"/index.cgi" : req.getUrl();
 	tmpEnv[ "CONTENT_LENGTH" ]	= ( req.getMethod()== "POST" ) ? \
 						toString( req.getBody().length() ) : "0";
-	tmpEnv[ "CONTEN_TYPE" ]   	= req.getHeaders().count( "Content-Type" ) ? \
+	tmpEnv[ "CONTENT_TYPE" ]   	= req.getHeaders().count( "Content-Type" ) ? \
 						req.getHeaders().at( "Content-Type" )[0] : \
 						"text/plain";
 	tmpEnv[ "SERVER_NAME" ]   	= req.getHeaders().count( "Host" ) ? \
@@ -241,6 +241,36 @@ static int	childProcess( HttpRequest& req, int* inputPipe, int* outputPipe, \
 	return( -1 );
 }
 
+// Function to get the body of the response by skipping headers
+std::string getBody(const std::string& response) {
+    // If response is empty, return empty string
+    if (response.empty()) {
+        return "";
+    }
+
+    // Search for the standard HTTP header/body separator from the end
+    size_t bodyStart = 0;
+    
+    // Look for the last header separator
+    size_t headerSep = response.rfind("\r\n\r\n");
+    if (headerSep != std::string::npos) {
+        // Found standard HTTP header separator
+        bodyStart = headerSep + 4; // Skip past \r\n\r\n
+    } else {
+        // Try Unix-style separator
+        headerSep = response.rfind("\n\n");
+        if (headerSep != std::string::npos) {
+            bodyStart = headerSep + 2; // Skip past \n\n
+        } else {
+            // If no separator found, assume the whole response is the body
+            return response;
+        }
+    }
+    
+    // Return everything after the separator
+    return response.substr(bodyStart);
+}
+
 static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid_t pid ){
 	//status for childs
 	int	status;
@@ -293,6 +323,7 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 		std::memset( buffer, '\0', BUFFERSIZE );
 	}
 
+	response = getBody(response);
 	//print response for testing
 	std::cout << "CGI output:\n" <<  response << std::endl;
 	req.setCgiResponseString(response);

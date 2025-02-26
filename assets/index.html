@@ -132,6 +132,13 @@
             <a href="/forbidden" class="btn">Test 403 Error</a>
         </div>
     </div>
+	
+	<form action="/cgi-bin/advanced_test.php" method="POST" enctype="multipart/form-data">
+		<h3>Advanced PHP CGI Test</h3>
+		<input type="text" name="message" placeholder="Enter a message" required>
+		<input type="file" name="userfile">
+		<button type="submit" class="btn">Run Advanced PHP Test</button>
+	</form>
 
     <script>
         function deleteResource() {

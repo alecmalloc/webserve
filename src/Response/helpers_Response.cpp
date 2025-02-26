@@ -49,7 +49,8 @@ std::string Response::getContentType(HttpRequest &reqObj, const std::string& ext
     }
 	if(reqObj.getResponseCode() != 200)
 		return "text/html; charset=utf-8"; // might not be correct but if error is html response ?
-    return "application/octet-stream"; // Default content type
+	return("text/html");//change so default is html 
+		//return "application/octet-stream"; // Default content type
 }
 
 
