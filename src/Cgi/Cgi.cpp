@@ -141,9 +141,12 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 //check if other env variables needed?
 static void	setEnv( HttpRequest& req, char*** env ){
 	//get SERVER_IP and SERVER_PORT for env
-	std::string ip, port;
+	//std::string ip, port;
+	std::string ip = "127.0.0.1";  // Default IP
+    std::string port = "8080";     // Default port or get from config
+    
 
-	// setIpPort( req, ip, port );
+	//setIpPort( req, ip, port );
 
 
 	//set env via strings 
@@ -178,7 +181,7 @@ static void	setEnv( HttpRequest& req, char*** env ){
 	for( std::map< std::string, std::vector< std::string > >::const_iterator it = \
 			headers.begin(); it != headers.end(); it++ ){
 		std::string key = "HTTP_" + it->first;
-		key.replace( key.begin(), key.end(), '-', '_' );
+		std::replace(key.begin(), key.end(), '-', '_');
 		tmpEnv[ key ] = it->second.empty() ? "" : it->second[0];
 	}
 
@@ -280,8 +283,38 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 	close( outputPipe[1] );
 
 	//send body to process if needed
-	if( req.getMethod() == "POST" )
-		write( inputPipe[1], req.getBody().c_str(), req.getBody().size() );
+	if (req.getMethod() == "POST") {
+        // Create a local copy of the body first
+        std::string body = req.getBody();
+		while (!body.empty() && (body[body.size()-1] == '\n' || body[body.size()-1] == '\r')) {
+            body.erase(body.size() -1 );
+        }
+		req.setBody(body);
+		std::cerr << "DEBUG: Writing POST body: '" << req.getBody() << "'" << std::endl;
+        std::cerr << "DEBUG: Body size: " << req.getBody().size() << std::endl;
+
+		size_t bytesWritten = 0;
+		size_t totalBytes = body.size();
+		const char* data = body.c_str();
+		
+		while (bytesWritten < totalBytes) {
+			ssize_t result = write(inputPipe[1], data + bytesWritten, totalBytes - bytesWritten);
+			std::cerr << "DEBUG: Write result: " << result << " bytes" << std::endl;
+    
+			if (result <= 0) {
+				std::cerr << "DEBUG: Write error: " << strerror(errno) << std::endl;
+				// Handle error
+				break;
+			}
+			bytesWritten += result;
+		}
+
+		std::cerr << "DEBUG: Total bytes written: " << bytesWritten << "/" << totalBytes << std::endl;
+		
+		// Add a small delay to ensure data is transferred before closing pipe
+		usleep(5000);  // 1ms delay
+	}
+		
 	
 	//close reaminig inputpipe so process dosent wait
 	close( inputPipe[1] );
@@ -343,6 +376,16 @@ int	handleCgi( HttpRequest& req ){
 	int	inputPipe[2], outputPipe[2];
 	pid_t	pid;
 
+	//clean body first 
+	if (req.getMethod() == "POST") {
+        // Create a local copy of the body first
+        std::string body = req.getBody();
+		while (!body.empty() && (body[body.size()-1] == '\n' || body[body.size()-1] == '\r')) {
+            body.erase(body.size() -1 );
+        }
+		//body += "\r\n";
+		req.setBody(body);
+	}
 	//check file ending and access to it  and store interpreter for executuing
 	std::string	interpreter;
 	if( checkFile( req, interpreter ) == -1 ){

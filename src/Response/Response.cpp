@@ -142,7 +142,7 @@ bool Response::isCgiRequest(const std::string& uri) {
 	// Check if URI matches CGI patterns
 	// 1. First check: Location config exists and CGI is enabled
 	
-	
+	std::cout << "DEBUG: POST body: '" << getBody() << "'" << std::endl;
 	if (_locationConf && 
 		!_locationConf->getCgiPath().empty() && 
 		!_locationConf->getCgiExt().empty())  {

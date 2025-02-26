@@ -1,29 +1,25 @@
-#!/usr/bin/php-cgi
+!/usr/bin/php-cgi
 <?php
+// Add to your PHP script
 
-echo "<pre>Environment variables:<br>";
-foreach($_SERVER as $key => $value) {
-    echo htmlspecialchars("$key: $value") . "<br>";
+// Output raw data with minimal processing
+echo "Content-Type: text/plain\r\n\r\n";
+
+// Try multiple ways to read input
+echo "READING INPUT METHODS:\n";
+echo "1. Raw input: '" . file_get_contents('php://input') . "'\n";
+
+// Raw stdin read
+$stdin = fopen('php://stdin', 'r');
+$stdin_data = '';
+while (!feof($stdin)) {
+    $stdin_data .= fread($stdin, 1024);
 }
-echo "</pre>";
+fclose($stdin);
+echo "2. Direct stdin read: '" . $stdin_data . "'\n";
 
-// Send proper headers
-header("Content-Type: text/html");
-
-// Process request
-$message = isset($_POST['message']) ? $_POST['message'] : '';
-
-// Generate HTML response
-echo "<html><body>";
-echo "<h1>PHP CGI Test</h1>";
-
-if (!empty($message)) {
-    echo "<p>Your message: " . htmlspecialchars($message) . "</p>";
-} else {
-    echo "<p>No message provided</p>";
-    echo "<p>POST data: " . json_encode($_POST) . "</p>";
-    echo "<p>REQUEST_METHOD: " . $_SERVER['REQUEST_METHOD'] . "</p>";
-}
-
-echo "</body></html>";
+// Debug environment
+echo "ENVIRONMENT:\n";
+echo "CONTENT_LENGTH: " . $_SERVER['CONTENT_LENGTH'] . "\n"; 
+echo "REMOTE_ADDR: " . $_SERVER['REMOTE_ADDR'] . "\n";
 ?>
