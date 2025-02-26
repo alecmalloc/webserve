@@ -89,6 +89,9 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 	end = uri.substr( dot, uri.npos );
 	std::vector< std::string >::iterator it = std::find( ext.begin(), ext.end(), end );
 
+	//RROR: Cgi: not found /cgi-bin/get_test.py?search=pizza+&category=news
+	//need to adjust for  endings like 
+
 	//return if ending is not inside cgiExt
 	if( it == ext.end() ){
 		std::cerr << "DEBUG: File extension " << end << " not in CGI extensions" << std::endl;

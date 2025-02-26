@@ -139,31 +139,37 @@ void Response::generateErrorResponse(HttpRequest &reqObj){
 
 
 bool Response::isCgiRequest(const std::string& uri) {
-	// Check if URI matches CGI patterns
-	// 1. First check: Location config exists and CGI is enabled
-	
-	std::cout << "DEBUG: POST body: '" << getBody() << "'" << std::endl;
-	if (_locationConf && 
-		!_locationConf->getCgiPath().empty() && 
-		!_locationConf->getCgiExt().empty())  {
-	
-	std::cout << "Checking CGI request for URI: " << uri << std::endl;
-	std::cout << "Full path: " << _locationConf->getRootDir() + uri << std::endl;
-	
-	// 2. Find file extension
-	size_t dot = uri.rfind('.');  // Finds last occurrence of '.' in URI
-	if (dot != std::string::npos) {
-		// 3. Extract extension (e.g., ".php", ".py")
-		std::string ext = uri.substr(dot);
-		
-		// 4. Get allowed CGI extensions from location config
-		const std::vector<std::string>& cgiExts = _locationConf->getCgiExt();
-		
-		// 5. Check if extension is in allowed list
-		return (std::find(cgiExts.begin(), cgiExts.end(), ext) != cgiExts.end());
-	}
-	}
-	return false;
+    // Check if URI matches CGI patterns
+    std::cout << "DEBUG: POST body: '" << getBody() << "'" << std::endl;
+    if (_locationConf && 
+        !_locationConf->getCgiPath().empty() && 
+        !_locationConf->getCgiExt().empty())  {
+    
+        std::cout << "Checking CGI request for URI: " << uri << std::endl;
+        
+        // Strip query parameters by finding the first '?'
+        std::string path = uri;
+        size_t queryPos = path.find('?');
+        if (queryPos != std::string::npos) {
+            path = path.substr(0, queryPos);
+        }
+        
+        std::cout << "Checking CGI path (without query): " << path << std::endl;
+        std::cout << "Full path: " << _locationConf->getRootDir() + path << std::endl;
+        
+        // Find file extension in the path (without query parameters)
+        size_t dot = path.rfind('.');
+        if (dot != std::string::npos) {
+            std::string ext = path.substr(dot);
+            
+            // Get allowed CGI extensions
+            const std::vector<std::string>& cgiExts = _locationConf->getCgiExt();
+            
+            // Check if extension is allowed
+            return (std::find(cgiExts.begin(), cgiExts.end(), ext) != cgiExts.end());
+        }
+    }
+    return false;
 }
 
 
