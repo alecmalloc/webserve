@@ -130,8 +130,6 @@ const std::vector< std::string >	ServerConf::getServerConfNames( void ) const {
 }
 
 const std::vector< LocationConf >		ServerConf::getLocationConfs( void ) const {
-	//std::cout << "Debug: Getting location confs" << std::endl;
-    //std::cout << "Debug: Server name: " << getRootDir() << std::endl;
 	return( _locations );
 }
 

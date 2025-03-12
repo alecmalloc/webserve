@@ -68,13 +68,13 @@ void	Response::generateHeader(HttpRequest &reqObj){
     headerMap["Content-Type"] = getContentType(reqObj, extension);
 
 	headerMap["Content-Length"] =  intToString(getBody().length());
-	headerMap["Connection"] = "keep alive";//example value set to this default but in reguest could ask for close
+	headerMap["Connection"] = reqObj.getConnectionType();
 
 	// Optional Fields
-    headerMap["Cache-Control"] = "no-cache"; // Example value
-    headerMap["Set-Cookie"] = "sessionId=abc123; Path=/; HttpOnly"; // Example value
-    headerMap["Last-Modified"] = getCurrentDateTime(); // Example value
-    headerMap["ETag"] = "\"123456789\""; // Example value
+   // headerMap["Cache-Control"] = "no-cache"; // Example value
+    //headerMap["Set-Cookie"] = "sessionId=abc123; Path=/; HttpOnly"; // Example value
+    //headerMap["Last-Modified"] = getCurrentDateTime(); // Example value
+    //headerMap["ETag"] = "\"123456789\""; // Example value
     //headerMap["Location"] = "/new-resource"; // Example value
 	
 	if(reqObj.getResponseCode() == 201){//for Post methode specify headers 

@@ -171,6 +171,10 @@ void HttpRequest::parseBody(std::stringstream& ss) {
     }
 }
 
+
+
+
+
 void HttpRequest::parse(const std::string& rawRequest) {
     // split request data into lines
     std::stringstream ss(rawRequest);
@@ -354,6 +358,32 @@ void HttpRequest::validateRequestPath(void) {
     if ((_response_code = _pathInfo.validatePath()) != 200)
         return;
 }
+
+
+std::string HttpRequest::getConnectionType() const {
+    // Default connection type based on HTTP version
+    std::string connectionType = "keep-alive";
+
+    
+    // Check if there is an explicit Connection header
+    std::map<std::string, std::vector<std::string> >::const_iterator it = _headers.find("Connection");
+    if (it != _headers.end() && !it->second.empty()) {
+        std::string clientConnection = it->second[0];
+        
+        // Convert to lowercase for case-insensitive comparison
+        std::string lowerConnection = clientConnection;
+        std::transform(lowerConnection.begin(), lowerConnection.end(), 
+                       lowerConnection.begin(), ::tolower);
+        
+        // Check if it's either keep-alive or close
+        if (lowerConnection == "keep-alive" || lowerConnection == "close") {
+            connectionType = lowerConnection;
+        }
+    }
+    
+    return connectionType;
+}
+
 
 /*
 void HttpRequest::validateRequestPath(void) {

@@ -40,10 +40,6 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 			}
 		}
 	}
-	if (_locationConf){
-		std::cout << "LOCATION CONF " << *_locationConf ;
-	}
-	
 	processResponse(reqObj);
 	generateHttpresponse(reqObj);
 }
@@ -63,14 +59,13 @@ void Response::generateHttpresponse(HttpRequest &reqObj){
 	header << "Content-Type: " << headerMap["Content-Type"] << "\r\n";
 	header << "Content-Length: " << headerMap["Content-Length"] << "\r\n";
 	header << "Connection: " << headerMap["Connection"] << "\r\n";
-	header << "Cache-Control: " << headerMap["Cache-Control"] << "\r\n";
-	header << "Set-Cookie: " << headerMap["Set-Cookie"] << "\r\n";
-	header << "Last-Modified: " << headerMap["Last-Modified"] << "\r\n";
-	header << "ETag: " << headerMap["ETag"] << "\r\n";
+	//header << "Cache-Control: " << headerMap["Cache-Control"] << "\r\n";
+	//header << "Set-Cookie: " << headerMap["Set-Cookie"] << "\r\n";
+	//header << "Last-Modified: " << headerMap["Last-Modified"] << "\r\n";
+	//header << "ETag: " << headerMap["ETag"] << "\r\n";
 	//header << "Location: " << headerMap["Location"] << "\r\n";
 	header << "\r\n"; // End of headers
 	std::string responseString = header.str() + getBody();
-					std::cout << "respsonse string :" << responseString << ";;;;;\n";
 	setHttpResponse(responseString);
 }
 
@@ -122,16 +117,11 @@ void Response::generateErrorResponse(HttpRequest &reqObj){
 			 setBody("<html><body><h1>" + Response::intToString(responseCode) + " " + genarateReasonPhrase(reqObj) + " Error</h1></body></html>\n");
 		 }
 	 } else {
-
-		std::cout << "no custom errror page make default one :\n";
-		 // Generate a default error page if custom error page is not found
-		 std::string defaultErrorPage = "<html><body><h1>" + Response::intToString(responseCode) + " " + genarateReasonPhrase(reqObj) + " Error</h1></body></html>\n";
-		 setBody(defaultErrorPage);
-	 }
 		// Generate a default error page if custom error page is not found
-
-		generateHeader(reqObj);
-		
+		std::string defaultErrorPage = "<html><body><h1>" + Response::intToString(responseCode) + " " + genarateReasonPhrase(reqObj) + " Error</h1></body></html>\n";
+		setBody(defaultErrorPage);
+	 }
+	generateHeader(reqObj);
 }
 
 
@@ -140,22 +130,16 @@ void Response::generateErrorResponse(HttpRequest &reqObj){
 
 bool Response::isCgiRequest(const std::string& uri) {
     // Check if URI matches CGI patterns
-    std::cout << "DEBUG: POST body: '" << getBody() << "'" << std::endl;
     if (_locationConf && 
         !_locationConf->getCgiPath().empty() && 
         !_locationConf->getCgiExt().empty())  {
-    
-        std::cout << "Checking CGI request for URI: " << uri << std::endl;
-        
+
         // Strip query parameters by finding the first '?'
         std::string path = uri;
         size_t queryPos = path.find('?');
         if (queryPos != std::string::npos) {
             path = path.substr(0, queryPos);
         }
-        
-        std::cout << "Checking CGI path (without query): " << path << std::endl;
-        std::cout << "Full path: " << _locationConf->getRootDir() + path << std::endl;
         
         // Find file extension in the path (without query parameters)
         size_t dot = path.rfind('.');
