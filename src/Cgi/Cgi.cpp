@@ -14,12 +14,20 @@ static std::string	toString( size_t i ){
 	return( ss.str() );
 }
 
-static std::string stripQueryParams(const std::string& uri) {
-    size_t queryPos = uri.find('?');
-    if (queryPos != std::string::npos) {
-        return uri.substr(0, queryPos);
+std::string stripQueryParams(const std::string& uri) {
+    size_t pos = uri.find('?');
+    if (pos != std::string::npos) {
+        return uri.substr(0, pos);
     }
     return uri;
+}
+
+std::string extractQueryString(const std::string& uri) {
+    size_t pos = uri.find('?');
+    if (pos != std::string::npos) {
+        return uri.substr(pos + 1);
+    }
+    return "";
 }
 
 static int getVectors(ServerConf server, std::vector<std::string>& ext, 
@@ -82,8 +90,11 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 	}
 		
 
-	//get ending and compare with cgi ext
 	std::string uri = stripQueryParams(req.getUri());
+    
+    // Debug output
+    std::cout << "Checking CGI path (without query): " << uri << std::endl;
+    
 	std::string			end;
 	std::string::size_type		dot = uri.rfind( '.', uri.npos );
 
@@ -107,9 +118,12 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 	}
 	
 	// Construct the full file path by combining the root directory with the URI
-    std::string fullPath = req.getPathInfo().getFullPath();
-    std::cout << "DEBUG: Full path: " << fullPath << std::endl;
-
+    
+    
+    
+    // Use your root directory + the clean URI
+    std::string fullPath = "." + uri;
+    std::cout << "DEBUG: Full path for access check: " << fullPath << std::endl;
 	//check if file is accesible
 	if( access( fullPath.c_str(), X_OK ) == -1 ){
 	std::cerr << "DEBUG: File " << uri << " is not accessible or executable" << std::endl;	
@@ -170,10 +184,13 @@ static void	setEnv( HttpRequest& req, char*** env ){
 
 
 	//set env via strings 
+	// Extract query string separately
+    std::string queryString = extractQueryString(req.getUri());
+	std::cout << "QUEERYSTRING" << queryString << ":::\n";
 	std::map< std::string, std::string > tmpEnv;
 
 	tmpEnv[ "REQUEST_METHOD" ]	= req.getMethod().empty() ? "GET" : req.getMethod();
-	tmpEnv[ "QUERY_STRING" ]  	= req.getUri().empty() ? "" : req.getUri();
+	tmpEnv[ "QUERY_STRING" ]  	= queryString;
 	tmpEnv[ "SCRIPT_NAME" ]   	= req.getUrl().empty() ? \
 						"/index.cgi" : req.getUrl();
 	tmpEnv[ "SCRIPT_FILENAME" ]   	= req.getUrl().empty() ? \
@@ -259,9 +276,14 @@ static int	childProcess( HttpRequest& req, int* inputPipe, int* outputPipe, \
 
 	// Construct the full file path by combining the root directory with the URI
     std::string rootDir = req.getServer().getRootDir();
-    std::string scriptPath = rootDir + req.getUri();
-    const std::string inter = interpreter.c_str();
-    char* args[] = { const_cast<char*>(inter.c_str()), const_cast<char*>(scriptPath.c_str()), NULL };
+    std::string uri = stripQueryParams(req.getUri());
+    std::string scriptPath = rootDir + uri;
+    
+    // Pass the clean path to execve
+    const std::string inter = interpreter;
+    char* args[] = { const_cast<char*>(inter.c_str()), 
+                    const_cast<char*>(scriptPath.c_str()), 
+                    NULL };
 
 	//std::cerr << "DEBUG: Executing interpreter: " << inter << " with script: " << path << std::endl;
 	//execute
