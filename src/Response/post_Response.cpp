@@ -35,6 +35,108 @@ int Response::checkContentLength(HttpRequest& ReqObj){
 	return(200);
 }
 
+void Response::handleMultipartUpload(HttpRequest& ReqObj, PathInfo& pathinfo, const std::string& boundary) {
+    const std::string& postData = ReqObj.getBody();
+    std::string boundaryMarker = "--" + boundary;
+	(void)pathinfo;
+    
+    // Find the start of the first part
+    size_t partStart = postData.find(boundaryMarker);
+    if (partStart == std::string::npos) {
+        std::cerr << "Invalid multipart format - boundary not found" << std::endl;
+        throw 400;
+    }
+    
+    // Skip to the end of the boundary line
+    partStart = postData.find("\r\n", partStart);
+    if (partStart == std::string::npos) {
+        std::cerr << "Invalid multipart format - no CRLF after boundary" << std::endl;
+        throw 400;
+    }
+    partStart += 2; // Skip \r\n
+    
+    // Find the Content-Disposition header
+    size_t dispPos = postData.find("Content-Disposition:", partStart);
+    if (dispPos == std::string::npos) {
+        std::cerr << "No Content-Disposition header found" << std::endl;
+        throw 400;
+    }
+    
+    // Extract filename
+    size_t filenamePos = postData.find("filename=\"", dispPos);
+    if (filenamePos == std::string::npos) {
+        std::cerr << "No filename found in Content-Disposition" << std::endl;
+        throw 400;
+    }
+    filenamePos += 10; // Skip 'filename="'
+    
+    size_t filenameEnd = postData.find("\"", filenamePos);
+    if (filenameEnd == std::string::npos) {
+        std::cerr << "Invalid filename format" << std::endl;
+        throw 400;
+    }
+    
+    std::string filename = postData.substr(filenamePos, filenameEnd - filenamePos);
+    std::cout << "Extracted filename: " << filename << std::endl;
+    
+    // Find the blank line that marks the start of file content
+    size_t contentStart = postData.find("\r\n\r\n", filenameEnd);
+    if (contentStart == std::string::npos) {
+        std::cerr << "Invalid multipart format - no content start" << std::endl;
+        throw 400;
+    }
+    contentStart += 4; // Skip \r\n\r\n
+    
+    // Find the end boundary
+    size_t contentEnd = postData.find("\r\n--" + boundary, contentStart);
+    if (contentEnd == std::string::npos) {
+        std::cerr << "Invalid multipart format - no content end" << std::endl;
+        throw 400;
+    }
+    
+    // Extract file content
+    std::string fileContent = postData.substr(contentStart, contentEnd - contentStart);
+    std::cout << "File content length: " << fileContent.length() << " bytes" << std::endl;
+    std::cout << "File content: '" << fileContent << "'" << std::endl;
+    
+    // Create the upload directory (use your existing function)
+    std::string uploadDir = uploadPathhandler(_locationConf);
+    
+    // But instead of using the generated filename, use the original filename
+    // Extract the directory path from the uploadPathhandler result
+    std::string dirPath = uploadDir.substr(0, uploadDir.find_last_of("/") + 1);
+    
+    // Use the original filename (sanitize it if needed)
+    std::string filePath = dirPath + filename;
+    std::cout << "Saving file to: " << filePath << std::endl;
+    
+    // Write only the file content to the file
+    std::ofstream outFile(filePath.c_str(), std::ios::out | std::ios::binary);
+    if (!outFile.is_open()) {
+        std::cerr << "Failed to open file: " << filePath << std::endl;
+        throw 500; // Internal Server Error
+    }
+    
+    outFile.write(fileContent.c_str(), fileContent.length());
+    outFile.close();
+    
+    if (outFile.fail()) {
+        std::cerr << "Failed to write to file: " << filePath << std::endl;
+        throw 500; // Internal Server Error
+    }
+    
+    // Success response
+    ReqObj.setResponseCode(201);
+    setStatusCode(201);
+    
+    // Set success response body with the actual filename
+    setBody("<html><body>"
+            "<h1>Upload Successful</h1>"
+            "<p>Your file '" + filename + "' has been uploaded successfully.</p>"
+            "<a href='/'>Return to home</a>"
+            "</body></html>");
+}
+
 
 void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
 	std::cout << "POST REQUEST" << std::endl;
@@ -48,7 +150,26 @@ void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
 	
 	std::string contentType = ReqObj.getHeaders()["Content-Type"][0];
 	std::cout << "Content-Type" << contentType << "\n";
+	
+	if (contentType.find("multipart/form-data") != std::string::npos) {
+		std::cout << "HANDLING MULTIPART FORM DATA\n";
+		
+		// Extract boundary
+		size_t boundaryPos = contentType.find("boundary=");
+		if (boundaryPos == std::string::npos) {
+			std::cerr << "No boundary found in Content-Type" << std::endl;
+			throw 400; // Bad Request
+		}
+		
+		std::string boundary = contentType.substr(boundaryPos + 9); // "boundary=" is 9 chars
+		std::cout << "Boundary: " << boundary << std::endl;
+		
+		// Handle the multipart form data with the extracted boundary
+		return handleMultipartUpload(ReqObj, pathinfo, boundary);
+	}
 
+
+	
 	// Validate the POST data
 	if (postData.empty()) {
 		std::cerr << "POST data is empty" << std::endl;

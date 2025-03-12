@@ -4,6 +4,9 @@
 obj/
 build/
 
+#upload folder 
+uploads/
+
 # Executables
 *.out
 *.exe

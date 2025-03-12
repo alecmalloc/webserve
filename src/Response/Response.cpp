@@ -186,6 +186,33 @@ void		Response::processResponse(HttpRequest &ReqObj){
 	
 	try{
 		 PathInfo pathInfo = ReqObj.getPathInfo();
+		
+		/* if (pathInfo.getFullPath().empty() && !ReqObj.getUri().empty()) {
+            std::cout << "DEBUG: Empty PathInfo detected, reconstructing from URI" << std::endl;
+            
+            // Construct the correct path
+            std::string uri = ReqObj.getUri();
+            std::string fullPath;
+            
+            // Use location config if available
+            if (_locationConf) {
+                fullPath = _locationConf->getRootDir() + uri;
+                
+                // Normalize path (remove double slashes)
+                size_t pos;
+                while ((pos = fullPath.find("//")) != std::string::npos) {
+                    fullPath.replace(pos, 2, "/");
+                }
+            } else {
+                fullPath = "." + uri;  // Default to current directory
+            }
+            
+            std::cout << "DEBUG: Reconstructed path: " << fullPath << std::endl;
+            
+            // Create new PathInfo with fixed path
+            pathInfo = PathInfo(fullPath);
+        }*/
+	
 		 // Validate and parse the path
 			pathInfo.validatePath();
 			pathInfo.parsePath();

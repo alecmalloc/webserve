@@ -14,52 +14,60 @@ static std::string	toString( size_t i ){
 	return( ss.str() );
 }
 
-//get correct location block and theire ext and paths
-static int	getVectors( ServerConf server, std::vector< std::string >& ext, \
-			std::vector< std::string >& path, std::string uri ){
-
-	std::cerr << "DEBUG: Getting CGI vectors for URI: " << uri << std::endl;
-	
-	//stores all location files from this server block
-	const std::vector< LocationConf >&	locations = server.getLocationConfs();
-
-	// Print all locations for debugging
-    std::cerr << "DEBUG: All locations:" << std::endl;
-    for (std::vector<LocationConf>::const_iterator it = locations.begin(); it != locations.end(); ++it) {
-        std::cerr << "Location Path: " << it->getPath() << ", Root Dir: " << it->getRootDir() << std::endl;
+static std::string stripQueryParams(const std::string& uri) {
+    size_t queryPos = uri.find('?');
+    if (queryPos != std::string::npos) {
+        return uri.substr(0, queryPos);
     }
+    return uri;
+}
 
-	//get uri path
-	std::string	uriPath;
-	std::string::size_type		slash = uri.rfind( '/', uri.npos );
-
-	//return if no path is foun"
-	if( slash == std::string::npos )
-		return( -1 );
-
-
-	uriPath = uri.substr( 0, slash );
-	std::cerr << "DEBUG: Extracted URI path: " << uriPath << std::endl;
-	for( std::vector< LocationConf >::const_iterator it = locations.begin(); it != \
-			locations.end(); it++ ){
-		std::string dir = it->getRootDir().empty() ? ( server.getRootDir() + 
-				it->getPath() ): ( it->getRootDir() + it->getPath() );
-		std::string Compare_dir = dir;
-		//to get rid of dot in front 
-		if(dir[0] == '.')
-			Compare_dir = dir.substr(1);
-		if( Compare_dir == uriPath ){
-			ext = it->getCgiExt();
-			path = it->getCgiPath();
-			
-			
-			std::cerr << "DEBUG: Matched location: " << dir << std::endl;
-            std::cerr << "DEBUG: CGI extensions: ";
-           
-			return( 0 );
-		}
-	}
-	return( -1 );
+static int getVectors(ServerConf server, std::vector<std::string>& ext, 
+                      std::vector<std::string>& path, std::string uri) {
+    // Strip query parameters first
+    std::string cleanUri = stripQueryParams(uri);
+    
+    // Extract just the path part (remove any query string)
+    std::string::size_type question = cleanUri.find('?');
+    if (question != std::string::npos) {
+        cleanUri = cleanUri.substr(0, question);
+    }
+    
+    // Get the path component
+    std::string uriPath = cleanUri;
+    std::string::size_type lastSlash = uriPath.find_last_of('/');
+    if (lastSlash != std::string::npos) {
+        uriPath = uriPath.substr(0, lastSlash+1);
+    }
+    
+    std::cerr << "DEBUG: Extracted URI path: " << uriPath << std::endl;
+    
+    // Improve location matching
+    const std::vector<LocationConf>& locations = server.getLocationConfs();
+    std::cerr << "DEBUG: All locations:" << std::endl;
+    
+    for (std::vector<LocationConf>::const_iterator it = locations.begin(); 
+         it != locations.end(); ++it) {
+        std::cerr << "Location Path: " << it->getPath() << ", Root Dir: " << it->getRootDir() << std::endl;
+        
+        std::string Compare_dir = it->getPath();
+        std::cerr << "DEBUG: Comparing location '" << Compare_dir << "' with URI path '" << uriPath << "'" << std::endl;
+        
+        // Match based on path prefix, not exact match
+        if (uriPath.find(Compare_dir) == 0) {
+            ext = it->getCgiExt();
+            path = it->getCgiPath();
+            std::cerr << "DEBUG: Matched location: " << it->getRootDir() + it->getPath() << std::endl;
+            
+            for (std::vector<std::string>::const_iterator extIt = ext.begin(); extIt != ext.end(); ++extIt) {
+                std::cerr << *extIt << " ";
+            }
+            std::cerr << std::endl;
+            return (0);
+        }
+    }
+    
+    return (-1);
 }
 
 static int	checkFile( HttpRequest& req, std::string& interpreter ){
@@ -75,8 +83,8 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 		
 
 	//get ending and compare with cgi ext
+	std::string uri = stripQueryParams(req.getUri());
 	std::string			end;
-	std::string			uri = req.getUri();
 	std::string::size_type		dot = uri.rfind( '.', uri.npos );
 
 	//return if no ending is found ".cgi"
@@ -147,8 +155,17 @@ static void	setEnv( HttpRequest& req, char*** env ){
 	//std::string ip, port;
 	std::string ip = "127.0.0.1";  // Default IP
     std::string port = "8080";     // Default port or get from config
-    
-
+    // Extract from Host header if available
+    if (req.getHeaders().count("Host")) {
+        std::string host = req.getHeaders().at("Host")[0];
+        size_t colonPos = host.find(':');
+        if (colonPos != std::string::npos) {
+            ip = host.substr(0, colonPos);
+            port = host.substr(colonPos+1);
+        } else {
+            ip = host;
+        }
+	}
 	//setIpPort( req, ip, port );
 
 
@@ -166,18 +183,32 @@ static void	setEnv( HttpRequest& req, char*** env ){
 	tmpEnv[ "CONTENT_TYPE" ]   	= req.getHeaders().count( "Content-Type" ) ? \
 						req.getHeaders().at( "Content-Type" )[0] : \
 						"text/plain";
+	
+	tmpEnv[ "SERVER_PROTOCOL" ]  	= req.getVersion().empty() ? "HTTP/1.1" :
+						req.getVersion();
+	
+	tmpEnv[ "REDIRECT_STATUS" ]	= "200";
+	tmpEnv[ "GATEWAY_INTERFACE" ]	= "CGI/1.1";
+	tmpEnv[ "PATH_INFO" ]		= req.getUri().empty() ? "" : req.getUri();
+	tmpEnv["SERVER_NAME"] = req.getHeaders().count("Host") ? 
+                       req.getHeaders().at("Host")[0] : 
+                       ip + ":" + port;
+	tmpEnv["SERVER_PORT"] = port;
+	tmpEnv["REMOTE_ADDR"] = ip;
+	tmpEnv["REQUEST_URI"] = req.getHeaders().count("Host") ? 
+                       req.getHeaders().at("Host")[0] + req.getUri() :
+                       ip + ":" + port + req.getUri();
+
+
+	/*cnaged to make it multi browser compatible
 	tmpEnv[ "SERVER_NAME" ]   	= req.getHeaders().count( "Host" ) ? \
 						req.getHeaders().at( "Host" )[0] : \
 						"localhost";
 	tmpEnv[ "SERVER_PORT" ]   	= port;
-	tmpEnv[ "SERVER_PROTOCOL" ]  	= req.getVersion().empty() ? "HTTP/1.1" :
-						req.getVersion();
 	tmpEnv[ "REMOTE_ADDR" ]   	= ip;
-	tmpEnv[ "REDIRECT_STATUS" ]	= "200";
-	tmpEnv[ "GATEWAY_INTERFACE" ]	= "CGI/1.1";
-	tmpEnv[ "PATH_INFO" ]		= req.getUri().empty() ? "" : req.getUri();
 	tmpEnv[ "REQUEST_URI" ]		= req.getUri().empty() ? "" : req.getUrl().empty() \
 						? "" : req.getUrl();
+	*/
 	
 	//transfer headers to be HTTP_...
 	const std::map< std::string, std::vector< std::string > >& headers = req.getHeaders();

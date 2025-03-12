@@ -47,6 +47,7 @@ class Response {
 		void handlePostData(const HttpRequest& ReqObj);
 		std::string generateDirectoryListing(const std::string& path);
 		std::string uploadPathhandler(LocationConf* locationConf);
+		void handleMultipartUpload(HttpRequest& ReqObj, PathInfo& pathinfo, const std::string& boundary);
 
 		int checkContentLength(HttpRequest& ReqObj);
 
