@@ -3,178 +3,452 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webserv Test Suite</title>
+    <title>WebServ Test Suite</title>
     <style>
+        :root {
+            --primary: #3498db;
+            --primary-hover: #2980b9;
+            --secondary: #2c3e50;
+            --accent: #27ae60;
+            --danger: #e74c3c;
+            --danger-hover: #c0392b;
+            --warning: #f39c12;
+            --light: #f5f5f5;
+            --border: #ddd;
+            --text: #333;
+            --text-light: #777;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+            --border-radius: 6px;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             line-height: 1.6;
             margin: 0;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: var(--light);
+            color: var(--text);
         }
+        
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
         }
+        
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .header h1 {
+            color: var(--secondary);
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .header p {
+            color: var(--text-light);
+            margin: 10px 0 0;
+        }
+        
         .test-section {
             margin-bottom: 30px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 25px;
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
+        
+        .test-section:hover {
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
         }
+        
         h2 {
-            color: #3498db;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 5px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 8px;
+            margin-top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+        
+        h3 {
+            color: var(--secondary);
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
         .btn {
             display: inline-block;
             padding: 10px 20px;
-            margin: 5px;
+            margin: 5px 3px;
             border: none;
-            border-radius: 4px;
-            background-color: #3498db;
+            border-radius: var(--border-radius);
+            background-color: var(--primary);
             color: white;
             cursor: pointer;
             text-decoration: none;
+            transition: background-color 0.2s, transform 0.1s;
         }
+        
         .btn:hover {
-            background-color: #2980b9;
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
         }
-        .delete-btn {
-            background-color: #e74c3c;
+        
+        .btn-danger {
+            background-color: var(--danger);
         }
-        .delete-btn:hover {
-            background-color: #c0392b;
+        
+        .btn-danger:hover {
+            background-color: var(--danger-hover);
         }
+        
+        .btn-success {
+            background-color: var(--accent);
+        }
+        
+        .btn-success:hover {
+            background-color: #219653;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+        }
+        
+        .btn-warning:hover {
+            background-color: #e67e22;
+        }
+        
+        .method-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .get {
+            background-color: var(--accent);
+        }
+        
+        .post {
+            background-color: var(--primary);
+        }
+        
+        .delete {
+            background-color: var(--danger);
+        }
+        
         form {
-            margin: 10px 0;
+            margin: 15px 0;
+            display: flex;
+            flex-direction: column;
         }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+        
         input[type="file"],
-        input[type="text"] {
-            margin: 10px 0;
-            padding: 8px;
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
             width: 100%;
-            box-sizing: border-box;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            font-size: 16px;
+        }
+        
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        .description {
+            color: var(--text-light);
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 10px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Webserv Test Suite</h1>
-
-        <!-- Directory Listing Test -->
-        <div class="test-section">
-            <h2>Directory Listing Test</h2>
-            <a href="/site/" class="btn">Test Directory Listing</a>
+        <div class="header">
+            <h1>WebServ Test Suite</h1>
+            <p>Comprehensive test suite for your C++98 HTTP server implementation</p>
         </div>
 
-        <!-- File Upload Test -->
+        <!-- Basic HTTP Methods -->
         <div class="test-section">
-            <h2>POST Method Test</h2>
-            <form action="/POST/" method="POST" enctype="multipart/form-data">
-                <h3>File Upload</h3>
-                <input type="file" name="file" required>
-                <button type="submit" class="btn">Upload File</button>
-            </form>
-
+            <h2>
+                Basic HTTP Methods
+            </h2>
+            <div class="description">Test basic HTTP method functionality</div>
+            
+            <!-- GET Tests -->
+            <h3><span class="method-badge get">GET</span> Method Tests</h3>
+            <div class="button-row">
+                <a href="/index.html" class="btn">Get HTML File</a>
+                <a href="/assets/style.css" class="btn">Get CSS File</a>
+                <a href="/assets/test.jpg" class="btn">Get Image File</a>
+            </div>
+            
+            <!-- POST Tests -->
+            <h3><span class="method-badge post">POST</span> Method Test</h3>
             <form action="/POST/" method="POST">
-                <h3>Text Message</h3>
-                <input type="text" name="message" placeholder="Enter a message" required>
+                <div class="form-group">
+                    <label for="message">Text Message</label>
+                    <input type="text" id="message" name="message" placeholder="Enter a message" required>
+                </div>
                 <button type="submit" class="btn">Send Message</button>
             </form>
+            
+            <!-- DELETE Tests -->
+            <h3><span class="method-badge delete">DELETE</span> Method Test</h3>
+            <div class="form-group">
+                <label for="deleteUrl">Path to Delete</label>
+                <input type="text" id="deleteUrl" placeholder="/uploads/filename.txt">
+            </div>
+            <button onclick="deleteResource()" class="btn btn-danger">Delete Resource</button>
         </div>
-		<!-- CGI Test -->
+
+        <!-- File Uploads -->
+        <div class="test-section">
+            <h2>
+                File Upload Tests
+                <span class="method-badge post">POST</span>
+            </h2>
+            <div class="description">Test file upload functionality</div>
+            
+            <form action="/POST/" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="uploadFile">Select File to Upload</label>
+                    <input type="file" id="uploadFile" name="file" required>
+                </div>
+                <button type="submit" class="btn">Upload File</button>
+            </form>
+            
+            <h3>Upload Large File Test</h3>
+            <div class="description">Test uploading a larger file (if your server has a size limit)</div>
+            <form action="/POST/" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="largeFile">Select Large File</label>
+                    <input type="file" id="largeFile" name="large_file">
+                </div>
+                <button type="submit" class="btn">Upload Large File</button>
+            </form>
+        </div>
+
+        <!-- Directory and Static Content Tests -->
+        <div class="test-section">
+            <h2>
+                Directory & Static Content Tests
+                <span class="method-badge get">GET</span>
+            </h2>
+            <div class="description">Test directory listing, index files, and static content</div>
+            
+            <h3>Directory Tests</h3>
+            <div class="button-row">
+                <a href="/site/" class="btn">Directory with Autoindex</a>
+                <a href="/assets/" class="btn">Directory with Index File</a>
+                <a href="/empty/" class="btn">Empty Directory Test</a>
+            </div>
+            
+            <h3>Static Files</h3>
+            <div class="button-row">
+                <a href="/test.html" class="btn">HTML File</a>
+                <a href="/test.txt" class="btn">Text File</a>
+                <a href="/test.pdf" class="btn">PDF File</a>
+                <a href="/test.json" class="btn">JSON File</a>
+            </div>
+        </div>
+
+        <!-- CGI Tests -->
         <div class="test-section">
             <h2>CGI Tests</h2>
+            <div class="description">Test CGI script execution in different languages</div>
             
-            <!-- Python CGI Test -->
+            <!-- Python CGI -->
+            <h3>Python CGI Tests</h3>
             <form action="/cgi-bin/test.py" method="POST">
-                <h3>Python CGI Test</h3>
-                <input type="text" name="name" placeholder="Enter your name" required>
-                <button type="submit" class="btn">Test Python CGI</button>
+                <div class="form-group">
+                    <label for="pyname">Name</label>
+                    <input type="text" id="pyname" name="name" placeholder="Enter your name" required>
+                </div>
+                <button type="submit" class="btn">Execute Python CGI</button>
             </form>
-
-            <!-- PHP CGI Test -->
+            
+            <!-- PHP CGI -->
+            <h3>PHP CGI Tests</h3>
             <form action="/cgi-bin/test.php" method="POST">
-                <h3>PHP CGI Test</h3>
-                <input type="text" name="message" placeholder="Enter a message" required>
-                <button type="submit" class="btn">Test PHP CGI</button>
+                <div class="form-group">
+                    <label for="phpmessage">Message</label>
+                    <input type="text" id="phpmessage" name="message" placeholder="Enter a message" required>
+                </div>
+                <button type="submit" class="btn">Execute PHP CGI</button>
+            </form>
+            
+            <!-- CGI with GET method -->
+            <h3>CGI with GET Parameters</h3>
+            <form action="/cgi-bin/get_test.py" method="GET">
+                <div class="form-group">
+                    <label for="search">Search Term</label>
+                    <input type="text" id="search" name="search" placeholder="Enter search term" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category">
+                        <option value="all">All Categories</option>
+                        <option value="news">News</option>
+                        <option value="blog">Blog</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Test GET Request</button>
+            </form>
+            
+            <div class="description">Or test with direct URL parameters:</div>
+            <a href="/cgi-bin/get_test.py?name=test&id=123" class="btn">Test GET with URL Parameters</a>
+            
+            <!-- CGI File Upload -->
+            <h3>CGI File Upload Test</h3>
+            <form action="/cgi-bin/upload_test.py" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="cgi_file">Select File</label>
+                    <input type="file" id="cgi_file" name="file" required>
+                </div>
+                <div class="form-group">
+                    <label for="cgi_comment">Comment</label>
+                    <input type="text" id="cgi_comment" name="comment" placeholder="Optional comment">
+                </div>
+                <button type="submit" class="btn">Upload via CGI</button>
             </form>
         </div>
 
-		<div class="test-section">
-			<h3>Python CGI GET Test</h3>
-			<form action="/cgi-bin/get_test.py" method="GET">
-				<input type="text" name="search" placeholder="Search term" required>
-				<select name="category">
-					<option value="all">All Categories</option>
-					<option value="news">News</option>
-					<option value="blog">Blog</option>
-				</select>
-				<button type="submit" class="btn">Test GET Request</button>
-			</form>
-			
-			<p>You can also test direct URL parameters:</p>
-			<a href="/cgi-bin/get_test.py?name=test&id=123" class="btn">Test GET with URL Parameters</a>
-		</div>
-
-    </div> <!-- container closing div -->
-        <!-- DELETE Method Test -->
+        <!-- Advanced Tests -->
         <div class="test-section">
-            <h2>DELETE Method Test</h2>
-            <input type="text" id="deleteUrl" placeholder="Enter path to delete">
-            <button onclick="deleteResource()" class="btn delete-btn">Delete Resource</button>
+            <h2>Advanced Tests</h2>
+            <div class="description">Test more complex server behaviors</div>
+            
+            <!-- Redirections -->
+            <h3>HTTP Redirections</h3>
+            <div class="button-row">
+                <a href="/redirect/" class="btn">Standard Redirect</a>
+                <a href="/redirect/301" class="btn">301 Permanent Redirect</a>
+                <a href="/redirect/302" class="btn">302 Temporary Redirect</a>
+            </div>
+            
+            <!-- Error Pages -->
+            <h3>Error Pages</h3>
+            <div class="button-row">
+                <a href="/nonexistent" class="btn btn-danger">404 Not Found</a>
+                <a href="/forbidden" class="btn btn-danger">403 Forbidden</a>
+                <a href="/cgi-bin/error_script.py" class="btn btn-danger">500 Server Error</a>
+            </div>
+            
+            <!-- Request Body Size Limit -->
+            <h3>Max Body Size Test</h3>
+            <form action="/max_body_test" method="POST">
+                <div class="form-group">
+                    <label for="body_size">Message Size (bytes)</label>
+                    <input type="number" id="body_size" value="1000" min="100" max="10000">
+                </div>
+                <div class="form-group">
+                    <label for="large_content">Content</label>
+                    <textarea id="large_content" name="content" rows="4" placeholder="Generated content will appear here"></textarea>
+                </div>
+                <button type="button" class="btn btn-warning" onclick="generateLargeData()">Generate Data</button>
+                <button type="submit" class="btn">Submit Large Body</button>
+            </form>
         </div>
 
-        <!-- Redirection Test -->
+        <!-- Multi-Host & Multi-Port Testing -->
         <div class="test-section">
-            <h2>Redirection Test</h2>
-            <a href="/redirect/" class="btn">Test Redirection</a>
+            <h2>Multi-Host & Multi-Port Testing</h2>
+            <div class="description">Test multiple hosts and ports configuration</div>
+            
+            <h3>Port Tests</h3>
+            <div class="button-row">
+                <a href="http://localhost:8080/" class="btn">Port 8080</a>
+                <a href="http://localhost:8081/" class="btn">Port 8081</a>
+            </div>
+            
+            <h3>Server Name Tests</h3>
+            <div class="description">Add these domains to your /etc/hosts file:</div>
+            <div class="button-row">
+                <a href="http://test1.local:8080/" class="btn">test1.local Host</a>
+                <a href="http://test2.local:8080/" class="btn">test2.local Host</a>
+            </div>
         </div>
-		
-		<div class="test-section">
-			<h2>CGI File Upload Test</h2>
-			<p>Test if file uploads work through CGI scripts</p>
-			<a href="/cgi-bin/upload_form.html" class="btn">Test CGI File Upload</a>
-		</div>
 
-
-        <!-- Error Pages Test -->
-        <div class="test-section">
-            <h2>Error Pages Test</h2>
-            <a href="/nonexistent" class="btn">Test 404 Error</a>
-            <a href="/forbidden" class="btn">Test 403 Error</a>
+        <div class="footer">
+            <p>WebServ Test Suite - Created for testing 42 WebServ project requirements</p>
         </div>
     </div>
-	
-	<form action="/cgi-bin/advanced_test.php" method="POST" enctype="multipart/form-data">
-		<h3>Advanced PHP CGI Test</h3>
-		<input type="text" name="message" placeholder="Enter a message" required>
-		<input type="file" name="userfile">
-		<button type="submit" class="btn">Run Advanced PHP Test</button>
-	</form>
 
     <script>
         function deleteResource() {
             const path = document.getElementById('deleteUrl').value;
+            if (!path) {
+                alert('Please enter a path to delete');
+                return;
+            }
+
             fetch(path, {
                 method: 'DELETE',
             })
             .then(response => {
-                alert(`Delete request sent. Status: ${response.status}`);
+                alert(`Delete request sent. Status: ${response.status} ${response.statusText}`);
             })
             .catch(error => {
                 alert('Error: ' + error);
             });
+        }
+
+        function generateLargeData() {
+            const size = document.getElementById('body_size').value;
+            document.getElementById('large_content').value = 'A'.repeat(size);
         }
     </script>
 </body>
