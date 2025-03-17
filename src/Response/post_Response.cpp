@@ -36,15 +36,24 @@ int Response::checkContentLength(HttpRequest& ReqObj){
 }
 
 void Response::handleMultipartUpload(HttpRequest& ReqObj, PathInfo& pathinfo, const std::string& boundary) {
-    const std::string& postData = ReqObj.getBody();
-    std::string boundaryMarker = "--" + boundary;
 	(void)pathinfo;
+	const std::string& postData = ReqObj.getBody();
+	std::cout << "Body received, length: " << postData.length() << std::endl;
+    // Debug: Print the first 50 bytes to verify content
+    std::cout << "Body starts with: " << postData.substr(0, 50) << std::endl;
     
-    // Find the start of the first part
+    // Chrome may or may not include leading "--" in the actual data
+    std::string boundaryMarker = "--" + boundary;
+    std::string altBoundaryMarker = boundary; // Try without --
+    
+    // Find the start of the first part with either format
     size_t partStart = postData.find(boundaryMarker);
     if (partStart == std::string::npos) {
-        std::cerr << "Invalid multipart format - boundary not found" << std::endl;
-        throw 400;
+        partStart = postData.find(altBoundaryMarker);
+        if (partStart == std::string::npos) {
+            std::cerr << "Invalid multipart format - boundary not found" << std::endl;
+            throw 400;
+        }
     }
     
     // Skip to the end of the boundary line

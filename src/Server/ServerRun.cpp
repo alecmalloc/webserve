@@ -1,5 +1,8 @@
 #include "webserv.hpp"
 
+#include <cstdlib> // For strtoul
+#include <sstream> // For stringstream
+
 static volatile bool running = true;
 
 static void	handleSignal( int signal ){
@@ -149,11 +152,35 @@ static void	readFromClient( Client* client ) {
 		client->setError( true );
 }
 
-//TODO: Check with alec for his function
-//this one just for testing an proplably uncomplete / not really read up for http
-static bool	completeHttpRequest( std::string request ){
-	//check if "\r\n\r\n" is in request -> this indicates end of request !?!?!?????
-	return( request.find( "\r\n\r\n" ) != std::string::npos );
+//chaged to make it work with split paed sending of chrome 
+static bool completeHttpRequest(std::string request) {
+    // First check if we have the full headers
+    size_t headerEnd = request.find("\r\n\r\n");
+    if (headerEnd == std::string::npos)
+        return false;
+        
+    // Look for Content-Length header
+    size_t clPos = request.find("Content-Length: ");
+    if (clPos != std::string::npos) {
+        // Extract the Content-Length value
+        size_t valueStart = clPos + 16;
+        size_t valueEnd = request.find("\r\n", valueStart);
+        std::string lengthStr = request.substr(valueStart, valueEnd - valueStart);
+        
+        // C++98 compliant conversion from string to number
+        std::istringstream ss(lengthStr);
+        size_t contentLength = 0;
+        ss >> contentLength;
+        
+        size_t bodyStart = headerEnd + 4;
+        size_t bodyReceived = request.length() - bodyStart;
+        
+        // Request is complete only if we've received all the content
+        return bodyReceived >= contentLength;
+    }
+    
+    // If no Content-Length, assume complete after headers
+    return true;
 }
 
 
@@ -188,9 +215,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 	//check if Clients send data
 	if( event.events & EPOLLIN ){
-		std::cout << "before readfrom client\n" ;
 		readFromClient( client );
-		std::cout << "after readfrom client\n" ;
 	}
 
 	//check if Clients stopped sending data
@@ -224,14 +249,17 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		//std::cout << "req.body:" + request.getBody() + ":\n";
 		//ServerConf selectedServerConf = request.getServer();
 		Response response(request, selectedServerConf);
-		//std::cout << "print response:" << response.getHttpResponse().c_str() << ":\n" ;
-		if(selectedServerConf->getChunkedTransfer()){//chunking is true print chunk size 
+		
+		
+		
+		//need to ajust these function not working properly right now 
+		/*if(selectedServerConf->getChunkedTransfer()){//chunking is true print chunk size 
 			int chunk_size = selectedServerConf->getChunkSize();
-			std::cout << "CHUNK SIZE:" << chunk_size << ":\n";
+			//std::cout << "CHUNK SIZE:" << chunk_size << ":\n";
 		}
 		else{
-			std::cout << "NO CHUNKING \n\n\n";
-		}
+			//std::cout << "NO CHUNKING \n\n\n";
+		}*/
 			write(client->getSocketFd(), response.getHttpResponse().c_str(), response.getHttpResponse().size());
 
 		

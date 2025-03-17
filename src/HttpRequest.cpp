@@ -252,8 +252,35 @@ void HttpRequest::parse(const std::string& rawRequest) {
         return;
     }
 
-    // Get body if present (everything after empty line)
-    parseBody(ss);
+    
+	// Get body if present (everything after empty line)
+    //parseBody(ss);
+	//canged logic so it gets depending on content length 
+	if (_method == "POST") {
+        // Find the double CRLF that separates headers and body
+        size_t bodyStart = rawRequest.find("\r\n\r\n");
+        if (bodyStart != std::string::npos) {
+            bodyStart += 4; // Skip the \r\n\r\n
+            
+            // Get the body using Content-Length
+            if (_headers.find("Content-Length") != _headers.end()) {
+                size_t contentLength = 0;
+                std::istringstream(_headers["Content-Length"][0]) >> contentLength;
+                
+                if (bodyStart + contentLength <= rawRequest.length()) {
+                    std::string bodyContent = rawRequest.substr(bodyStart, contentLength);
+                    setBody(bodyContent);
+                    
+                    // Debug output
+                    std::cout << "Read POST body, length: " << bodyContent.length() << std::endl;
+                } else {
+                    std::cerr << "Warning: Incomplete body received. Expected " 
+                              << contentLength << " bytes, got " 
+                              << (rawRequest.length() - bodyStart) << " bytes." << std::endl;
+                }
+            }
+        }
+    }
 
     // POST specific validation
     if (_method == "POST") {
@@ -307,8 +334,8 @@ void HttpRequest::validateRequestPath(void) {
     const std::string uri = getUri();
     
     // Add null checks and debugging
-    std::cout << "Processing URI: " << uri << std::endl;
-    std::cout << "Server root: " << _server.getRootDir() << std::endl;
+    //std::cout << "Processing URI: " << uri << std::endl;
+    //std::cout << "Server root: " << _server.getRootDir() << std::endl;
 
     // Protect against empty/null values
     if (_server.getRootDir().empty()) {
