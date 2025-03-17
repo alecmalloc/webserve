@@ -1,14 +1,14 @@
 #include "webserv.hpp"
 
-HttpRequest::HttpRequest(Config& conf): 
-    _conf(conf), 
-    _response_code(200), 
-    _pathInfo() 
+HttpRequest::HttpRequest(Config& conf):
+    _conf(conf),
+    _response_code(200),
+    _pathInfo()
 {
-    ;
+    _cgiResponseString = "";
 }
 
-HttpRequest::HttpRequest(const HttpRequest& other): 
+HttpRequest::HttpRequest(const HttpRequest& other):
     _conf(other._conf),
     _response_code(other._response_code),
     _method(other._method),
@@ -41,6 +41,12 @@ HttpRequest& HttpRequest::operator =(const HttpRequest& other) {
 
     return (*this);
 }
+
+
+std::string HttpRequest::getCgiResponseString() const {
+    return _cgiResponseString;
+}
+
 
 ServerConf HttpRequest::getServer() const {
     return _server;
@@ -78,6 +84,12 @@ PathInfo HttpRequest::getPathInfo() const {
     return _pathInfo;
 }
 
+
+void HttpRequest::setCgiResponseString(const std::string& cgiResponseString) {
+    _cgiResponseString = cgiResponseString;
+}
+
+
 void	HttpRequest::setMethod( std::string tmp ){
 	_method = tmp;
 }
@@ -92,7 +104,7 @@ void	HttpRequest::setUrl( std::string tmp ){
 
 void	HttpRequest::setVersion( std::string tmp ){
 	_version = tmp;
-	
+
 }
 
 void	HttpRequest::setBody( std::string tmp ){
@@ -146,54 +158,65 @@ std::ostream& operator<<(std::ostream& os, HttpRequest& request) {
     return os;
 }
 
-void HttpRequest::parse(const std::string& rawRequest) {
 
+void HttpRequest::parseBody(std::stringstream& ss) {
+    std::string line;
+    std::string body;
+
+    while (std::getline(ss, line)) {
+        body += line + "\n";
+    }
+    if (!body.empty()) {
+        setBody(body);
+    }
+}
+
+
+
+
+
+void HttpRequest::parse(const std::string& rawRequest) {
     // split request data into lines
     std::stringstream ss(rawRequest);
     std::string line;
-    // make sure first line exists again (just to be sure)
+
+    // Parse request line (METHOD URI HTTP/VERSION)
     if (!std::getline(ss, line)) {
         setResponseCode(400);
         return;
     }
-    // parse request line (METHOD URI HTTP/VERSION)
     std::istringstream request_line(line);
     std::string method, uri, version;
     request_line >> method >> uri >> version;
-    // check if method uri and version exist
     if (method.empty() || uri.empty() || version.empty()) {
         setResponseCode(400);
         return;
     }
-    
-    // check if http version is 1.1 (correct version)
     if (version != "HTTP/1.1") {
         setResponseCode(505);
         return;
     }
-
-    // set ss to member variables
     _method = method;
     _uri = uri;
     _version = version;
 
+    // Parse headers
     while (std::getline(ss, line) && !line.empty() && line != "\r") {
         if (line[line.length()-1] == '\r')
             line = line.substr(0, line.length()-1);
-    
+
         size_t colon = line.find(':');
         if (colon != std::string::npos) {
             std::string key = line.substr(0, colon);
             std::string value = line.substr(colon + 2); // skip ": "
-            
+
             std::vector<std::string> values;
-            
+
             // special handling for Cookie header
             if (key == "Cookie") {
                 std::stringstream valueStream(value);
                 std::string item;
                 while (std::getline(valueStream, item, ';')) {
-                    // trim leading/trailing whitespace
                     item.erase(0, item.find_first_not_of(" "));
                     item.erase(item.find_last_not_of(" ") + 1);
                     values.push_back(item);
@@ -208,51 +231,69 @@ void HttpRequest::parse(const std::string& rawRequest) {
                     values.push_back(item);
                 }
             }
-            
+
             _headers[key] = values;
         }
     }
 
-    // check to make sure host is in headers -> these are standard and sent with every req in modern tools, however just to be safe
+    // Check to make sure host is in headers
     if (_headers.find("Host") == _headers.end()) {
         setResponseCode(400);
         return;
     }
 
-    // set url from host header + uri and set host (ip + port)
+    // Set URL from host header + URI and set host (IP + port)
     std::string host = _headers["Host"][0];
     _url = host + _uri;
 
-    // only handle GET POST DELETE
+    // Only handle GET, POST, DELETE
     if (_method != "GET" && _method != "POST" && _method != "DELETE") {
         setResponseCode(405);
         return;
     }
 
+    
+	// Get body if present (everything after empty line)
+    //parseBody(ss);
+	//canged logic so it gets depending on content length 
+	if (_method == "POST") {
+        // Find the double CRLF that separates headers and body
+        size_t bodyStart = rawRequest.find("\r\n\r\n");
+        if (bodyStart != std::string::npos) {
+            bodyStart += 4; // Skip the \r\n\r\n
+            
+            // Get the body using Content-Length
+            if (_headers.find("Content-Length") != _headers.end()) {
+                size_t contentLength = 0;
+                std::istringstream(_headers["Content-Length"][0]) >> contentLength;
+                
+                if (bodyStart + contentLength <= rawRequest.length()) {
+                    std::string bodyContent = rawRequest.substr(bodyStart, contentLength);
+                    setBody(bodyContent);
+                    
+                    // Debug output
+                    std::cout << "Read POST body, length: " << bodyContent.length() << std::endl;
+                } else {
+                    std::cerr << "Warning: Incomplete body received. Expected " 
+                              << contentLength << " bytes, got " 
+                              << (rawRequest.length() - bodyStart) << " bytes." << std::endl;
+                }
+            }
+        }
+    }
+
     // POST specific validation
     if (_method == "POST") {
-        // check for Content-Length or Transfer-Encoding header
         if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end()) {
             setResponseCode(411); // Length Required
             return;
         }
-
-        // verify body exists for POST
         if (_body.empty()) {
+            std::cout << "ERROR EMPTY BODY\n";
             setResponseCode(400); // Bad Request
             return;
         }
     }
-
-    // get body if present (everything after empty line)
-    std::string body;
-    while (std::getline(ss, line)) {
-        body += line + "\n";
-    }
-    if (!body.empty()) {
-        _body = body;
-    }
-
     // //  match server block from conf
     std::vector<ServerConf> server_list;
     server_list = _conf.getServerConfs();
@@ -273,20 +314,141 @@ void HttpRequest::parse(const std::string& rawRequest) {
             _server = (*it);
         }
     }
-    // return if above fails and return response? -> cant remember what i meant with this lol
+	//std::Cout << "parse Body:" + body  + ":\n";
+	// return if above fails and return response? -> cant remember what i meant with this lol
 }
 
 void HttpRequest::handleRequest(const std::string& rawRequest) {
     // parse http request
     parse(rawRequest);
-    if (_response_code != 200)
-        return ;
-
-    // validate and load into PathInfo obj
+	//std::cout << "raw req string :" << rawRequest << ":\n";
+	// validate and load into PathInfo obj
     validateRequestPath();
     if (_response_code != 200)
         return ;
 }
+
+
+void HttpRequest::validateRequestPath(void) {
+    const std::vector<LocationConf>& locationConfs = _server.getLocationConfs();
+    const std::string uri = getUri();
+    
+    // Add null checks and debugging
+    //std::cout << "Processing URI: " << uri << std::endl;
+    //std::cout << "Server root: " << _server.getRootDir() << std::endl;
+
+    // Protect against empty/null values
+    if (_server.getRootDir().empty()) {
+        std::cout << "Warning: Server root is empty" << std::endl;
+        _response_code = 500;
+        return;
+    }
+
+    // Create initial PathInfo with safety checks
+    std::string fullPath = _server.getRootDir();
+    if (!uri.empty()) {
+        fullPath += uri;
+    }
+    _pathInfo = PathInfo(fullPath);
+    
+    for (std::vector<LocationConf>::const_iterator it = locationConfs.begin();
+         it != locationConfs.end(); ++it) {
+        // Add null checks before accessing location properties
+        if (it->getPath().empty()) {
+            continue;
+        }
+
+        if (uri.find(it->getPath()) == 0) {
+            if (uri == it->getPath() || uri == it->getPath() + "/") {
+                // Check if index array is not empty before accessing first element
+                if (!it->getIndex().empty()) {
+                    std::string locationPath = it->getRootDir();
+                    locationPath += it->getPath();
+                    locationPath += "/";
+                    locationPath += it->getIndex()[0];
+                    _pathInfo = PathInfo(locationPath);
+                } else {
+                    std::cout << "Warning: Location has no index files" << std::endl;
+                    _response_code = 404;
+                    return;
+                }
+            } else {
+                std::string locationPath = it->getRootDir() + uri;
+                _pathInfo = PathInfo(locationPath);
+            }
+            break;
+        }
+    }
+
+    _pathInfo.parsePath();
+    
+    if ((_response_code = _pathInfo.validatePath()) != 200)
+        return;
+}
+
+
+std::string HttpRequest::getConnectionType() const {
+    // Default connection type based on HTTP version
+    std::string connectionType = "keep-alive";
+
+    
+    // Check if there is an explicit Connection header
+    std::map<std::string, std::vector<std::string> >::const_iterator it = _headers.find("Connection");
+    if (it != _headers.end() && !it->second.empty()) {
+        std::string clientConnection = it->second[0];
+        
+        // Convert to lowercase for case-insensitive comparison
+        std::string lowerConnection = clientConnection;
+        std::transform(lowerConnection.begin(), lowerConnection.end(), 
+                       lowerConnection.begin(), ::tolower);
+        
+        // Check if it's either keep-alive or close
+        if (lowerConnection == "keep-alive" || lowerConnection == "close") {
+            connectionType = lowerConnection;
+        }
+    }
+    
+    return connectionType;
+}
+
+
+/*
+void HttpRequest::validateRequestPath(void) {
+    const std::vector<LocationConf>& locationConfs = _server.getLocationConfs();
+    std::string bestMatch = "";
+    const LocationConf* matchedLoc = NULL;
+    const std::string uri = getUri();
+
+    // Set PathInfo before location matching
+    std::string full_path = _server.getRootDir() + uri;
+    _pathInfo = PathInfo(full_path);
+    _pathInfo.parsePath(); // Parse the path components regardless of validation
+
+    // Loop over location confs
+    for (std::vector<LocationConf>::const_iterator it = locationConfs.begin();
+        it != locationConfs.end(); ++it) {
+            const LocationConf& loc = *it;
+            std::string locPath = loc.getPath();
+            if (uri.substr(0, locPath.length()) == locPath) {
+                if (locPath.length() > bestMatch.length()) {
+                    bestMatch = locPath;
+                    matchedLoc = &loc;
+                }
+            }
+    }
+
+    // If no location match, set 404 but keep path info
+    if (!matchedLoc) {
+        _response_code = 404;
+        return;
+    }
+
+    // Only validate the path exists if we found a matching location
+    if ((_response_code = _pathInfo.validatePath()) != 200)
+        return;
+}
+
+
 
 void HttpRequest::validateRequestPath(void) {
     // grab location confs
@@ -294,20 +456,20 @@ void HttpRequest::validateRequestPath(void) {
     // things we need in for loop
     const std::vector<LocationConf>& locationConfs = _server.getLocationConfs();
     std::string bestMatch = "";
-    const LocationConf* matchedLoc = NULL; 
+    const LocationConf* matchedLoc = NULL;
     const std::string uri = getUri();
 
     //std::cout << "Debug: URI to match: " << uri << std::endl;
     //std::cout << "Debug: Number of location configs: " << locationConfs.size() << std::endl;
 
     // loop over location confs
-    for (std::vector<LocationConf>::const_iterator it = locationConfs.begin(); 
+    for (std::vector<LocationConf>::const_iterator it = locationConfs.begin();
         it != locationConfs.end(); ++it) {
             const LocationConf& loc = *it;
             std::string locPath = loc.getPath();
             // Check if URI starts with location path
             if (uri.substr(0, locPath.length()) == locPath) {
-                // keep longest match (most specific). Ex: /posts/ or posts/articles 
+                // keep longest match (most specific). Ex: /posts/ or posts/articles
                 if (locPath.length() > bestMatch.length()) {
                     bestMatch = locPath;
                     matchedLoc = &loc;
@@ -325,7 +487,7 @@ void HttpRequest::validateRequestPath(void) {
     size_t question_mark = full_path.find("?");
     if (question_mark != std::string::npos)
         full_path = full_path.substr(0, question_mark);
-   
+
     // std::cout << "Debug fullPath:" << full_path  << '\n';
     // load full path into PathInfo obj
     _pathInfo = PathInfo(full_path);
@@ -337,3 +499,4 @@ void HttpRequest::validateRequestPath(void) {
     if ((_response_code = _pathInfo.parsePath()) != 200)
         return;
 }
+*/

@@ -1,1 +1,181 @@
-<h1>example</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webserv Test Suite</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        h2 {
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .delete-btn {
+            background-color: #e74c3c;
+        }
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        form {
+            margin: 10px 0;
+        }
+        input[type="file"],
+        input[type="text"] {
+            margin: 10px 0;
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Webserv Test Suite</h1>
+
+        <!-- Directory Listing Test -->
+        <div class="test-section">
+            <h2>Directory Listing Test</h2>
+            <a href="/site/" class="btn">Test Directory Listing</a>
+        </div>
+
+        <!-- File Upload Test -->
+        <div class="test-section">
+            <h2>POST Method Test</h2>
+            <form action="/POST/" method="POST" enctype="multipart/form-data">
+                <h3>File Upload</h3>
+                <input type="file" name="file" required>
+                <button type="submit" class="btn">Upload File</button>
+            </form>
+
+            <form action="/POST/" method="POST">
+                <h3>Text Message</h3>
+                <input type="text" name="message" placeholder="Enter a message" required>
+                <button type="submit" class="btn">Send Message</button>
+            </form>
+        </div>
+		<!-- CGI Test -->
+        <div class="test-section">
+            <h2>CGI Tests</h2>
+            
+            <!-- Python CGI Test -->
+            <form action="/cgi-bin/test.py" method="POST">
+                <h3>Python CGI Test</h3>
+                <input type="text" name="name" placeholder="Enter your name" required>
+                <button type="submit" class="btn">Test Python CGI</button>
+            </form>
+
+            <!-- PHP CGI Test -->
+            <form action="/cgi-bin/test.php" method="POST">
+                <h3>PHP CGI Test</h3>
+                <input type="text" name="message" placeholder="Enter a message" required>
+                <button type="submit" class="btn">Test PHP CGI</button>
+            </form>
+        </div>
+
+		<div class="test-section">
+			<h3>Python CGI GET Test</h3>
+			<form action="/cgi-bin/get_test.py" method="GET">
+				<input type="text" name="search" placeholder="Search term" required>
+				<select name="category">
+					<option value="all">All Categories</option>
+					<option value="news">News</option>
+					<option value="blog">Blog</option>
+				</select>
+				<button type="submit" class="btn">Test GET Request</button>
+			</form>
+			
+			<p>You can also test direct URL parameters:</p>
+			<a href="/cgi-bin/get_test.py?name=test&id=123" class="btn">Test GET with URL Parameters</a>
+		</div>
+
+    </div> <!-- container closing div -->
+        <!-- DELETE Method Test -->
+        <div class="test-section">
+            <h2>DELETE Method Test</h2>
+            <input type="text" id="deleteUrl" placeholder="Enter path to delete">
+            <button onclick="deleteResource()" class="btn delete-btn">Delete Resource</button>
+        </div>
+
+        <!-- Redirection Test -->
+        <div class="test-section">
+            <h2>Redirection Test</h2>
+            <a href="/redirect/" class="btn">Test Redirection</a>
+        </div>
+		
+		<div class="test-section">
+			<h2>CGI File Upload Test</h2>
+			<p>Test if file uploads work through CGI scripts</p>
+			<a href="/cgi-bin/upload_form.html" class="btn">Test CGI File Upload</a>
+		</div>
+
+
+        <!-- Error Pages Test -->
+        <div class="test-section">
+            <h2>Error Pages Test</h2>
+            <a href="/nonexistent" class="btn">Test 404 Error</a>
+            <a href="/forbidden" class="btn">Test 403 Error</a>
+        </div>
+    </div>
+	
+	<form action="/cgi-bin/advanced_test.php" method="POST" enctype="multipart/form-data">
+		<h3>Advanced PHP CGI Test</h3>
+		<input type="text" name="message" placeholder="Enter a message" required>
+		<input type="file" name="userfile">
+		<button type="submit" class="btn">Run Advanced PHP Test</button>
+	</form>
+
+    <script>
+        function deleteResource() {
+            const path = document.getElementById('deleteUrl').value;
+            fetch(path, {
+                method: 'DELETE',
+            })
+            .then(response => {
+                alert(`Delete request sent. Status: ${response.status}`);
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
+        }
+    </script>
+</body>
+</html>

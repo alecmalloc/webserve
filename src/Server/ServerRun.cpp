@@ -1,5 +1,8 @@
 #include "webserv.hpp"
 
+#include <cstdlib> // For strtoul
+#include <sstream> // For stringstream
+
 static volatile bool running = true;
 
 static void	handleSignal( int signal ){
@@ -13,7 +16,7 @@ static void	handleSignal( int signal ){
 static void	startupSignalHandler( void ){
 	struct sigaction	sa;
 
-	//set struct to zero 
+	//set struct to zero
 	std::memset( &sa, 0, sizeof( sa ) );
 
 	sa.sa_handler = handleSignal;
@@ -64,7 +67,7 @@ static int	createNewClient( int epollFd, int fd ){
 	if( setNonBlocking( clientFd ) == -1 ){
 		close( clientFd );
 		return( -1 );
-	}	
+	}
 
 	if( setToEpoll( epollFd, clientFd ) == -1 ){
 		close( clientFd );
@@ -86,12 +89,12 @@ static Client*	findClient( Server& server, struct epoll_event event ){
 			return( &( *it ) );
 
 	}
-	
+
 	//if client doesn exist already create new one and add to epoll
 	int	clientFd;
 	Client	newClient;
 	clientFd = createNewClient( server.getEpollFd(),  event.data.fd );
-       
+
 	if( clientFd == -1 ){
 		std::cerr << RED << "ERROR:	Client: Connection failed" << \
 				END << std::endl;
@@ -107,7 +110,7 @@ static Client*	findClient( Server& server, struct epoll_event event ){
 
 	std::cout << BLUE << "INFO:	Client: connected:	" << END << clientFd \
 			<< std::endl;
-	
+
 	//return new client
 	return( &clients.back() );
 }
@@ -133,29 +136,66 @@ static void	readFromClient( Client* client ) {
 
 	//recive data from client
 	while( bytesRead > 0 ){
-		buffer[ BUFFERSIZE ] = '\0';
+		buffer[ bytesRead ] = '\0'; //fixed from buffersice to buffer[ bytesRead ] 
+		//std::cout << "BUFFER:" << buffer << ":\n";
 		client->setContent( buffer );
 		std::memset( buffer, '\0', BUFFERSIZE );
 		bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
 	}
-	
+
 	//check recv for closed client connection
 	if( bytesRead == 0 )
 		client->setClosed( true );
 
 	//check for error on client connection
-	if( bytesRead == -1 && ( errno != EAGAIN || errno != EWOULDBLOCK ) )
+	if( bytesRead == -1 && ( errno != EAGAIN || errno != EWOULDBLOCK ) )//if problem try (bytesRead == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {
 		client->setError( true );
 }
 
-//TODO: Check with alec for his function 
-//this one just for testing an proplably uncomplete / not really read up for http
-static bool	completeHttpRequest( std::string request ){
-	//check if "\r\n\r\n" is in request -> this indicates end of request !?!?!?????
-	return( request.find( "\r\n\r\n" ) != std::string::npos );
+//chaged to make it work with split paed sending of chrome 
+static bool completeHttpRequest(std::string request) {
+    // First check if we have the full headers
+    size_t headerEnd = request.find("\r\n\r\n");
+    if (headerEnd == std::string::npos)
+        return false;
+        
+    // Look for Content-Length header
+    size_t clPos = request.find("Content-Length: ");
+    if (clPos != std::string::npos) {
+        // Extract the Content-Length value
+        size_t valueStart = clPos + 16;
+        size_t valueEnd = request.find("\r\n", valueStart);
+        std::string lengthStr = request.substr(valueStart, valueEnd - valueStart);
+        
+        // C++98 compliant conversion from string to number
+        std::istringstream ss(lengthStr);
+        size_t contentLength = 0;
+        ss >> contentLength;
+        
+        size_t bodyStart = headerEnd + 4;
+        size_t bodyReceived = request.length() - bodyStart;
+        
+        // Request is complete only if we've received all the content
+        return bodyReceived >= contentLength;
+    }
+    
+    // If no Content-Length, assume complete after headers
+    return true;
 }
 
-static void	checkEvents( Server& server, Client* client,  struct epoll_event& event ){		
+
+//rverConf* selectServerConf(const std::vector<ServerConf>& serverConfs, const std::string& host, int port) {
+//  for (size_t i = 0; i < serverConfs.size(); ++i) {
+//      const ServerConf& conf = serverConfs[i];
+//      // Implement your selection logic here based on host and port
+//      if (conf.getHost() == host && conf.getPort() == port) {
+//           return &serverConfs[i];
+//      }
+//  }
+//  return nullptr; // Return nullptr if no matching configuration is found
+//
+
+static void	checkEvents( Server& server, Client* client,  struct epoll_event& event ){
 	//check for error
 	if( event.events & EPOLLERR || client->getError() ){
 		//close client
@@ -180,31 +220,54 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 	//check if Clients stopped sending data
 	if( event.events & EPOLLRDHUP || completeHttpRequest( client->getContent() ) ){
-		//std::cout << client->getContent() << std::endl;
+		std::cout << client->getContent() << std::endl;
 		//test cgi
 		//cgimain( server.getConf() );
 
 		// create temp config file for request construction
 		Config confTMP = server.getConf();
-		HttpRequest request(confTMP);
+		
+		//td::vector<ServerConf> serverTMPConf = confTMP.getServerConfs();
+		//select the server conf i need with function idk how ???
+		//ServerConf* selectedServerConf = &serverTMPConf[0]; // just plce holder value 
+		
 
-		// FOR @LINUS:
-		// handle http request all sub functions and check response code after
+		HttpRequest request(confTMP);
+		
 		const std::string request_str = client->getContent();
 		request.handleRequest(request_str);
-		int response_code = request.getResponseCode();
-		std::cout << "RESPONSE CODE: " <<  response_code << "\n";
-		// IMPORTANT: IF REQUEST CODE ISN'T 200 PATHINFO WON'T HAVE MUCH BESIDES FULLPATH
-		/// EX: if RESPONSE is 404 it will only have fullPath. we dont do any more checks once one check fails
-		std::cout << request.getPathInfo() << '\n';
+		
+		//std::cout << request.getPathInfo() << '\n';
 		// Ex: you could check smt like request.getPathInfo().isDirectory() or request.getPathInfo().getFilename()
 		// but read the PathInfo.hpp to get all specs. its really helpful and it already checks all permissions etc
+		//request.setResponseCode(200);
+		
+		
+		std::vector<ServerConf> serverTMPConf = confTMP.getServerConfs();
+		//select the server conf i need with function idk how ???
+		ServerConf* selectedServerConf = &serverTMPConf[0]; // just plce holder value
+		//std::cout << "req.body:" + request.getBody() + ":\n";
+		//ServerConf selectedServerConf = request.getServer();
+		Response response(request, selectedServerConf);
+		
+		
+		
+		//need to ajust these function not working properly right now 
+		/*if(selectedServerConf->getChunkedTransfer()){//chunking is true print chunk size 
+			int chunk_size = selectedServerConf->getChunkSize();
+			//std::cout << "CHUNK SIZE:" << chunk_size << ":\n";
+		}
+		else{
+			//std::cout << "NO CHUNKING \n\n\n";
+		}*/
+			write(client->getSocketFd(), response.getHttpResponse().c_str(), response.getHttpResponse().size());
 
-
+		
 		//so TODO add httpparsing and response handler here -> unchunking chunking,
 		//sending etc -_-> integrate cgi with" cgihandler( HttpRequest ) "
 		client->setClosed( true );
 	}
+	
 
 	//check for error
 	if( event.events & EPOLLERR || client->getError() ) {
@@ -222,6 +285,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		closeClient( server, client );
 		return;
 	}
+			
 }
 
 static void	mainLoop( Server& server ){
@@ -245,7 +309,7 @@ static void	mainLoop( Server& server ){
 			//check if client already exists
 			Client*	tmp = findClient( server, events[i] );
 
-			//check if client was found 
+			//check if client was found
 			if( !tmp )
 				continue;
 

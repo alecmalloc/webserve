@@ -17,7 +17,8 @@ class HttpRequest {
         std::string                                          _version;
         std::map<std::string, std::vector<std::string> >      _headers;
         std::string                                          _body;
-        
+		//cgi response string 
+		std::string											_cgiResponseString;
         std::string                                          _hostname;
 
         // reference to which serverConf i have matched from request
@@ -44,6 +45,7 @@ class HttpRequest {
         std::string                                             getHostname() const;
         ServerConf						                        getServer() const;
         PathInfo                                                getPathInfo() const;
+		std::string                                             getCgiResponseString() const;
 
         //setters
         void	setMethod( std::string );
@@ -56,6 +58,7 @@ class HttpRequest {
         void	setResponseCode( int tmp );
         void	setServer( ServerConf );
         void    setPathInfo( PathInfo );
+		void    setCgiResponseString(const std::string& cgiResponseString);
 
         // main handler
         void    handleRequest(const std::string& rawRequest);
@@ -64,6 +67,9 @@ class HttpRequest {
 
 	    // member funcitons
         void    parse(const std::string& rawRequest);
+		void	parseBody(std::stringstream& ss);
+
+		std::string getConnectionType() const;
 };
 
 // << overload for printing

@@ -27,4 +27,4 @@
 - **501 Not Implemented**: The request method is not supported by the server and cannot be handled.
 - **502 Bad Gateway**: The server, while acting as a gateway or proxy, received an invalid response from the upstream server.
 - **503 Service Unavailable**: The server is not ready to handle the request.
-- **505 Wrong HTTP Version**  
+- **505 Wrong HTTP Version**

@@ -5,7 +5,7 @@
 #define DEFAULT_CONF		"conf/default.conf"
 #define DEFAULT_IP		"0.0.0.0"
 #define DEFAULT_PORT		8080
-#define MAXBODYSIZE		10000
+#define MAXBODYSIZE		1000000
 
 //defines for parser. Methodes Names how config stuff is called etc.
 #define ALLOWED_METHODES	{ "POST", "DELETE", "GET" }

@@ -73,6 +73,13 @@ SERVER_SOFTWARE: The server software you’re using (e.g., Apache 1.3).
 - Error management system
 - Custom error pages
 
+
+- IMPLEMENTIBG Chuncking for responses 
+
+
+- Unchunking of chnunked requests ?????
+- maximum max body size location specific _locationConf->getClientMaxBodySize() for upload kinda like this IDK if nessary ?
+- Make for post extraction of content if multi line dont know if nessary tho ?
 **Integration Points:** Will need to work with Moritz on CGI implementation and Alec for request/response flow
 
 ## Shared Tasks

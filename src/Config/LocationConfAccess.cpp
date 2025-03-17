@@ -46,11 +46,12 @@ void	LocationConf::checkAccess( std::string rootDir ){
 					*it + " not accessible" ) );
 	}
 
-	//check upload dir
+	/*check upload dir ---> think we dont need that cause i make the dir if needed like Nginx would 
 	if( !_uploadDir.empty() && !accessibleDir( rootDir + _path + _uploadDir ) )
 		throw( std::runtime_error( "UploadDir " + rootDir + _path + _uploadDir + \
 				" not accesible" ) );
- 
+	*/
+				
 	//check allowed redirect
 	for( std::map< std::string, std::string >::iterator it = \
 			_allowedRedirects.begin(); it != _allowedRedirects.end(); it++ ){
