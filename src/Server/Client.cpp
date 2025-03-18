@@ -1,12 +1,16 @@
 #include "webserv.hpp"
 
-Client::Client( void ) : _eventFd( -1 ), _socketFd( -1 ), _closed( false ), _error( false ) {
-	;
+Client::Client( void ) : _eventFd( -1 ), _socketFd( -1 ), _closed( false ), _error( false ){
+	std::string	tmp( "abc" );
+
+	_content = tmp;	
 }
 
 Client::Client( int eventFd, int socketFd ) : _eventFd( eventFd), _socketFd( socketFd ), \
 		_closed( false ), _error( false ){
-	;
+	std::string	tmp;
+
+	_content = tmp;
 }
 
 Client::Client( const Client& og ) : _eventFd( og._eventFd ), _socketFd( og._socketFd ), \
