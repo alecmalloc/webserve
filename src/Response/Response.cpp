@@ -32,6 +32,7 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 	for (std::vector<LocationConf>::const_iterator it = locations.begin();
 		 it != locations.end(); ++it) {
 		std::string locPath = it->getPath();
+		std::cout << "DEBUG - Checking location: '" << it->getPath() << "'" << std::endl;
 		
 		if (uri.find(locPath) == 0) {  // URI starts with location path
 			if (locPath.length() > bestMatch.length()) {
@@ -40,6 +41,13 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 			}
 		}
 	}
+	std::cout << "URI: " << uri << std::endl;
+	std::cout << "Server root: " << _serverConf->getRootDir() << std::endl;
+	if (_locationConf) {
+    	std::cout << "Location path: " << _locationConf->getPath() << std::endl;
+    	std::cout << "Location root: " << _locationConf->getRootDir() << std::endl;
+	}
+	//std::cout << "Final path being used: " << pathInfo.getFullPath() << std::endl;
 	processResponse(reqObj);
 	generateHttpresponse(reqObj);
 }
@@ -86,7 +94,6 @@ std::string Response::getServerName(){
 
 
 void Response::generateErrorResponse(HttpRequest &reqObj){
-	//check for custom error page saved by moritz somewhere
 	 // Retrieve the error pages map
 	 const std::map<int, std::string>& errorPages = _serverConf->getErrorPages();
 
@@ -198,8 +205,9 @@ void		Response::processResponse(HttpRequest &ReqObj){
         }*/
 	
 		 // Validate and parse the path
-			pathInfo.validatePath();
-			pathInfo.parsePath();
+			int code = pathInfo.validatePath();
+			std::cout << "ERROR CODE AFTER VALIDATEING GGG " <<  code << ":PENUS\n";
+			//pathInfo.parsePath();
 			
 		
 		//FIRST CHECK IF ITS CGI REQUEST 
@@ -226,11 +234,13 @@ void		Response::processResponse(HttpRequest &ReqObj){
 		if (ReqObj.getMethod() == "DELETE") {
 		std::cout << "DELETE REQUEST" << std::endl;
 		HandleDeleteRequest(ReqObj, pathInfo);
-	}
+		}
+		
 	}
 	catch(int error)
 	{
 		ReqObj.setResponseCode(error);
+		std::cout << "CODE " << ReqObj.getResponseCode() << ":\n";
 		generateErrorResponse(ReqObj);
 	}
 

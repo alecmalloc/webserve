@@ -243,12 +243,69 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		//request.setResponseCode(200);
 		
 		
-		std::vector<ServerConf> serverTMPConf = confTMP.getServerConfs();
-		//select the server conf i need with function idk how ???
-		ServerConf* selectedServerConf = &serverTMPConf[0]; // just plce holder value
-		//std::cout << "req.body:" + request.getBody() + ":\n";
-		//ServerConf selectedServerConf = request.getServer();
-		Response response(request, selectedServerConf);
+	// Get server configs
+	std::vector<ServerConf> serverTMPConf = confTMP.getServerConfs();
+
+	// Initialize server conf pointer
+	ServerConf* selectedServerConf = NULL;
+
+	// Get the Host header from the request
+	std::string host = "localhost"; // Default
+	if (request.getHeaders().count("Host") > 0) {
+    	host = request.getHeaders().at("Host")[0];
+    	// Remove port if present
+    	size_t colonPos = host.find(':');
+    	if (colonPos != std::string::npos) {
+    	    host = host.substr(0, colonPos);
+    	}
+	}
+
+	// Debug the host value
+	std::cout << "HOST HEADER VALUE: " << host << std::endl;
+
+	// Match server based on host/server_name
+	for (size_t i = 0; i < serverTMPConf.size(); i++) {
+    	const std::vector<std::string>& serverNames = serverTMPConf[i].getServerConfNames();
+    
+    	std::cout << "Checking server " << i << " with names: ";
+    	for (size_t j = 0; j < serverNames.size(); j++) {
+        	std::cout << serverNames[j] << " ";
+    	}
+    	std::cout << std::endl;
+    
+    	if (std::find(serverNames.begin(), serverNames.end(), host) != serverNames.end()) {
+        	selectedServerConf = &serverTMPConf[i];
+        	std::cout << "FOUND SERVER MATCH by name!" << std::endl;
+        	break;
+    	}
+    
+    	// Also check if this server listens on the requested IP
+    	const std::map<std::string, std::set<int> >& ipPorts = serverTMPConf[i].getIpPort();
+    	if (ipPorts.find(host) != ipPorts.end()) {
+        	selectedServerConf = &serverTMPConf[i];
+        	std::cout << "FOUND SERVER MATCH by IP!" << std::endl;
+        	break;
+    	}
+	}
+
+	// Use the first server as default if no match
+	if (!selectedServerConf && !serverTMPConf.empty()) {
+    	selectedServerConf = &serverTMPConf[0];
+    	std::cout << "NO MATCH - using default server" << std::endl;
+	}
+
+	// Before creating response, validate
+	if (!selectedServerConf) {
+    	std::cerr << "CRITICAL ERROR: No server configuration available" << std::endl;
+    	// Handle error case
+    	return;
+	}
+
+	// Now print debug info
+	std::cout << "SERVER ROOT: " << selectedServerConf->getRootDir() << std::endl;
+
+	// Create response with the selected server
+	Response response(request, selectedServerConf);
 		
 		
 		
