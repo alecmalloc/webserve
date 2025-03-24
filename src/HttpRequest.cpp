@@ -186,7 +186,7 @@ void HttpRequest::parseHeaders(const std::string& rawRequest) {
     // Parse headers
     while (std::getline(ss, line) && !line.empty() && line != "\r") {
         if (line[line.length()-1] == '\r')
-            line = line.substr(0, line.length()-1);
+            line = line.substr(0, line.length() - 1);
 
         size_t colon = line.find(':');
         if (colon != std::string::npos) {
@@ -236,40 +236,62 @@ void HttpRequest::parseHeaders(const std::string& rawRequest) {
     }
 }
 
+void HttpRequest::parseBodyChunked(const std::string& rawRequest, size_t bodyStart) {
+    std::string chunkedBody = rawRequest.substr(bodyStart, (rawRequest.size() - bodyStart) + 1);
+    std::stringstream ss(chunkedBody);
+    std::string line;
+    while (std::getline(ss, line)) {
+        if (line.empty())
+            continue;
+        // reached end of chunked request
+        if (line.find("0") != std::string::npos)
+            break;
+        std::stringstream chunkedline;
+        std::cout << "chunkedline: " << line << '\n';
+    }
+}
+
 void HttpRequest::parseBody(const std::string& rawRequest) {
-    // check to make sure content length and transfer encoding headers exists
+    
+    // check that at least one of these headers exists (MUST for POST request)
     if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end()) {
         setResponseCode(411); // Length Required
         return;
     }
-    // Find the double CRLF that separates headers and body
+
+    // find \r\n\r\n that seperates body and header
     size_t bodyStart = rawRequest.find("\r\n\r\n");
-    if (bodyStart != std::string::npos) {
-        bodyStart += 4; // Skip the \r\n\r\n
-        
-        // Get the body using Content-Length
-        if (_headers.find("Content-Length") != _headers.end()) {
-            size_t contentLength = 0;
-            std::istringstream(_headers["Content-Length"][0]) >> contentLength;
-            
-            if (bodyStart + contentLength <= rawRequest.length()) {
-                std::string bodyContent = rawRequest.substr(bodyStart, contentLength);
-                setBody(bodyContent);
-                
-                // Debug output
-                std::cout << "Read POST body, length: " << bodyContent.length() << std::endl;
-            } else {
-                std::cerr << "Warning: Incomplete body received. Expected " 
-                            << contentLength << " bytes, got " 
-                            << (rawRequest.length() - bodyStart) << " bytes." << std::endl;
-            }
-        }
-    }
-    if (_body.empty()) {
-        std::cout << "ERROR EMPTY BODY\n";
-        setResponseCode(400); // Bad Request
+    if (bodyStart == std::string::npos) {
+        setResponseCode(400);
         return;
     }
+    // Skip the \r\n\r\n
+    bodyStart += 4;
+
+    // parse chunked requests seperately
+    if (_headers["Transfer-Encoding"][0] == "chunked") {
+        parseBodyChunked(rawRequest, bodyStart);
+        return;
+    }
+
+    // Get the body using Content-Length
+    // TODO: refactor this
+    // this only works when content length is used -> which is not always the case
+    size_t contentLength = 0;
+    std::istringstream(_headers["Content-Length"][0]) >> contentLength;
+    
+    if (bodyStart + contentLength <= rawRequest.length()) {
+        std::string bodyContent = rawRequest.substr(bodyStart, contentLength);
+        setBody(bodyContent);
+
+        // Debug output
+        std::cout << "Read POST body, length: " << bodyContent.length() << std::endl;
+    } else {
+        std::cerr << "Warning: Incomplete body received. Expected " 
+                    << contentLength << " bytes, got " 
+                    << (rawRequest.length() - bodyStart) << " bytes." << std::endl;
+    }
+
 }
 
 // //  match server block from conf
@@ -295,6 +317,8 @@ void HttpRequest::matchServerBlock(void) {
 }
 
 void HttpRequest::parse(const std::string& rawRequest) {
+    
+
 
     parseHeaders(rawRequest);
 
@@ -303,6 +327,9 @@ void HttpRequest::parse(const std::string& rawRequest) {
     }
 
     matchServerBlock();
+
+    // FOR DEBUGGING 
+    std::cout << "DEBUG" << *this << '\n';
 }
 
 void HttpRequest::handleRequest(const std::string& rawRequest) {

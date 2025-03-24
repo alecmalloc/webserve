@@ -69,6 +69,7 @@ class HttpRequest {
         void    parse(const std::string& rawRequest);
         void    parseHeaders(const std::string& rawRequest);
         void    parseBody(const std::string& rawRequest);
+        void    parseBodyChunked(const std::string& rawRequest, size_t bodyStart);
 
         void    matchServerBlock(void);
 
