@@ -67,7 +67,10 @@ class HttpRequest {
 
 	    // member funcitons
         void    parse(const std::string& rawRequest);
-		void	parseBody(std::stringstream& ss);
+        void    parseHeaders(const std::string& rawRequest);
+        void    parseBody(const std::string& rawRequest);
+
+        void    matchServerBlock(void);
 
 		std::string getConnectionType() const;
 };
