@@ -236,18 +236,32 @@ void HttpRequest::parseHeaders(const std::string& rawRequest) {
     }
 }
 
+// check if a string only contains digits 
+bool static isOnlyDigits(const std::string& str) {
+    std::istringstream iss(str);
+    int number;
+    char remaining;
+    
+    return iss >> number && !(iss >> remaining);
+}
+
 void HttpRequest::parseBodyChunked(const std::string& rawRequest, size_t bodyStart) {
     std::string chunkedBody = rawRequest.substr(bodyStart, (rawRequest.size() - bodyStart) + 1);
     std::stringstream ss(chunkedBody);
     std::string line;
     while (std::getline(ss, line)) {
-        if (line.empty())
+        // check if line in chunked is byte size of next chunk -> continue for now. implement check for correct byte later
+        if (isOnlyDigits(line))
+            continue;
+        else if (line.empty())
             continue;
         // reached end of chunked request
-        if (line.find("0") != std::string::npos)
+        else if (line.find("0") != std::string::npos)
             break;
+        else
+            _body.append(line);
         std::stringstream chunkedline;
-        std::cout << "chunkedline: " << line << '\n';
+        //std::cout << "chunkedline: " << line << '\n';
     }
 }
 

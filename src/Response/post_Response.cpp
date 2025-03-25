@@ -5,7 +5,7 @@
 int Response::checkContentLength(HttpRequest& ReqObj){
 	std::map<std::string, std::vector<std::string> > headers = ReqObj.getHeaders();
 	std::map<std::string, std::vector<std::string> >::const_iterator it = headers.find("Content-Length");
-		 
+
 	if (it == headers.end() || it->second.empty()) {
 		std::cerr << "Missing Content-Length header" << std::endl;
 		return (411); // Length Required
@@ -152,8 +152,9 @@ void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
 	(void)pathinfo;
 	(void)ReqObj;
 	
-	if(checkContentLength(ReqObj) != 200)
-		throw(checkContentLength(ReqObj));
+	// ALEC EDIT: We dont always need content length in a post request. esp if chunked we use transfer-encoding instead
+	// if(checkContentLength(ReqObj) != 200)
+	// 	throw(checkContentLength(ReqObj));
 	std::string postData = ReqObj.getBody();
 	std::cout << "Received POST data: " << postData << std::endl;
 	
