@@ -343,7 +343,7 @@ void HttpRequest::parse(const std::string& rawRequest) {
     matchServerBlock();
 
     // FOR DEBUGGING 
-    std::cout << "DEBUG" << *this << '\n';
+    // std::cout << "DEBUG" << *this << '\n';
 }
 
 void HttpRequest::handleRequest(const std::string& rawRequest) {
