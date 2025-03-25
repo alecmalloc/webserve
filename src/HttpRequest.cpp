@@ -158,24 +158,7 @@ std::ostream& operator<<(std::ostream& os, HttpRequest& request) {
     return os;
 }
 
-
-void HttpRequest::parseBody(std::stringstream& ss) {
-    std::string line;
-    std::string body;
-
-    while (std::getline(ss, line)) {
-        body += line + "\n";
-    }
-    if (!body.empty()) {
-        setBody(body);
-    }
-}
-
-
-
-
-
-void HttpRequest::parse(const std::string& rawRequest) {
+void HttpRequest::parseHeaders(const std::string& rawRequest) {
     // split request data into lines
     std::stringstream ss(rawRequest);
     std::string line;
@@ -203,7 +186,7 @@ void HttpRequest::parse(const std::string& rawRequest) {
     // Parse headers
     while (std::getline(ss, line) && !line.empty() && line != "\r") {
         if (line[line.length()-1] == '\r')
-            line = line.substr(0, line.length()-1);
+            line = line.substr(0, line.length() - 1);
 
         size_t colon = line.find(':');
         if (colon != std::string::npos) {
@@ -243,65 +226,96 @@ void HttpRequest::parse(const std::string& rawRequest) {
     }
 
     // Set URL from host header + URI and set host (IP + port)
-    std::string host = _headers["Host"][0];
-    _url = host + _uri;
+    _hostname = _headers["Host"][0];
+    _url = _hostname + _uri;
 
     // Only handle GET, POST, DELETE
     if (_method != "GET" && _method != "POST" && _method != "DELETE") {
         setResponseCode(405);
         return;
     }
+}
 
+// check if a string only contains digits 
+bool static isOnlyDigits(const std::string& str) {
+    std::istringstream iss(str);
+    int number;
+    char remaining;
     
-	// Get body if present (everything after empty line)
-    //parseBody(ss);
-	//canged logic so it gets depending on content length 
-	if (_method == "POST") {
-        // Find the double CRLF that separates headers and body
-        size_t bodyStart = rawRequest.find("\r\n\r\n");
-        if (bodyStart != std::string::npos) {
-            bodyStart += 4; // Skip the \r\n\r\n
-            
-            // Get the body using Content-Length
-            if (_headers.find("Content-Length") != _headers.end()) {
-                size_t contentLength = 0;
-                std::istringstream(_headers["Content-Length"][0]) >> contentLength;
-                
-                if (bodyStart + contentLength <= rawRequest.length()) {
-                    std::string bodyContent = rawRequest.substr(bodyStart, contentLength);
-                    setBody(bodyContent);
-                    
-                    // Debug output
-                    std::cout << "Read POST body, length: " << bodyContent.length() << std::endl;
-                } else {
-                    std::cerr << "Warning: Incomplete body received. Expected " 
-                              << contentLength << " bytes, got " 
-                              << (rawRequest.length() - bodyStart) << " bytes." << std::endl;
-                }
-            }
-        }
+    return iss >> number && !(iss >> remaining);
+}
+
+void HttpRequest::parseBodyChunked(const std::string& rawRequest, size_t bodyStart) {
+    std::string chunkedBody = rawRequest.substr(bodyStart, (rawRequest.size() - bodyStart) + 1);
+    std::stringstream ss(chunkedBody);
+    std::string line;
+    while (std::getline(ss, line)) {
+        // check if line in chunked is byte size of next chunk -> continue for now. implement check for correct byte later
+        if (isOnlyDigits(line))
+            continue;
+        else if (line.empty())
+            continue;
+        // reached end of chunked request
+        else if (line.find("0") != std::string::npos)
+            break;
+        else
+            _body.append(line);
+        std::stringstream chunkedline;
+        //std::cout << "chunkedline: " << line << '\n';
+    }
+}
+
+void HttpRequest::parseBody(const std::string& rawRequest) {
+    
+    // check that at least one of these headers exists (MUST for POST request)
+    if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end()) {
+        setResponseCode(411); // Length Required
+        return;
     }
 
-    // POST specific validation
-    if (_method == "POST") {
-        if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end()) {
-            setResponseCode(411); // Length Required
-            return;
-        }
-        if (_body.empty()) {
-            std::cout << "ERROR EMPTY BODY\n";
-            setResponseCode(400); // Bad Request
-            return;
-        }
+    // find \r\n\r\n that seperates body and header
+    size_t bodyStart = rawRequest.find("\r\n\r\n");
+    if (bodyStart == std::string::npos) {
+        setResponseCode(400);
+        return;
     }
-    // //  match server block from conf
+    // Skip the \r\n\r\n
+    bodyStart += 4;
+
+    // parse chunked requests seperately
+    if (_headers["Transfer-Encoding"][0] == "chunked") {
+        parseBodyChunked(rawRequest, bodyStart);
+        return;
+    }
+
+    // Get the body using Content-Length
+    // TODO: refactor this
+    // this only works when content length is used -> which is not always the case
+    size_t contentLength = 0;
+    std::istringstream(_headers["Content-Length"][0]) >> contentLength;
+    
+    if (bodyStart + contentLength <= rawRequest.length()) {
+        std::string bodyContent = rawRequest.substr(bodyStart, contentLength);
+        setBody(bodyContent);
+
+        // Debug output
+        std::cout << "Read POST body, length: " << bodyContent.length() << std::endl;
+    } else {
+        std::cerr << "Warning: Incomplete body received. Expected " 
+                    << contentLength << " bytes, got " 
+                    << (rawRequest.length() - bodyStart) << " bytes." << std::endl;
+    }
+
+}
+
+// //  match server block from conf
+void HttpRequest::matchServerBlock(void) {
     std::vector<ServerConf> server_list;
     server_list = _conf.getServerConfs();
     // hostname = remove port from host if present
-    size_t colon = host.find(":");
-    std::string hostname;
+    size_t colon = _hostname.find(":");
     if (colon != std::string::npos)
-        _hostname = host.substr(0, colon);
+        _hostname = _hostname.substr(0, colon);
     // loop over serverConfs and match server names and ips
     for (std::vector<ServerConf>::iterator it = server_list.begin(); it != server_list.end(); ++it) {
         std::vector<std::string> server_names = it->getServerConfNames();
@@ -314,8 +328,22 @@ void HttpRequest::parse(const std::string& rawRequest) {
             _server = (*it);
         }
     }
-	//std::Cout << "parse Body:" + body  + ":\n";
-	// return if above fails and return response? -> cant remember what i meant with this lol
+}
+
+void HttpRequest::parse(const std::string& rawRequest) {
+    
+
+
+    parseHeaders(rawRequest);
+
+    if (_method == "POST") {
+        parseBody(rawRequest);
+    }
+
+    matchServerBlock();
+
+    // FOR DEBUGGING 
+    // std::cout << "DEBUG" << *this << '\n';
 }
 
 void HttpRequest::handleRequest(const std::string& rawRequest) {
