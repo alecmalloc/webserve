@@ -282,8 +282,8 @@ void HttpRequest::parseBody(const std::string& rawRequest) {
     // Skip the \r\n\r\n
     bodyStart += 4;
 
-    // parse chunked requests seperately
-    if (_headers["Transfer-Encoding"][0] == "chunked") {
+    // parse chunked requests seperately (check to make sure transfer encoding exists first. above we only checked if either content length or transfer exists)
+    if (_headers.find("Transfer-Encoding") != _headers.end() && _headers["Transfer-Encoding"][0] == "chunked") {
         parseBodyChunked(rawRequest, bodyStart);
         return;
     }
