@@ -2,9 +2,6 @@
 #include "webserv.hpp"
 #include <sstream>
 
-
-
-
 Response::~Response(){}
 
 Response::Response()
@@ -19,6 +16,7 @@ void Response::setReasonPhrase(const std::string &reasonPhrase) {
 std::string Response::getReasonPhrase() const {
 	return _reasonPhrase;
 }
+
 Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 	: _serverConf(serverConf), _locationConf(NULL){
 	// Get locations from server config
