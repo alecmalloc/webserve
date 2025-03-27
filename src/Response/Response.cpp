@@ -71,7 +71,11 @@ void Response::generateHttpresponse(HttpRequest &reqObj){
 	header << "Content-Length: " << headerMap["Content-Length"] << "\r\n";
 	header << "Connection: " << headerMap["Connection"] << "\r\n";
 	//header << "Cache-Control: " << headerMap["Cache-Control"] << "\r\n";
-	//header << "Set-Cookie: " << headerMap["Set-Cookie"] << "\r\n";
+
+	// needed for cookies to work
+	header << "Set-Cookie: " << headerMap["Set-Cookie"] << "\r\n";
+	std::cout << "SetCookie found: " << headerMap["Set-Cookie"] << '\n';
+
 	//header << "Last-Modified: " << headerMap["Last-Modified"] << "\r\n";
 	//header << "ETag: " << headerMap["ETag"] << "\r\n";
 	//header << "Location: " << headerMap["Location"] << "\r\n";
