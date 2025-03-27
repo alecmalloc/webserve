@@ -205,9 +205,7 @@ void		Response::processResponse(HttpRequest &ReqObj){
 		PathInfo pathInfo = ReqObj.getPathInfo();
 	
 		// Validate and parse the path
-		int code = pathInfo.validatePath();
-		std::cout << "http code: " <<  code << '\n';
-		//pathInfo.parsePath();
+		// int code = pathInfo.validatePath();
 
 		// CGI REQUEST CHECK HANDLER
 		// note this is the only part of the check that returns
