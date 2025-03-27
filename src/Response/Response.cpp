@@ -165,15 +165,16 @@ bool Response::isCgiRequest(const std::string& uri) {
 
 
 void		Response::processResponse(HttpRequest &ReqObj){
+
 	std::cout << std::endl << "IN RESPONSE PROCESSING" <<std::endl << std::endl;
 	std::cout << "Current URI: " << ReqObj.getUri() << std::endl;
+
 	if (_locationConf) {
 		std::cout << "Matched Location: " << _locationConf->getPath() << std::endl;
 	} else {
 		std::cout << "No location configuration matched" << std::endl;
 	}
-	
-	try{
+	try {
 		 PathInfo pathInfo = ReqObj.getPathInfo();
 		
 		/* if (pathInfo.getFullPath().empty() && !ReqObj.getUri().empty()) {
@@ -219,23 +220,24 @@ void		Response::processResponse(HttpRequest &ReqObj){
 			return;
 		}
 
+		// GET REQUEST HANDLER
 		if (ReqObj.getMethod() == "GET") {
 			std::cout << "GET REQUEST" << std::endl;
 			HandleGetRequest(ReqObj,pathInfo);
 		}
 
+		// POST REQUEST HANDLER
 		if (ReqObj.getMethod() == "POST") {
 		HandlePostRequest(ReqObj, pathInfo);
 		}
 
-		// Handle DELETE request
+		// HANDLE DELETE request
 		if (ReqObj.getMethod() == "DELETE") {
 		std::cout << "DELETE REQUEST" << std::endl;
 		HandleDeleteRequest(ReqObj, pathInfo);
 		}
 		
-	}
-	catch(int error)
+	} catch(int error)
 	{
 		ReqObj.setResponseCode(error);
 		std::cout << "CODE " << ReqObj.getResponseCode() << ":\n";

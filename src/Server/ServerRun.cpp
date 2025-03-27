@@ -298,20 +298,20 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 			
 			
 			
-			//need to ajust these function not working properly right now 
-			/*if(selectedServerConf->getChunkedTransfer()){//chunking is true print chunk size 
-				int chunk_size = selectedServerConf->getChunkSize();
-				//std::cout << "CHUNK SIZE:" << chunk_size << ":\n";
-			}
-			else{
-				//std::cout << "NO CHUNKING \n\n\n";
-			}*/
-				write(client->getSocketFd(), response.getHttpResponse().c_str(), response.getHttpResponse().size());
+		//need to ajust these function not working properly right now 
+		/*if(selectedServerConf->getChunkedTransfer()){//chunking is true print chunk size 
+			int chunk_size = selectedServerConf->getChunkSize();
+			//std::cout << "CHUNK SIZE:" << chunk_size << ":\n";
+		}
+		else{
+			//std::cout << "NO CHUNKING \n\n\n";
+		}*/
+		write(client->getSocketFd(), response.getHttpResponse().c_str(), response.getHttpResponse().size());
 
-			
-			//so TODO add httpparsing and response handler here -> unchunking chunking,
-			//sending etc -_-> integrate cgi with" cgihandler( HttpRequest ) "
-			client->setClosed( true );
+		
+		//so TODO add httpparsing and response handler here -> unchunking chunking,
+		//sending etc -_-> integrate cgi with" cgihandler( HttpRequest ) "
+		client->setClosed( true );
 	}
 		
 
