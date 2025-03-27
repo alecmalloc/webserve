@@ -7,12 +7,9 @@ void	Response::generateStatusLine(HttpRequest &reqObj){
 	std::string httpVersion = reqObj.getVersion();
 	std::string statusCode = Response::intToString(reqObj.getResponseCode());
 	std::string reasonPhrase = genarateReasonPhrase(reqObj.getResponseCode());
-
 	std::stringstream statusLine;
     statusLine << httpVersion << " " << statusCode << " " << reasonPhrase;
     setStatusLine(statusLine.str());
-
-
 }
 
 std::string Response::getCurrentDateTime() {

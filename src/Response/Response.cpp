@@ -95,12 +95,12 @@ void Response::setBodyErrorPage(int httpCode) {
 	+ Response::intToString(httpCode) 
 	+ " " 
 	+ genarateReasonPhrase(httpCode)
-	+ "Error"
+	+ "Error "
 	+ intToString(httpCode)
 	+ "</h1></body></html>\n");
 }
 
-void Response::generateErrorResponse(HttpRequest &reqObj){
+void Response::generateErrorResponse(HttpRequest &reqObj) {
 	// Retrieve the error pages map
 	const std::map<int, std::string>& errorPages = _serverConf->getErrorPages();
 
@@ -114,11 +114,17 @@ void Response::generateErrorResponse(HttpRequest &reqObj){
 	int responseCode = reqObj.getResponseCode();
 	std::map<int, std::string>::const_iterator customPageIt = errorPages.find(responseCode);
 	
-	// check if we have a custom error page for our object
+	// generate correct headers for our error page
+	generateHeader(reqObj);
+
+	// check if we have a custom error page for our httpCode
 	if (customPageIt != errorPages.end()) {
+
 		// Custom error page found, load and set it as the response body
 		std::string errorPagePath = "." + customPageIt->second; // Use relative path
 		std::ifstream file(errorPagePath.c_str());
+
+		// if we can open the error page file
 		if (file) {
 			std::ostringstream contents;
 			contents << file.rdbuf();
@@ -128,16 +134,19 @@ void Response::generateErrorResponse(HttpRequest &reqObj){
 		PathInfo errorPath(errorPagePath);
 		errorPath.parsePath();
 		reqObj.setPathInfo(errorPath);
-		// if custom error page isnt found return a 500 http response
+		// return internal server error 500 we are not able to open the file
 		} else {
 			setBodyErrorPage(500);
 		}
-	} else {
-		// also set error code to 500 for internal server error
-		setBodyErrorPage(500);
+
+		return;
 	}
-	
-	generateHeader(reqObj);
+
+	// in case that no custom error page exists
+	// also set error code to 500 for internal server error
+	// client errors 400 - 420
+	// server errors 500 - 511
+	setBodyErrorPage(responseCode);
 }
 
 
@@ -172,9 +181,6 @@ bool Response::isCgiRequest(const std::string& uri) {
     return false;
 }
 
-
-
-
 void		Response::processResponse(HttpRequest &ReqObj){
 
 	std::cout << std::endl << "IN RESPONSE PROCESSING" <<std::endl << std::endl;
@@ -188,16 +194,16 @@ void		Response::processResponse(HttpRequest &ReqObj){
 
 	// this try catch tries to handle the request and if it encounters any issues it catches and returns that as the error page
 	try {
-		 PathInfo pathInfo = ReqObj.getPathInfo();
+		PathInfo pathInfo = ReqObj.getPathInfo();
 	
 		// Validate and parse the path
 		int code = pathInfo.validatePath();
 		std::cout << "ERROR CODE AFTER VALIDATEING GGG " <<  code << '\n';
 		//pathInfo.parsePath();
-		
-		//FIRST CHECK IF ITS CGI REQUEST
+
+		// CGI REQUEST CHECK HANDLER
 		// note this is the only part of the check that returns
-		if(isCgiRequest(ReqObj.getUri())){//should be ok but some errro with cgi handler cant find files
+		if(isCgiRequest(ReqObj.getUri())){ //should be ok but some errro with cgi handler cant find files
 			int result = handleCgi(ReqObj);
 			std::cout << "CGI result" << result << '\n';
 			if(result == 0) {
@@ -222,11 +228,12 @@ void		Response::processResponse(HttpRequest &ReqObj){
 		}
 		
 	} 
-	// catches the error and sets the response as a CODE 
+	// catches the error and sets the code in the response code Obj
 	catch(int error)
 	{
 		ReqObj.setResponseCode(error);
-		std::cout << "CODE " << ReqObj.getResponseCode() << ":\n";
+		// for debugging
+		// std::cout << "CODE " << ReqObj.getResponseCode() << ":\n";
 		generateErrorResponse(ReqObj);
 	}
 
