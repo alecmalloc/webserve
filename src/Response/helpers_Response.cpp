@@ -6,13 +6,10 @@
 void	Response::generateStatusLine(HttpRequest &reqObj){
 	std::string httpVersion = reqObj.getVersion();
 	std::string statusCode = Response::intToString(reqObj.getResponseCode());
-	std::string reasonPhrase = genarateReasonPhrase(reqObj);
-
+	std::string reasonPhrase = genarateReasonPhrase(reqObj.getResponseCode());
 	std::stringstream statusLine;
     statusLine << httpVersion << " " << statusCode << " " << reasonPhrase;
     setStatusLine(statusLine.str());
-
-
 }
 
 std::string Response::getCurrentDateTime() {
@@ -140,12 +137,12 @@ std::string Response::intToString(int number) {
     return ss.str();
 }
 
+std::string Response::genarateReasonPhrase(int httpCode){
 
-
-std::string Response::genarateReasonPhrase(HttpRequest &reqObj){
-	std::string statusCode = Response::intToString(reqObj.getResponseCode());
 	std::string reasonPhrase;
-	switch (reqObj.getResponseCode()){
+
+    // matches http code to a string for response 
+	switch (httpCode){
 		 case 100:
             reasonPhrase = "Continue";
             break;
@@ -219,6 +216,8 @@ std::string Response::genarateReasonPhrase(HttpRequest &reqObj){
             reasonPhrase = "Error";
             break;
     }
+
+    // sets response phrase in obj and also returns it
 	setReasonPhrase(reasonPhrase);
 	return(reasonPhrase);
 }

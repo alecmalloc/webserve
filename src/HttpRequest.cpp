@@ -312,10 +312,7 @@ void HttpRequest::parseBody(const std::string& rawRequest) {
 void HttpRequest::matchServerBlock(void) {
     std::vector<ServerConf> server_list;
     server_list = _conf.getServerConfs();
-    // hostname = remove port from host if present
-    size_t colon = _hostname.find(":");
-    if (colon != std::string::npos)
-        _hostname = _hostname.substr(0, colon);
+
     // loop over serverConfs and match server names and ips
     for (std::vector<ServerConf>::iterator it = server_list.begin(); it != server_list.end(); ++it) {
         std::vector<std::string> server_names = it->getServerConfNames();
@@ -336,11 +333,9 @@ void HttpRequest::parse(const std::string& rawRequest) {
 
     parseHeaders(rawRequest);
 
-    if (_method == "POST") {
+    if ( _method == "POST" ) {
         parseBody(rawRequest);
     }
-
-    matchServerBlock();
 
     // FOR DEBUGGING 
     // std::cout << "DEBUG" << *this << '\n';
@@ -349,13 +344,23 @@ void HttpRequest::parse(const std::string& rawRequest) {
 void HttpRequest::handleRequest(const std::string& rawRequest) {
     // parse http request
     parse(rawRequest);
+
+    // extract hostname
+    // hostname = remove port from host if present
+    size_t colon = _hostname.find(":");
+    if (colon != std::string::npos)
+        _hostname = _hostname.substr(0, colon);
+
+
+    // match server block from conf
+    matchServerBlock();
+
 	//std::cout << "raw req string :" << rawRequest << ":\n";
 	// validate and load into PathInfo obj
     validateRequestPath();
     if (_response_code != 200)
         return ;
 }
-
 
 void HttpRequest::validateRequestPath(void) {
     const std::vector<LocationConf>& locationConfs = _server.getLocationConfs();

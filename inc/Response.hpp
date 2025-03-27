@@ -39,7 +39,7 @@ class Response {
 		void generateErrorResponse(HttpRequest &reqObj);
 		void generateHeader(HttpRequest &reqObj);
 		void	generateStatusLine(HttpRequest &reqObj);
-		std::string genarateReasonPhrase(HttpRequest &reqObj);
+		std::string genarateReasonPhrase(int HttpCode);
 		void generateHttpresponse(HttpRequest &reqObj);
 		std::string intToString(int number);
 		std::string serveFileContent(const PathInfo& pathInfo);
@@ -81,7 +81,9 @@ class Response {
         void setStatusCode(int statusCode) { m_statusCode = statusCode; }
 		void setReasonPhrase(const std::string &reasonPhrase);
 
-
+		// alec refactor functions
+		// added these while refactoring
+		void setBodyErrorPage(int httpCode);
 
 
         void setStatus(int statusCode) {m_statusCode = statusCode;};

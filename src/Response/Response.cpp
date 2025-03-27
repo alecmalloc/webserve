@@ -2,9 +2,6 @@
 #include "webserv.hpp"
 #include <sstream>
 
-
-
-
 Response::~Response(){}
 
 Response::Response()
@@ -19,6 +16,7 @@ void Response::setReasonPhrase(const std::string &reasonPhrase) {
 std::string Response::getReasonPhrase() const {
 	return _reasonPhrase;
 }
+
 Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 	: _serverConf(serverConf), _locationConf(NULL){
 	// Get locations from server config
@@ -91,44 +89,64 @@ std::string Response::getServerName(){
 	return("Webserv/1.0");
 }
 
+// set the Response to a certain code (template)
+void Response::setBodyErrorPage(int httpCode) {
+	setBody("<html><body><h1>"
+	+ Response::intToString(httpCode) 
+	+ " " 
+	+ genarateReasonPhrase(httpCode)
+	+ "Error "
+	+ intToString(httpCode)
+	+ "</h1></body></html>\n");
+}
 
+void Response::generateErrorResponse(HttpRequest &reqObj) {
+	// Retrieve the error pages map
+	const std::map<int, std::string>& errorPages = _serverConf->getErrorPages();
 
-void Response::generateErrorResponse(HttpRequest &reqObj){
-	 // Retrieve the error pages map
-	 const std::map<int, std::string>& errorPages = _serverConf->getErrorPages();
-
-	 // Loop over the error pages and print them
-	for (std::map<int, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it) {
-		 std::cout << "Error Code: " << it->first << ", Error Page: " << it->second << std::endl;
-	 }
-	 
-	 // Check if a custom error page exists for the response code
-	 int responseCode = reqObj.getResponseCode();
-	 std::map<int, std::string>::const_iterator customPageIt = errorPages.find(responseCode);
-	 if (customPageIt != errorPages.end()) {
-		 // Custom error page found, load and set it as the response body
-		 std::string errorPagePath = "." + customPageIt->second; // Use relative path
-		 std::ifstream file(errorPagePath.c_str());
-		 if (file) {
-			 std::ostringstream contents;
-			 contents << file.rdbuf();
-			 file.close();
-			 setBody(contents.str());
-			//updats the path to the one for the error pages 
-			PathInfo errorPath(errorPagePath);
-			errorPath.parsePath();
-			reqObj.setPathInfo(errorPath);
-			
-		 } else {
-			 std::cerr << "Failed to open custom error page: " << customPageIt->second << std::endl;
-			 setBody("<html><body><h1>" + Response::intToString(responseCode) + " " + genarateReasonPhrase(reqObj) + " Error</h1></body></html>\n");
-		 }
-	 } else {
-		// Generate a default error page if custom error page is not found
-		std::string defaultErrorPage = "<html><body><h1>" + Response::intToString(responseCode) + " " + genarateReasonPhrase(reqObj) + " Error</h1></body></html>\n";
-		setBody(defaultErrorPage);
-	 }
+	// ONLY NEEDED DURING DEBUGGING: COMMENTING OUT
+	// // Loop over the error pages and print them
+	// for (std::map<int, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it) {
+	// 	std::cout << "Error Code: " << it->first << ", Error Page: " << it->second << std::endl;
+	// }
+	
+	// check request obj for the code
+	int responseCode = reqObj.getResponseCode();
+	std::map<int, std::string>::const_iterator customPageIt = errorPages.find(responseCode);
+	
+	// generate correct headers for our error page
 	generateHeader(reqObj);
+
+	// check if we have a custom error page for our httpCode
+	if (customPageIt != errorPages.end()) {
+
+		// Custom error page found, load and set it as the response body
+		std::string errorPagePath = "." + customPageIt->second; // Use relative path
+		std::ifstream file(errorPagePath.c_str());
+
+		// if we can open the error page file
+		if (file) {
+			std::ostringstream contents;
+			contents << file.rdbuf();
+			file.close();
+			setBody(contents.str());
+		//updates the path to the one for the error pages 
+		PathInfo errorPath(errorPagePath);
+		errorPath.parsePath();
+		reqObj.setPathInfo(errorPath);
+		// return internal server error 500 we are not able to open the file
+		} else {
+			setBodyErrorPage(500);
+		}
+
+		return;
+	}
+
+	// in case that no custom error page exists
+	// also set error code to 500 for internal server error
+	// client errors 400 - 420
+	// server errors 500 - 511
+	setBodyErrorPage(responseCode);
 }
 
 
@@ -163,84 +181,59 @@ bool Response::isCgiRequest(const std::string& uri) {
     return false;
 }
 
-
-
-
 void		Response::processResponse(HttpRequest &ReqObj){
+
 	std::cout << std::endl << "IN RESPONSE PROCESSING" <<std::endl << std::endl;
 	std::cout << "Current URI: " << ReqObj.getUri() << std::endl;
+
 	if (_locationConf) {
 		std::cout << "Matched Location: " << _locationConf->getPath() << std::endl;
 	} else {
 		std::cout << "No location configuration matched" << std::endl;
 	}
+
+	// this try catch tries to handle the request and if it encounters any issues it catches and returns that as the error page
+	try {
+		PathInfo pathInfo = ReqObj.getPathInfo();
 	
-	try{
-		 PathInfo pathInfo = ReqObj.getPathInfo();
-		
-		/* if (pathInfo.getFullPath().empty() && !ReqObj.getUri().empty()) {
-            std::cout << "DEBUG: Empty PathInfo detected, reconstructing from URI" << std::endl;
-            
-            // Construct the correct path
-            std::string uri = ReqObj.getUri();
-            std::string fullPath;
-            
-            // Use location config if available
-            if (_locationConf) {
-                fullPath = _locationConf->getRootDir() + uri;
-                
-                // Normalize path (remove double slashes)
-                size_t pos;
-                while ((pos = fullPath.find("//")) != std::string::npos) {
-                    fullPath.replace(pos, 2, "/");
-                }
-            } else {
-                fullPath = "." + uri;  // Default to current directory
-            }
-            
-            std::cout << "DEBUG: Reconstructed path: " << fullPath << std::endl;
-            
-            // Create new PathInfo with fixed path
-            pathInfo = PathInfo(fullPath);
-        }*/
-	
-		 // Validate and parse the path
-			int code = pathInfo.validatePath();
-			std::cout << "ERROR CODE AFTER VALIDATEING GGG " <<  code << ":PENUS\n";
-			//pathInfo.parsePath();
-			
-		
-		//FIRST CHECK IF ITS CGI REQUEST 
-		if(isCgiRequest(ReqObj.getUri())){//should be ok but some errro with cgi handler cant find files
+		// Validate and parse the path
+		int code = pathInfo.validatePath();
+		std::cout << "ERROR CODE AFTER VALIDATEING GGG " <<  code << '\n';
+		//pathInfo.parsePath();
+
+		// CGI REQUEST CHECK HANDLER
+		// note this is the only part of the check that returns
+		if(isCgiRequest(ReqObj.getUri())){ //should be ok but some errro with cgi handler cant find files
 			int result = handleCgi(ReqObj);
-			std::cout << "CGI result" << result << "\n";
-			if(result == 0)
-			{
+			std::cout << "CGI result" << result << '\n';
+			if(result == 0) {
 				setBody(ReqObj.getCgiResponseString());
 			}
 			return;
 		}
 
+		// GET REQUEST HANDLER
 		if (ReqObj.getMethod() == "GET") {
 			std::cout << "GET REQUEST" << std::endl;
 			HandleGetRequest(ReqObj,pathInfo);
 		}
-
-		if (ReqObj.getMethod() == "POST") {
-		HandlePostRequest(ReqObj, pathInfo);
+		// POST REQUEST HANDLER
+		else if (ReqObj.getMethod() == "POST") {
+			HandlePostRequest(ReqObj, pathInfo);
 		}
-
-		// Handle DELETE request
-		if (ReqObj.getMethod() == "DELETE") {
-		std::cout << "DELETE REQUEST" << std::endl;
-		HandleDeleteRequest(ReqObj, pathInfo);
+		// HANDLE DELETE request
+		else if (ReqObj.getMethod() == "DELETE") {
+			std::cout << "DELETE REQUEST" << std::endl;
+			HandleDeleteRequest(ReqObj, pathInfo);
 		}
 		
-	}
+	} 
+	// catches the error and sets the code in the response code Obj
 	catch(int error)
 	{
 		ReqObj.setResponseCode(error);
-		std::cout << "CODE " << ReqObj.getResponseCode() << ":\n";
+		// for debugging
+		// std::cout << "CODE " << ReqObj.getResponseCode() << ":\n";
 		generateErrorResponse(ReqObj);
 	}
 
