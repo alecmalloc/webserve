@@ -81,9 +81,10 @@ class Response {
         void setStatusCode(int statusCode) { m_statusCode = statusCode; }
 		void setReasonPhrase(const std::string &reasonPhrase);
 
-		// alec refactor functions
+		// alec functions
 		// added these while refactoring
 		void setBodyErrorPage(int httpCode);
+		void handleCookiesPage(HttpRequest& request);
 
 
         void setStatus(int statusCode) {m_statusCode = statusCode;};

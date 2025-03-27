@@ -30,7 +30,9 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 	for (std::vector<LocationConf>::const_iterator it = locations.begin();
 		 it != locations.end(); ++it) {
 		std::string locPath = it->getPath();
-		std::cout << "DEBUG - Checking location: '" << it->getPath() << "'" << std::endl;
+		 
+		// DEBUG
+		// std::cout << "DEBUG - Checking location: '" << it->getPath() << "'" << std::endl;
 		
 		if (uri.find(locPath) == 0) {  // URI starts with location path
 			if (locPath.length() > bestMatch.length()) {
@@ -39,13 +41,16 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 			}
 		}
 	}
-	std::cout << "URI: " << uri << std::endl;
-	std::cout << "Server root: " << _serverConf->getRootDir() << std::endl;
-	if (_locationConf) {
-    	std::cout << "Location path: " << _locationConf->getPath() << std::endl;
-    	std::cout << "Location root: " << _locationConf->getRootDir() << std::endl;
-	}
+
+	// DEBUG
+	// std::cout << "URI: " << uri << std::endl;
+	// std::cout << "Server root: " << _serverConf->getRootDir() << std::endl;
+	// if (_locationConf) {
+    // 	std::cout << "Location path: " << _locationConf->getPath() << std::endl;
+    // 	std::cout << "Location root: " << _locationConf->getRootDir() << std::endl;
+	// }
 	//std::cout << "Final path being used: " << pathInfo.getFullPath() << std::endl;
+	
 	processResponse(reqObj);
 	generateHttpresponse(reqObj);
 }
@@ -149,10 +154,6 @@ void Response::generateErrorResponse(HttpRequest &reqObj) {
 	setBodyErrorPage(responseCode);
 }
 
-
-
-
-
 bool Response::isCgiRequest(const std::string& uri) {
     // Check if URI matches CGI patterns
     if (_locationConf && 
@@ -165,15 +166,15 @@ bool Response::isCgiRequest(const std::string& uri) {
         if (queryPos != std::string::npos) {
             path = path.substr(0, queryPos);
         }
-        
+
         // Find file extension in the path (without query parameters)
         size_t dot = path.rfind('.');
         if (dot != std::string::npos) {
             std::string ext = path.substr(dot);
-            
+
             // Get allowed CGI extensions
             const std::vector<std::string>& cgiExts = _locationConf->getCgiExt();
-            
+
             // Check if extension is allowed
             return (std::find(cgiExts.begin(), cgiExts.end(), ext) != cgiExts.end());
         }
@@ -183,14 +184,17 @@ bool Response::isCgiRequest(const std::string& uri) {
 
 void		Response::processResponse(HttpRequest &ReqObj){
 
-	std::cout << std::endl << "IN RESPONSE PROCESSING" <<std::endl << std::endl;
-	std::cout << "Current URI: " << ReqObj.getUri() << std::endl;
+	// DEBUG
+	std::cout << std::endl << "RESPONSE PROCESSING:" << '\n';
+	std::cout << "Current URI: " << ReqObj.getUri() << '\n';
 
-	if (_locationConf) {
-		std::cout << "Matched Location: " << _locationConf->getPath() << std::endl;
-	} else {
-		std::cout << "No location configuration matched" << std::endl;
-	}
+	// DEBUG
+	// print out the location that has been matched
+	// if (_locationConf) {
+	// 	std::cout << "Matched Location: " << _locationConf->getPath() << std::endl;
+	// } else {
+	// 	std::cout << "No location configuration matched" << std::endl;
+	// }
 
 	// this try catch tries to handle the request and if it encounters any issues it catches and returns that as the error page
 	try {
@@ -198,7 +202,7 @@ void		Response::processResponse(HttpRequest &ReqObj){
 	
 		// Validate and parse the path
 		int code = pathInfo.validatePath();
-		std::cout << "ERROR CODE AFTER VALIDATEING GGG " <<  code << '\n';
+		std::cout << "http code: " <<  code << '\n';
 		//pathInfo.parsePath();
 
 		// CGI REQUEST CHECK HANDLER
@@ -219,6 +223,7 @@ void		Response::processResponse(HttpRequest &ReqObj){
 		}
 		// POST REQUEST HANDLER
 		else if (ReqObj.getMethod() == "POST") {
+			std::cout << "POST REQUEST" << std::endl;
 			HandlePostRequest(ReqObj, pathInfo);
 		}
 		// HANDLE DELETE request
@@ -226,8 +231,8 @@ void		Response::processResponse(HttpRequest &ReqObj){
 			std::cout << "DELETE REQUEST" << std::endl;
 			HandleDeleteRequest(ReqObj, pathInfo);
 		}
-		
-	} 
+
+	}
 	// catches the error and sets the code in the response code Obj
 	catch(int error)
 	{

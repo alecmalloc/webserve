@@ -266,7 +266,7 @@ void HttpRequest::parseBodyChunked(const std::string& rawRequest, size_t bodySta
 }
 
 void HttpRequest::parseBody(const std::string& rawRequest) {
-    
+
     // check that at least one of these headers exists (MUST for POST request)
     if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end()) {
         setResponseCode(411); // Length Required
@@ -328,8 +328,6 @@ void HttpRequest::matchServerBlock(void) {
 }
 
 void HttpRequest::parse(const std::string& rawRequest) {
-    
-
 
     parseHeaders(rawRequest);
 
@@ -350,7 +348,6 @@ void HttpRequest::handleRequest(const std::string& rawRequest) {
     size_t colon = _hostname.find(":");
     if (colon != std::string::npos)
         _hostname = _hostname.substr(0, colon);
-
 
     // match server block from conf
     matchServerBlock();
@@ -414,7 +411,7 @@ void HttpRequest::validateRequestPath(void) {
     }
 
     _pathInfo.parsePath();
-    
+
     if ((_response_code = _pathInfo.validatePath()) != 200)
         return;
 }

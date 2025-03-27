@@ -148,13 +148,10 @@ void Response::handleMultipartUpload(HttpRequest& ReqObj, PathInfo& pathinfo, co
 
 
 void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
-	std::cout << "POST REQUEST" << std::endl;
 	(void)pathinfo;
 	(void)ReqObj;
 	
-	// ALEC EDIT: We dont always need content length in a post request. esp if chunked we use transfer-encoding instead
-	// if(checkContentLength(ReqObj) != 200)
-	// 	throw(checkContentLength(ReqObj));
+	// We dont always need content length in a post request. esp if chunked we use transfer-encoding instead
 	std::string postData = ReqObj.getBody();
 	std::cout << "Received POST data: " << postData << std::endl;
 	
@@ -178,8 +175,6 @@ void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
 		return handleMultipartUpload(ReqObj, pathinfo, boundary);
 	}
 
-
-	
 	// Validate the POST data
 	if (postData.empty()) {
 		std::cerr << "POST data is empty" << std::endl;
