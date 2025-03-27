@@ -67,6 +67,11 @@ void	Response::generateHeader(HttpRequest &reqObj){
 	headerMap["Content-Length"] =  intToString(getBody().length());
 	headerMap["Connection"] = reqObj.getConnectionType();
 
+    // only if setCookieValue has been changed
+    if (_setCookieValue != "") {
+        headerMap["Set-Cookie"] = _setCookieValue;
+    }
+
 	// Optional Fields
    // headerMap["Cache-Control"] = "no-cache"; // Example value
     //headerMap["Set-Cookie"] = "sessionId=abc123; Path=/; HttpOnly"; // Example value

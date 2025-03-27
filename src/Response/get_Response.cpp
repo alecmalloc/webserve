@@ -1,14 +1,23 @@
 #include "webserv.hpp"
 
-
-
 void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
-    std::cout << "Path Information: " << pathInfo << std::endl;
+
+    // get uri from request
+    std::string uri = ReqObj.getUri();
+
+    // custom cookies override - Alec
+    // check if the uri points at the /customCookiesEndpoint/CookiesPage end point
+    if (uri == "/customCookiesEndpoint/CookiesPage" 
+        || uri == "/customCookiesEndpoint/CookiesPage/deactivate" 
+        || uri == "/customCookiesEndpoint/CookiesPage/activate") {
+        handleCookiesPage(ReqObj);
+        return;
+    }
+
+    // std::cout << "Path Information: " << pathInfo << std::endl;
     std::string fullPath = pathInfo.getFullPath();
-	std::cout << "FULL PATH" << fullPath << "IN GET HANDLER START \n";
+	// std::cout << "FULL PATH" << fullPath << "IN GET HANDLER START \n";
     if (pathInfo.isDirectory() || pathInfo.getFullPath() == "") {
-        // Get the URI and location information
-        std::string uri = ReqObj.getUri();
         
         // Construct the proper path without duplication
         std::string fullPath = _serverConf->getRootDir();
@@ -26,9 +35,6 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
             fullPath = _serverConf->getRootDir() + uri;
             std::cout << "No location matched, path: " << fullPath << std::endl;
         }
-        
-        // Create new PathInfo with corrected path
-       // pathInfo = PathInfo(fullPath);
         
         std::vector<std::string> indexFiles = _serverConf->getIndex();
         if (!indexFiles.empty()) {

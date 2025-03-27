@@ -220,28 +220,16 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 	//check if Clients stopped sending data
 	if( event.events & EPOLLRDHUP || completeHttpRequest( client->getContent() ) ){
-		std::cout << client->getContent() << std::endl;
-		//test cgi
-		//cgimain( server.getConf() );
+		// std::cout << client->getContent() << std::endl;
 
 		// create temp config file for request construction
 		Config confTMP = server.getConf();
-		
-		//td::vector<ServerConf> serverTMPConf = confTMP.getServerConfs();
-		//select the server conf i need with function idk how ???
-		//ServerConf* selectedServerConf = &serverTMPConf[0]; // just plce holder value 
-		
 
 		// hand over content to request obj
+		std::cout << "Reading request from client" << '\n';
 		HttpRequest request(confTMP);
 		const std::string request_str = client->getContent();
 		request.handleRequest(request_str);
-		
-		//std::cout << request.getPathInfo() << '\n';
-		// Ex: you could check smt like request.getPathInfo().isDirectory() or request.getPathInfo().getFilename()
-		// but read the PathInfo.hpp to get all specs. its really helpful and it already checks all permissions etc
-		//request.setResponseCode(200);
-		
 		
 		// Get server configs
 		std::vector<ServerConf> serverTMPConf = confTMP.getServerConfs();
@@ -254,25 +242,17 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 		// Match server based on host/server_name
 		for (size_t i = 0; i < serverTMPConf.size(); i++) {
+			// check server names
 			const std::vector<std::string>& serverNames = serverTMPConf[i].getServerConfNames();
-		
-			std::cout << "Checking server " << i << " with names: ";
-			for (size_t j = 0; j < serverNames.size(); j++) {
-				std::cout << serverNames[j] << " ";
-			}
-			std::cout << std::endl;
-		
 			if (std::find(serverNames.begin(), serverNames.end(), host) != serverNames.end()) {
 				selectedServerConf = &serverTMPConf[i];
-				std::cout << "FOUND SERVER MATCH by name!" << std::endl;
 				break;
 			}
-		
-			// Also check if this server listens on the requested IP
+
+			// check server ips
 			const std::map<std::string, std::set<int> >& ipPorts = serverTMPConf[i].getIpPort();
 			if (ipPorts.find(host) != ipPorts.end()) {
 				selectedServerConf = &serverTMPConf[i];
-				std::cout << "FOUND SERVER MATCH by IP!" << std::endl;
 				break;
 			}
 		}
@@ -280,35 +260,21 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		// Use the first server as default if no match
 		if (!selectedServerConf && !serverTMPConf.empty()) {
 			selectedServerConf = &serverTMPConf[0];
-			std::cout << "NO MATCH - using default server" << std::endl;
 		}
 
 		// Before creating response, validate
 		if (!selectedServerConf) {
 			std::cerr << "CRITICAL ERROR: No server configuration available" << std::endl;
-			// Handle error case
-			return;
+			// needs to be a 500 internal server error
+			request.setResponseCode(500);
 		}
-
-		// Now print debug info
-		std::cout << "SERVER ROOT: " << selectedServerConf->getRootDir() << std::endl;
 
 		// Create response with the selected server
 		Response response(request, selectedServerConf);
-			
-			
-			
-		//need to ajust these function not working properly right now 
-		/*if(selectedServerConf->getChunkedTransfer()){//chunking is true print chunk size 
-			int chunk_size = selectedServerConf->getChunkSize();
-			//std::cout << "CHUNK SIZE:" << chunk_size << ":\n";
-		}
-		else{
-			//std::cout << "NO CHUNKING \n\n\n";
-		}*/
+
+		// write response to socket
 		write(client->getSocketFd(), response.getHttpResponse().c_str(), response.getHttpResponse().size());
 
-		
 		//so TODO add httpparsing and response handler here -> unchunking chunking,
 		//sending etc -_-> integrate cgi with" cgihandler( HttpRequest ) "
 		client->setClosed( true );

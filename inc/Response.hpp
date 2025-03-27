@@ -28,6 +28,10 @@ class Response {
 		const ServerConf*							_serverConf;
 		LocationConf* 								_locationConf;
 
+		// to make cookies work 
+		// cookie value we want to have
+		std::string									_setCookieValue;
+
         int m_statusCode; // http status code
     public:
        // Response(): m_statusCode(200) {};
@@ -81,9 +85,16 @@ class Response {
         void setStatusCode(int statusCode) { m_statusCode = statusCode; }
 		void setReasonPhrase(const std::string &reasonPhrase);
 
-		// alec refactor functions
+		// for cookie setter
+		void setSetCookieValue(std::string value);
+
+		void takeCookie( void );
+		void giveCookie( void );
+
+		// alec functions
 		// added these while refactoring
 		void setBodyErrorPage(int httpCode);
+		void handleCookiesPage(HttpRequest& request);
 
 
         void setStatus(int statusCode) {m_statusCode = statusCode;};
