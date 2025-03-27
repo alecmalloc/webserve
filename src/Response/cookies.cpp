@@ -46,13 +46,13 @@ std::string static cookiesHtmlCookiesHaveBeenTaken() {
 }
 
 // add cookie to headers (headers are generated with the ones we have so changing headers in request effectively changes them in response too)
-void static giveCookie(std::map<std::string, std::vector<std::string> >& reqHeaders) {
-    reqHeaders["Set-Cookie"].push_back("NUM_cookie=YES; Path=/; HttpOnly");
+void Response::giveCookie( void ) {
+    setSetCookieValue("NUM_cookie=YES; Path=/; HttpOnly");
 }
 
 // remove cookies from headers
-void static takeCookie(std::map<std::string, std::vector<std::string> >& reqHeaders) {
-    reqHeaders["Set-Cookie"].push_back("NUM_cookie=NO; Path=/; HttpOnly");
+void Response::takeCookie( void ) {
+    setSetCookieValue("NUM_cookie=NO; Path=/; HttpOnly");
 }
 
 void Response::handleCookiesPage(HttpRequest& request) {
@@ -63,12 +63,12 @@ void Response::handleCookiesPage(HttpRequest& request) {
 
     // check if we need to do any cookie actions
     if (request.getUri() == "/customCookiesEndpoint/CookiesPage/activate") {
-        giveCookie(headers);
+        giveCookie();
         setBody(cookiesHtmlCookiesHaveBeenGiven());
         return;
     }
     if (request.getUri() == "/customCookiesEndpoint/CookiesPage/deactivate") {
-        takeCookie(headers);
+        takeCookie();
         setBody(cookiesHtmlCookiesHaveBeenTaken());
         return;
     }

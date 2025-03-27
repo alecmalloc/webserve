@@ -5,7 +5,7 @@
 Response::~Response(){}
 
 Response::Response()
-	: _serverConf(NULL), _locationConf(NULL){
+	: _serverConf(NULL), _locationConf(NULL), _setCookieValue("") {
 	// Default constructor implementation
 }
 
@@ -18,7 +18,7 @@ std::string Response::getReasonPhrase() const {
 }
 
 Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
-	: _serverConf(serverConf), _locationConf(NULL){
+	: _serverConf(serverConf), _locationConf(NULL), _setCookieValue(""){
 	// Get locations from server config
 	std::string uri = reqObj.getUri();
 
@@ -248,14 +248,6 @@ void		Response::processResponse(HttpRequest &ReqObj){
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
+void Response::setSetCookieValue(std::string value) {
+	_setCookieValue = value;
+}
