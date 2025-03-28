@@ -126,6 +126,53 @@ static void	closeClient( Server& server, Client* client ){
 	server.removeClient( client );
 }
 
+// basic check for valid http request
+static bool checkForValidRequest(std::string rawRequest) {
+	// find content length value
+	size_t contentLenPos = rawRequest.find("Content-Length:");
+	// skip out of the rest of the checks for now -> edge case of no content length existing
+	if (contentLenPos == std::string::npos)
+		return true;
+
+	// skip past "Content-Length:" and any spaces
+	contentLenPos += 15; // Length of "Content-Length:"
+	while (contentLenPos < rawRequest.size() && isspace(rawRequest[contentLenPos])) {
+		contentLenPos++;
+	}
+	
+	// find the end of the line
+	size_t lineEnd = rawRequest.find("\r\n", contentLenPos);
+	if (lineEnd == std::string::npos)
+		return false;
+	
+	// extract the content length value string
+	std::string contentLenStr = rawRequest.substr(contentLenPos, lineEnd - contentLenPos);
+	
+	// Convert to integer
+	size_t contentLength = 0;
+	std::istringstream ss(contentLenStr);
+	ss >> contentLength;
+
+	// now check if we have received the complete body
+	size_t headerEnd = rawRequest.find("\r\n\r\n");
+	if (headerEnd == std::string::npos)
+		return false;
+	
+	size_t bodyStart = headerEnd + 4;
+	size_t bodyReceived = rawRequest.length() - bodyStart;
+
+	// Return true if we've received the complete body
+	return bodyReceived >= contentLength;
+}
+
+
+bool static clientReadBreakCheck(int bytesRead, Client* client) {
+	if (bytesRead == 0 && client->getContent().size() )
+	
+	
+	return false;
+}
+
 static void	readFromClient( Client* client ) {
 	//create Buffer and Zero it
 	char	buffer[ BUFFERSIZE ];
@@ -135,8 +182,10 @@ static void	readFromClient( Client* client ) {
 	int	bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
 
 	//recive data from client
-	while( bytesRead > 0 ){
-		buffer[ bytesRead ] = '\0'; //fixed from buffersice to buffer[ bytesRead ] 
+	// continue reading while http request is 
+	while( true ){
+		// braking functuion -> break if bytesRead == 0 && header contentleangth not existig or break if bytestread = 0 and contentnlength == conten size
+		buffer[ bytesRead ] = '\0'; //fixed from buffersice to buffer[ bytesRead ]
 		client->setContent( buffer );
 		std::memset( buffer, '\0', BUFFERSIZE );
 		bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
@@ -194,16 +243,8 @@ static void	readFromClient( Client* client ) {
 //  return nullptr; // Return nullptr if no matching configuration is found
 //
 
-// basic check for valid http request
-static bool checkForValidRequest(std::string rawRequest) {
-	if (rawRequest.find("\r\n\r\n") != std::string::npos)
-		return true;
-	
-	return false;
-}
-
 static void	checkEvents( Server& server, Client* client,  struct epoll_event& event ){
-	//check for error
+	// check for error
 	if( event.events & EPOLLERR || client->getError() ){
 		//close client
 		closeClient( server, client );
@@ -212,7 +253,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		return;
 	}
 
-	//check for hanging conection
+	// check for hanging conection
 	if( event.events & EPOLLHUP || client->getClosed() ){
 		closeClient( server, client );
 		std::cout << BLUE << "INFO:	Client: disconnected:	" << \
@@ -220,7 +261,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		return;
 	}
 
-	//check if Clients send data
+	// check if Clients send data
 	if( event.events & EPOLLIN ){
 		readFromClient( client );
 	}
