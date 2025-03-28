@@ -165,7 +165,7 @@ static bool checkForValidRequest(std::string rawRequest) {
 	return bodyReceived >= contentLength;
 }
 
-
+// TODO checkpoint alec and mo leave 42
 bool static clientReadBreakCheck(int bytesRead, Client* client) {
 	if (bytesRead == 0 && client->getContent().size() )
 	
