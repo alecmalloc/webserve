@@ -137,7 +137,6 @@ static void	readFromClient( Client* client ) {
 	//recive data from client
 	while( bytesRead > 0 ){
 		buffer[ bytesRead ] = '\0'; //fixed from buffersice to buffer[ bytesRead ] 
-		//std::cout << "BUFFER:" << buffer << ":\n";
 		client->setContent( buffer );
 		std::memset( buffer, '\0', BUFFERSIZE );
 		bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
@@ -195,6 +194,14 @@ static void	readFromClient( Client* client ) {
 //  return nullptr; // Return nullptr if no matching configuration is found
 //
 
+// basic check for valid http request
+static bool checkForValidRequest(std::string rawRequest) {
+	if (rawRequest.find("\r\n\r\n") != std::string::npos)
+		return true;
+	
+	return false;
+}
+
 static void	checkEvents( Server& server, Client* client,  struct epoll_event& event ){
 	//check for error
 	if( event.events & EPOLLERR || client->getError() ){
@@ -218,8 +225,8 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		readFromClient( client );
 	}
 
-	//check if Clients stopped sending data
-	if( event.events & EPOLLRDHUP ){
+	// check for complete request instead of checking for EUP
+	if (checkForValidRequest(client->getContent())) {
 		// std::cout << client->getContent() << std::endl;
 
 		// create temp config file for request construction
@@ -280,6 +287,12 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		//sending etc -_-> integrate cgi with" cgihandler( HttpRequest ) "
 		client->setClosed( true );
 	}
+
+	// //check if Clients stopped sending data
+	// // TODO ALEC THIS DOESNT SEEM TO BE WORKING
+	// if( event.events & EPOLLRDHUP ) {
+
+	// }
 		
 
 	//check for error
