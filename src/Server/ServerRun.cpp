@@ -152,36 +152,36 @@ static void	readFromClient( Client* client ) {
 		client->setError( true );
 }
 
-//chaged to make it work with split paed sending of chrome 
-static bool completeHttpRequest(std::string request) {
-    // First check if we have the full headers
-    size_t headerEnd = request.find("\r\n\r\n");
-    if (headerEnd == std::string::npos)
-        return false;
+// //chaged to make it work with split paed sending of chrome 
+// static bool completeHttpRequest(std::string request) {
+//     // First check if we have the full headers
+//     size_t headerEnd = request.find("\r\n\r\n");
+//     if (headerEnd == std::string::npos)
+//         return false;
         
-    // Look for Content-Length header
-    size_t clPos = request.find("Content-Length: ");
-    if (clPos != std::string::npos) {
-        // Extract the Content-Length value
-        size_t valueStart = clPos + 16;
-        size_t valueEnd = request.find("\r\n", valueStart);
-        std::string lengthStr = request.substr(valueStart, valueEnd - valueStart);
+//     // Look for Content-Length header
+//     size_t clPos = request.find("Content-Length: ");
+//     if (clPos != std::string::npos) {
+//         // Extract the Content-Length value
+//         size_t valueStart = clPos + 16;
+//         size_t valueEnd = request.find("\r\n", valueStart);
+//         std::string lengthStr = request.substr(valueStart, valueEnd - valueStart);
         
-        // C++98 compliant conversion from string to number
-        std::istringstream ss(lengthStr);
-        size_t contentLength = 0;
-        ss >> contentLength;
+//         // C++98 compliant conversion from string to number
+//         std::istringstream ss(lengthStr);
+//         size_t contentLength = 0;
+//         ss >> contentLength;
         
-        size_t bodyStart = headerEnd + 4;
-        size_t bodyReceived = request.length() - bodyStart;
+//         size_t bodyStart = headerEnd + 4;
+//         size_t bodyReceived = request.length() - bodyStart;
         
-        // Request is complete only if we've received all the content
-        return bodyReceived >= contentLength;
-    }
+//         // Request is complete only if we've received all the content
+//         return bodyReceived >= contentLength;
+//     }
     
-    // If no Content-Length, assume complete after headers
-    return true;
-}
+//     // If no Content-Length, assume complete after headers
+//     return true;
+// }
 
 
 //rverConf* selectServerConf(const std::vector<ServerConf>& serverConfs, const std::string& host, int port) {
@@ -219,7 +219,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 	}
 
 	//check if Clients stopped sending data
-	if( event.events & EPOLLRDHUP || completeHttpRequest( client->getContent() ) ){
+	if( event.events & EPOLLRDHUP ){
 		// std::cout << client->getContent() << std::endl;
 
 		// create temp config file for request construction
@@ -230,6 +230,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		HttpRequest request(confTMP);
 		const std::string request_str = client->getContent();
 		request.handleRequest(request_str);
+		std::cout << request << '\n';
 		
 		// Get server configs
 		std::vector<ServerConf> serverTMPConf = confTMP.getServerConfs();

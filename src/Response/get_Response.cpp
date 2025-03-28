@@ -39,7 +39,7 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
         std::vector<std::string> indexFiles = _serverConf->getIndex();
         if (!indexFiles.empty()) {
             // Use the first index file in the vector
-            std::string indexFilePath = pathInfo.getDirName() + "/" + indexFiles[0];
+            std::string indexFilePath = pathInfo.getDirName() + indexFiles[0];
             
             // Try to open the index file - FIXED: using indexFilePath instead of fullPath
             std::cout << "Trying to open index file: " << indexFilePath << std::endl;
