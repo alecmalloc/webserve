@@ -166,10 +166,10 @@ static bool checkForValidRequest(std::string rawRequest) {
 }
 
 // TODO checkpoint alec and mo leave 42
-bool static clientReadBreakCheck(int bytesRead, Client* client) {
-	if (bytesRead == 0 && client->getContent().size() )
-	
-	
+// right now only breaks on valid request
+bool static clientReadBreakCheck(int bytesRead, std::string request) {
+	if (bytesRead == 0 && checkForValidRequest(request))
+		return true;
 	return false;
 }
 
@@ -185,6 +185,9 @@ static void	readFromClient( Client* client ) {
 	// continue reading while http request is 
 	while( true ){
 		// braking functuion -> break if bytesRead == 0 && header contentleangth not existig or break if bytestread = 0 and contentnlength == conten size
+		// started implementing this - alec
+		if (clientReadBreakCheck(bytesRead, client->getContent()))
+			break;
 		buffer[ bytesRead ] = '\0'; //fixed from buffersice to buffer[ bytesRead ]
 		client->setContent( buffer );
 		std::memset( buffer, '\0', BUFFERSIZE );
