@@ -6,35 +6,33 @@ static const std::string COOKIE_PAGE_STYLE = "<style>body{font-family:sans-serif
 std::string static cookiesHtmlTemplateHasCookie() {
     std::string response;
 
-    response += "<h1>omg! we found our cookie!</h1>";
+    response += "<h1>logged in</h1>";
 
-    response += "<a href=\"/customCookiesEndpoint/CookiesPage/deactivate\">eat your cookie!</a>";
+    response += "<a href=\"/customCookiesEndpoint/CookiesPage/deactivate\">log out</a>";
 
     response += COOKIE_PAGE_STYLE;
 
-    //std::cout << "has cookie" << '\n';
     return response;
 }
 
 std::string static cookiesHtmlTemplateHasNoCookie() {
     std::string response;
 
-    response += "<h1>no cookies found ...</h1>";
+    response += "<h1>not logged in</h1>";
 
-    response += "<a href=\"/customCookiesEndpoint/CookiesPage/activate\">grab a cookie!</a>";
+    response += "<a href=\"/customCookiesEndpoint/CookiesPage/activate\">log in</a>";
 
     response += COOKIE_PAGE_STYLE;
 
-    //std::cout << "has no cookie" << '\n';
     return response;
 }
 
 std::string static cookiesHtmlCookiesHaveBeenGiven() {
     std::string response;
 
-    response += "<h1>you got a cookie!</h1>";
+    response += "<h1>you have recieved a cookie and been logged in</h1>";
 
-    response += "<a href=\"/customCookiesEndpoint/CookiesPage\">return to cookies page</a>";
+    response += "<a href=\"/customCookiesEndpoint/CookiesPage\">back</a>";
 
     response += COOKIE_PAGE_STYLE;
 
@@ -45,9 +43,9 @@ std::string static cookiesHtmlCookiesHaveBeenGiven() {
 std::string static cookiesHtmlCookiesHaveBeenTaken() {
     std::string response;
 
-    response += "<h1>we stole your cookie...</h1>";
+    response += "<h1>you have been logged out</h1>";
 
-    response += "<a href=\"/customCookiesEndpoint/CookiesPage\">return to cookies page</a>";
+    response += "<a href=\"/customCookiesEndpoint/CookiesPage\">back</a>";
 
     response += COOKIE_PAGE_STYLE;
 
@@ -55,14 +53,54 @@ std::string static cookiesHtmlCookiesHaveBeenTaken() {
     return response;
 }
 
+// generate a session ID randomly
+std::string generateSessionID(std::size_t length = 32) {
+    const std::string CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    
+    // seed the random number generator if it hasn't been seeded yet
+    static bool seeded = false;
+    if (!seeded) {
+        srand(static_cast<unsigned int>(time(NULL)));
+        seeded = true;
+    }
+    
+    std::string sessionID;
+    for (std::size_t i = 0; i < length; ++i) {
+        int index = rand() % CHARACTERS.size();
+        sessionID += CHARACTERS[index];
+    }
+    return sessionID;
+}
+
+
 // add cookie to headers (headers are generated with the ones we have so changing headers in request effectively changes them in response too)
+// not renaming but it also creates session
 void Response::giveCookie( void ) {
-    setSetCookieValue("NUM_cookie=YES; Path=/; HttpOnly");
+    // generate session ID and save file named after session ID
+    // save file in root+/sessions/SESSIONID
+    std::string sessionFilePath = _serverConf->getRootDir() + "/session/";
+    std::string sessionID = generateSessionID();
+
+    sessionFilePath += sessionID;
+    std::cout << sessionFilePath << '\n';
+    std::ofstream outFile(sessionFilePath.c_str());
+
+    // check if file opened successfully
+    if (outFile.is_open()) {
+        // write data to the file
+        outFile << "session ID muahahaha" << '\n';
+        outFile.close();
+    }
+    setSetCookieValue("NUM_cookie=" + sessionID + "; Path=/; HttpOnly");
 }
 
 // remove cookies from headers
 void Response::takeCookie( void ) {
     setSetCookieValue("NUM_cookie=NO; Path=/; HttpOnly");
+}
+
+void static findSession(std::vector<std::string> cookies) {
+    
 }
 
 void Response::handleCookiesPage(HttpRequest& request) {
@@ -93,8 +131,11 @@ void Response::handleCookiesPage(HttpRequest& request) {
     std::vector<std::string> cookies = headers["Cookie"];
 
     // check if our cookie can be found
-    if (std::find(cookies.begin(), cookies.end(), "NUM_cookie=YES") != cookies.end()) {
-        setBody(cookiesHtmlTemplateHasCookie());
+    if (std::find(cookies.begin(), cookies.end(), "NUM_cookie=") != cookies.end()) {
+        // checks if a session file exists returns invalid if no or if it doesnt match the cookie
+        std::string sessionID = findSession(cookies);
+        if (sessionID != "invalid")
+            setBody(cookiesHtmlTemplateHasCookie());
         return;
     }
 
