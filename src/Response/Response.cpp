@@ -84,8 +84,6 @@ void Response::generateHttpresponse(HttpRequest &reqObj){
 	setHttpResponse(responseString);
 }
 
-
-
 std::string Response::getServerName(){
 	std::vector<std::string> server = _serverConf->getServerConfNames();
 	

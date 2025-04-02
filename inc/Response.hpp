@@ -88,8 +88,8 @@ class Response {
 		// for cookie setter
 		void setSetCookieValue(std::string value);
 
-		void takeCookie( void );
-		void giveCookie( void );
+		void createSession( void );
+		void deleteSession( std::string sessionID );
 		std::string findSession( std::vector<std::string> cookies );
 
 		// alec functions

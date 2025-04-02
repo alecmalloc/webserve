@@ -78,14 +78,14 @@ std::string generateSessionID(std::size_t length = 32) {
 
 // add cookie to headers (headers are generated with the ones we have so changing headers in request effectively changes them in response too)
 // not renaming but it also creates session
-void Response::giveCookie( void ) {
+void Response::createSession( void ) {
     // generate session ID and save file named after session ID
     // save file in root+/sessions/SESSIONID
     std::string sessionFilePath = _serverConf->getRootDir() + "/session/";
     std::string sessionID = generateSessionID();
 
     sessionFilePath += sessionID;
-   //  std::cout << sessionFilePath << '\n';
+    //  std::cout << sessionFilePath << '\n';
     std::ofstream outFile(sessionFilePath.c_str());
 
     // check if file opened successfully
@@ -97,12 +97,25 @@ void Response::giveCookie( void ) {
     setSetCookieValue("NUM_cookie=" + sessionID + "; Path=/; HttpOnly");
 }
 
-// remove cookies from headers
-void Response::takeCookie( void ) {
+// deletes session file and sets cookie to NO
+void Response::deleteSession( std::string sessionID ) {
+    
+    // full path to session file
+    std::string sessionFilePath = _serverConf->getRootDir() + "/session/" + sessionID;
+
+    // delete the session file
+    // if this fails its not the end of the world but we should print smt
+    // just means that we have an extra file in /sessions/ -> but wont harm operations
+    if (std::remove(sessionFilePath.c_str()) != 0) {
+        std::cerr << "Error deleting session file: " << sessionFilePath << std::endl;
+    }
+
     setSetCookieValue("NUM_cookie=NO; Path=/; HttpOnly");
 }
 
 std::string Response::findSession(std::vector<std::string> cookies) {
+    std::string defaultState = "none";
+
     // folder in which sessions are stored
     std::string sessionFilePath = _serverConf->getRootDir() + "/session/";
 
@@ -129,30 +142,25 @@ std::string Response::findSession(std::vector<std::string> cookies) {
             }
         }
     }
+
     // default case
-    return "invalid";
+    return defaultState;
 }
 
-void Response::handleCookiesPage(HttpRequest& request) {
-    // TODO
-
-    // get headers from request
-    std::map<std::string, std::vector<std::string> > headers = request.getHeaders();
-
-    // check if we need to do any cookie actions
+void Response::handleCookiesPage(HttpRequest& request) { 
+    // check for activate hook before handling any other state or cookie checking
+    // doesnt need any cookies etc just a clean start
     if (request.getUri() == "/customCookiesEndpoint/CookiesPage/activate") {
-        giveCookie();
+        createSession();
         setBody(cookiesHtmlCookiesHaveBeenGiven());
         return;
     }
-    if (request.getUri() == "/customCookiesEndpoint/CookiesPage/deactivate") {
-        // TODO clean up session FILE -> delete from sessions
-        takeCookie();
-        setBody(cookiesHtmlCookiesHaveBeenTaken());
-        return;
-    }
+    
+    // get headers from request
+    std::map<std::string, std::vector<std::string> > headers = request.getHeaders();
 
     // check if cookies even exists at all
+    // return and set to no cookie html template if none are found
     if (headers.find("Cookie") == headers.end()) {
         setBody(cookiesHtmlTemplateHasNoCookie());
         return;
@@ -161,26 +169,28 @@ void Response::handleCookiesPage(HttpRequest& request) {
     // get cookies vector from headers
     std::vector<std::string> cookies = headers["Cookie"];
 
-    bool hasOurCookie = false;
-    for (std::vector<std::string>::iterator it = cookies.begin(); it != cookies.end(); ++it) {
-        if (it->find("NUM_cookie=") != std::string::npos) {
-            hasOurCookie = true;
-            break;
-        }
+    // SESSION MANAGEMENT
+    // see if there is an active session (session file in sessions with matched cookie value NUM_VAL=) -> default none
+    // only needed for scope of this function
+    // need to do this before custom handlers because we need sessionID for deactivation and cleanup
+    std::string activeSessionID = findSession(cookies);
+    // std::cout << "activeSession: " << activeSessionID << '\n';
+
+    // check if deactivate hook has been triggered
+    if (request.getUri() == "/customCookiesEndpoint/CookiesPage/deactivate") {
+        // TODO clean up session FILE -> delete from sessions
+        deleteSession(activeSessionID);
+        setBody(cookiesHtmlCookiesHaveBeenTaken());
+        return;
     }
 
-    // check if our cookie can be found
-    if (hasOurCookie) {
-        // checks if a session file exists returns invalid if no or if it doesnt match the cookie
-        std::string sessionID = findSession(cookies);
-        // std::cout << "SESSION ID: " << sessionID << '\n';
-        // if we find a valid session we set body to cookie page and return
-        if (sessionID != "invalid") {
-            setBody(cookiesHtmlTemplateHasCookie(sessionID));
-            return;
-        }
+    // COOKIE PAGE DEFAULT
+    // if there is an active session that matches with cookie etc -> state of activeSessionID is not none
+    if (activeSessionID != "none") {
+        setBody(cookiesHtmlTemplateHasCookie(activeSessionID));
+        return;
     }
-
-    // cookies existed but not ours
+    
+    // no session exists
     setBody(cookiesHtmlTemplateHasNoCookie());
 }

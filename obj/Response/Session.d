@@ -1,4 +1,4 @@
-obj/Response/cookies.o: src/Response/cookies.cpp inc/webserv.hpp \
+obj/Response/Session.o: src/Response/Session.cpp inc/webserv.hpp \
  inc/Location.hpp inc/Server.hpp inc/Config.hpp inc/ServerConf.hpp \
  inc/Defines.hpp inc/Client.hpp inc/HttpRequest.hpp inc/PathInfo.hpp \
  inc/webserv.hpp inc/StrUtils.hpp inc/Response.hpp inc/Cgi.hpp \
