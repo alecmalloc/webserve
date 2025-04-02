@@ -3,10 +3,13 @@
 static const std::string COOKIE_PAGE_STYLE = "<style>body{font-family:sans-serif;text-align:center;margin:40px auto;max-width:600px;background:#f8f8f8;}h1{color:#333;font-size:24px;margin-bottom:30px;}a{display:inline-block;background:#4285f4;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;font-weight:bold;}a:hover{background:#3367d6;}</style>";
 
 // templates for cookie html
-std::string static cookiesHtmlTemplateHasCookie() {
+std::string static cookiesHtmlTemplateHasCookie(std::string sessionID) {    
     std::string response;
 
     response += "<h1>logged in</h1>";
+    
+    // interpolate sessionID into h1
+    response += "<p>session ID: " + sessionID + "</p>";
 
     response += "<a href=\"/customCookiesEndpoint/CookiesPage/deactivate\">log out</a>";
 
@@ -82,7 +85,7 @@ void Response::giveCookie( void ) {
     std::string sessionID = generateSessionID();
 
     sessionFilePath += sessionID;
-    std::cout << sessionFilePath << '\n';
+   //  std::cout << sessionFilePath << '\n';
     std::ofstream outFile(sessionFilePath.c_str());
 
     // check if file opened successfully
@@ -99,8 +102,35 @@ void Response::takeCookie( void ) {
     setSetCookieValue("NUM_cookie=NO; Path=/; HttpOnly");
 }
 
-void static findSession(std::vector<std::string> cookies) {
-    
+std::string Response::findSession(std::vector<std::string> cookies) {
+    // folder in which sessions are stored
+    std::string sessionFilePath = _serverConf->getRootDir() + "/session/";
+
+    // find the cookie that contains "NUM_cookie="
+    for (std::vector<std::string>::iterator it = cookies.begin(); it != cookies.end(); ++it) {
+        std::string cookie = *it;
+        
+        // beginning of cookie we are trying to find
+        size_t pos = cookie.find("NUM_cookie=");
+        
+        // if we can find our cookie
+        if (pos != std::string::npos) {
+            // extract the session ID value after "NUM_cookie="
+            std::string sessionID = cookie.substr(pos + 11); // 11 is the length of "NUM_cookie="
+
+            // check if the session file exists
+            std::string filePath = sessionFilePath + sessionID;
+            // open session file
+            std::ifstream fileCheck(filePath.c_str());
+            bool fileExists = fileCheck.good();
+            fileCheck.close();
+            if (fileExists) {
+                return sessionID;
+            }
+        }
+    }
+    // default case
+    return "invalid";
 }
 
 void Response::handleCookiesPage(HttpRequest& request) {
@@ -116,6 +146,7 @@ void Response::handleCookiesPage(HttpRequest& request) {
         return;
     }
     if (request.getUri() == "/customCookiesEndpoint/CookiesPage/deactivate") {
+        // TODO clean up session FILE -> delete from sessions
         takeCookie();
         setBody(cookiesHtmlCookiesHaveBeenTaken());
         return;
@@ -130,16 +161,26 @@ void Response::handleCookiesPage(HttpRequest& request) {
     // get cookies vector from headers
     std::vector<std::string> cookies = headers["Cookie"];
 
+    bool hasOurCookie = false;
+    for (std::vector<std::string>::iterator it = cookies.begin(); it != cookies.end(); ++it) {
+        if (it->find("NUM_cookie=") != std::string::npos) {
+            hasOurCookie = true;
+            break;
+        }
+    }
+
     // check if our cookie can be found
-    if (std::find(cookies.begin(), cookies.end(), "NUM_cookie=") != cookies.end()) {
+    if (hasOurCookie) {
         // checks if a session file exists returns invalid if no or if it doesnt match the cookie
         std::string sessionID = findSession(cookies);
-        if (sessionID != "invalid")
-            setBody(cookiesHtmlTemplateHasCookie());
-        return;
+        // std::cout << "SESSION ID: " << sessionID << '\n';
+        // if we find a valid session we set body to cookie page and return
+        if (sessionID != "invalid") {
+            setBody(cookiesHtmlTemplateHasCookie(sessionID));
+            return;
+        }
     }
 
     // cookies existed but not ours
     setBody(cookiesHtmlTemplateHasNoCookie());
-
 }

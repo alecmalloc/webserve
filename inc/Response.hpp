@@ -90,6 +90,7 @@ class Response {
 
 		void takeCookie( void );
 		void giveCookie( void );
+		std::string findSession( std::vector<std::string> cookies );
 
 		// alec functions
 		// added these while refactoring

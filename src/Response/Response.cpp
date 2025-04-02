@@ -74,7 +74,7 @@ void Response::generateHttpresponse(HttpRequest &reqObj){
 
 	// needed for cookies to work
 	header << "Set-Cookie: " << headerMap["Set-Cookie"] << "\r\n";
-	std::cout << "SetCookie found: " << headerMap["Set-Cookie"] << '\n';
+	// std::cout << "SetCookie found: " << headerMap["Set-Cookie"] << '\n';
 
 	//header << "Last-Modified: " << headerMap["Last-Modified"] << "\r\n";
 	//header << "ETag: " << headerMap["ETag"] << "\r\n";
