@@ -46,7 +46,7 @@ static int	setToEpoll( int epollFd, int clientFd ){
 		struct epoll_event	event;
 
 		event.data.fd = clientFd;
-		event.events = EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLERR | EPOLLHUP;
+		event.events = EPOLLIN | EPOLLET;
 
 		return( epoll_ctl( epollFd, EPOLL_CTL_ADD, clientFd, &event ) );
 }
@@ -126,51 +126,49 @@ static void	closeClient( Server& server, Client* client ){
 	server.removeClient( client );
 }
 
-// basic check for valid http request
-static bool checkForValidRequest(std::string rawRequest) {
-	// find content length value
-	size_t contentLenPos = rawRequest.find("Content-Length:");
-	// skip out of the rest of the checks for now -> edge case of no content length existing
-	if (contentLenPos == std::string::npos)
-		return true;
 
-	// skip past "Content-Length:" and any spaces
-	contentLenPos += 15; // Length of "Content-Length:"
-	while (contentLenPos < rawRequest.size() && isspace(rawRequest[contentLenPos])) {
+static ssize_t	getDefinedBodySize( std::string request ){
+	
+	// find content length value
+	size_t contentLenPos = request.find("Content-Length:");
+
+	//return -1 on undefined bodysize
+	if (contentLenPos == std::string::npos)
+		return -1;
+
+	contentLenPos += 15;
+	while (contentLenPos < request.size() && isspace(request[contentLenPos])) {
 		contentLenPos++;
 	}
 	
 	// find the end of the line
-	size_t lineEnd = rawRequest.find("\r\n", contentLenPos);
+	size_t lineEnd = request.find("\r\n", contentLenPos);
 	if (lineEnd == std::string::npos)
-		return false;
+		return -1;
 	
 	// extract the content length value string
-	std::string contentLenStr = rawRequest.substr(contentLenPos, lineEnd - contentLenPos);
+	std::string contentLenStr = request.substr(contentLenPos, lineEnd - contentLenPos);
 	
 	// Convert to integer
 	size_t contentLength = 0;
 	std::istringstream ss(contentLenStr);
 	ss >> contentLength;
 
-	// now check if we have received the complete body
-	size_t headerEnd = rawRequest.find("\r\n\r\n");
-	if (headerEnd == std::string::npos)
-		return false;
-	
-	size_t bodyStart = headerEnd + 4;
-	size_t bodyReceived = rawRequest.length() - bodyStart;
-
-	// Return true if we've received the complete body
-	return bodyReceived >= contentLength;
+	return( contentLength );
 }
 
-// TODO checkpoint alec and mo leave 42
-// right now only breaks on valid request
-bool static clientReadBreakCheck(int bytesRead, std::string request) {
-	if (bytesRead == 0 && checkForValidRequest(request))
-		return true;
-	return false;
+static ssize_t	getRecivedBodySize( std::string request ){
+
+	//count body length
+	size_t headerEnd = request.find("\r\n\r\n");
+	if (headerEnd == std::string::npos)
+		return( -1 );
+	
+	size_t bodyStart = headerEnd + 4;
+	size_t bodyReceived = request.length() - bodyStart;
+
+	// Return true if we've received the complete body
+	return ( bodyReceived );
 }
 
 static void	readFromClient( Client* client ) {
@@ -178,29 +176,38 @@ static void	readFromClient( Client* client ) {
 	char	buffer[ BUFFERSIZE ];
 	std::memset( buffer, '\0', BUFFERSIZE );
 
-	//check for bytes read
+	//recv data from client
 	int	bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
 
-	//recive data from client
-	// continue reading while http request is 
-	while( true ){
-		// braking functuion -> break if bytesRead == 0 && header contentleangth not existig or break if bytestread = 0 and contentnlength == conten size
-		// started implementing this - alec
-		if (clientReadBreakCheck(bytesRead, client->getContent()))
-			break;
-		buffer[ bytesRead ] = '\0'; //fixed from buffersice to buffer[ bytesRead ]
-		client->setContent( buffer );
-		std::memset( buffer, '\0', BUFFERSIZE );
-		bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
-	}
+	//set null to end and store in client
+	buffer[ bytesRead ] = '\0'; 
+	client->setContent( buffer );
+	
+	ssize_t	definedBodySize = getDefinedBodySize( client->getContent() );
+	ssize_t	requestedBodysize = getRecivedBodySize( client->getContent() );
 
-	//check recv for closed client connection
-	if( bytesRead == 0 )
+	//check if error occured
+	if( bytesRead == -1 )
+		return ;
+
+	//check if client closed connection on a full read of body
+	else if( bytesRead == 0 )
 		client->setClosed( true );
 
-	//check for error on client connection
-	if( bytesRead == -1 && ( errno != EAGAIN || errno != EWOULDBLOCK ) )//if problem try (bytesRead == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {
-		client->setError( true );
+	//check if done reading and httprequest is valid
+	else if( definedBodySize > 0 ){
+		
+		while( requestedBodysize < definedBodySize ){
+			bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
+			buffer[ bytesRead ] = '\0'; 
+			client->setContent( buffer );
+			requestedBodysize = getRecivedBodySize( client->getContent() );
+		}
+		client->setComplete( true );
+	}
+	else
+		client->setComplete( true );
+	return;
 }
 
 // //chaged to make it work with split paed sending of chrome 
@@ -252,7 +259,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		//close client
 		closeClient( server, client );
 		std::cerr << RED << "ERROR:	Client: fd:	" << END << \
-			client->getEventFd() << std::endl;
+			client->getEventFd() << strerror( errno ) << std::endl;
 		return;
 	}
 
@@ -270,7 +277,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 	}
 
 	// check for complete request instead of checking for EUP
-	if (checkForValidRequest(client->getContent())) {
+	if ( client->getComplete() ){
 		// std::cout << client->getContent() << std::endl;
 
 		// create temp config file for request construction
@@ -327,24 +334,19 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		// write response to socket
 		write(client->getSocketFd(), response.getHttpResponse().c_str(), response.getHttpResponse().size());
 
-		//so TODO add httpparsing and response handler here -> unchunking chunking,
-		//sending etc -_-> integrate cgi with" cgihandler( HttpRequest ) "
-		client->setClosed( true );
+		client->clearContent();
+		client->setComplete( false );
+
+		if( std::strstr ( client->getContent().c_str(), "Connection: close" ) )
+			client->setClosed( true );
 	}
-
-	// //check if Clients stopped sending data
-	// // TODO ALEC THIS DOESNT SEEM TO BE WORKING
-	// if( event.events & EPOLLRDHUP ) {
-
-	// }
-		
 
 	//check for error
 	if( event.events & EPOLLERR || client->getError() ) {
 		//close client
 		closeClient( server, client );
 		std::cerr << RED << "ERROR:	Client: fd:	" << END << \
-			client->getEventFd() << std::endl;
+			client->getEventFd() << strerror( errno ) << std::endl;
 		return;
 	}
 

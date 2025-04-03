@@ -25,8 +25,8 @@
 
 
 //defines for epoll
-#define	MAX_EVENTS 	1000
-#define BUFFERSIZE	1000
+#define	MAX_EVENTS 	10000
+#define BUFFERSIZE	10000
 #define TIMEOUT_TIME	10000
 
 //color codes for output

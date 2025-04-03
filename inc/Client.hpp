@@ -22,6 +22,7 @@ class	Client{
 		int		getSocketFd( void ) const;
 		std::string	getContent( void ) const;
 		bool		getClosed( void ) const;
+		bool		getComplete( void ) const;
 		bool		getError( void ) const;
 		
 		//setters
@@ -29,9 +30,11 @@ class	Client{
 		void		setSocketFd( int );
 		void		setContent( std::string );
 		void		setClosed( bool );
+		void		setComplete( bool );
 		void		setError( bool );
 
 		//memberfunctions
+		void		clearContent( void );
 
 	private:
 		//stores event and socket fd
@@ -41,6 +44,9 @@ class	Client{
 		//checks if recv got 0 so the client closed the connection on sending
 		bool		_closed;
 
+		//completed readind
+		bool		_complete;
+		
 		//check if recv got -1 so the client had an error on connection 
 		bool		_error;
 
