@@ -28,6 +28,7 @@
 #define	MAX_EVENTS 	1000
 #define BUFFERSIZE	1000
 #define TIMEOUT_TIME	10000
+#define MAX_ALLOWED_BYTES  104857600000 // 1 MB 
 
 //color codes for output
 # define RED		"\x1B[31m"
