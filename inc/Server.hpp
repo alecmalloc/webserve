@@ -9,6 +9,7 @@
 #include <string>
 #include <cstddef>
 #include <netdb.h>
+#include <unistd.h>
 
 #include "Location.hpp"
 #include "Config.hpp"

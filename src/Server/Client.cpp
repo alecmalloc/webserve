@@ -1,16 +1,17 @@
 #include "webserv.hpp"
 
-Client::Client( void ) : _eventFd( -1 ), _socketFd( -1 ), _closed( false ), _error( false ) {
+Client::Client( void ) : _eventFd( -1 ), _socketFd( -1 ), _closed( false ), _complete( false ),  _error( false ) {
 	;
 }
 
 Client::Client( int eventFd, int socketFd ) : _eventFd( eventFd), _socketFd( socketFd ), \
-		_closed( false ), _error( false ){
+		_closed( false ), _complete( false ), _error( false ){
 	;
 }
 
 Client::Client( const Client& og ) : _eventFd( og._eventFd ), _socketFd( og._socketFd ), \
-		_closed( og._closed ), _error( og._error),  _content( og._content ), _request(og._request){
+		_closed( og._closed ), _complete( og._complete ),  _error( og._error),  _content( og._content ), \
+		_request(og._request){
 	;
 }
 
@@ -24,6 +25,7 @@ Client&	Client::operator =( const Client& og ){
 		_eventFd = og._eventFd;
 		_socketFd = og._socketFd;
 		_closed = og._closed;
+		_complete = og._complete;
 		_error = og._error;
 		_content = og._content;
 		_request = og._request;
@@ -46,6 +48,10 @@ std::string	Client::getContent( void ) const{
 
 bool		Client::getClosed( void ) const{
 	return( _closed );
+}
+
+bool		Client::getComplete( void ) const{
+	return( _complete );
 }
 
 bool		Client::getError( void ) const{
@@ -71,6 +77,14 @@ void	Client::setClosed( bool closed ){
 	_closed = closed;
 }
 
+void	Client::setComplete( bool complete ){
+	_complete = complete;
+}
+
 void	Client::setError( bool error ){
 	_error = error;
+}
+
+void	Client::clearContent( void ){
+	_content = "";
 }
