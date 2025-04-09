@@ -52,6 +52,7 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 	//std::cout << "Final path being used: " << pathInfo.getFullPath() << std::endl;
 	
 	processResponse(reqObj);
+	std::cout << "generating response" << '\n';
 	generateHttpresponse(reqObj);
 }
 
@@ -81,6 +82,7 @@ void Response::generateHttpresponse(HttpRequest &reqObj){
 	//header << "Location: " << headerMap["Location"] << "\r\n";
 	header << "\r\n"; // End of headers
 	std::string responseString = header.str() + getBody();
+	std::cout << header.str() << '\n';
 	setHttpResponse(responseString);
 }
 
