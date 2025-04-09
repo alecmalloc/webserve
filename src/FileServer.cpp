@@ -1,14 +1,5 @@
 #include "webserv.hpp"
 
-Response serveFile(const PathInfo& path) {
-    Response response;
-
-    if (!path.isFile())
-        throw std::runtime_error("Path is not a file");
-
-    return response;
-}
-
 Response serveDirectory(const PathInfo& path) {
     Response response;
 
@@ -73,6 +64,15 @@ Response serveDirectory(const PathInfo& path) {
     if (pos != std::string::npos) {
         htmlTemplate.replace(pos, 17, directoryPath);
     }
+
+    return response;
+}
+
+Response serveFile(const PathInfo& path) {
+    Response response;
+
+    if (!path.isFile())
+        throw std::runtime_error("Path is not a file");
 
     return response;
 }

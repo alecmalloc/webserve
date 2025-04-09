@@ -46,6 +46,7 @@
 #include "Response.hpp"
 #include "Server.hpp"
 #include "Cgi.hpp"
+#include "FileOps.hpp"
 
 
 void	runServer( Config& conf );
