@@ -15,7 +15,7 @@ static std::string	cutEnding( std::string tmp ){
 static std::string	makePath( std::string tmp, int root ){
 	if( tmp.at( 0 ) != '/' && !root )
 		tmp = "/" + tmp;
-	if( tmp.at( tmp.size() - 1 ) == '/' )
+	if( tmp.at( tmp.size() - 1 ) == '/' && tmp.size() != 1 )
 		tmp = tmp.substr( 0, tmp.size() - 1 );
 	return( tmp );
 }
