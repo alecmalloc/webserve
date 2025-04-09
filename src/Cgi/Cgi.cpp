@@ -408,6 +408,11 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 	size_t		bytesRead;
 
 	while( ( bytesRead = read( outputPipe[0], buffer, BUFFERSIZE - 1 ) ) > 0){
+		if (bytesRead > MAX_ALLOWED_BYTES) {
+			std::cerr << "ERROR: CGI output exceeded limit" << std::endl;
+			kill( pid, SIGKILL );	
+			break;
+		}
 		response += buffer;
 		std::memset( buffer, '\0', BUFFERSIZE );
 	}
