@@ -1,6 +1,6 @@
 #include "webserv.hpp"
 
-static const std::string COOKIE_PAGE_STYLE = "<style>body{font-family:sans-serif;text-align:center;margin:40px auto;max-width:600px;background:#f8f8f8;}h1{color:#333;font-size:24px;margin-bottom:30px;}a{display:inline-block;background:#4285f4;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;font-weight:bold;}a:hover{background:#3367d6;}</style>";
+static const std::string COOKIE_PAGE_STYLE = "<style>body{font-family:sans-serif;text-align:center;margin:40px auto;max-width:600px;background:#f8f8f8;display:flex;flex-direction:column;align-items:center;}h1{color:#333;font-size:24px;margin-bottom:30px;}a{display:inline-block;background:#4285f4;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;font-weight:bold;margin-top:10px;}a:hover{background:#3367d6;}</style>";
 
 // templates for cookie html
 std::string static cookiesHtmlTemplateHasCookie() {
@@ -9,6 +9,8 @@ std::string static cookiesHtmlTemplateHasCookie() {
     response += "<h1>omg! we found our cookie!</h1>";
 
     response += "<a href=\"/customCookiesEndpoint/CookiesPage/deactivate\">eat your cookie!</a>";
+
+    response += "<a href=\"/\">home</a>";
 
     response += COOKIE_PAGE_STYLE;
 
@@ -22,6 +24,8 @@ std::string static cookiesHtmlTemplateHasNoCookie() {
     response += "<h1>no cookies found ...</h1>";
 
     response += "<a href=\"/customCookiesEndpoint/CookiesPage/activate\">grab a cookie!</a>";
+
+    response += "<a href=\"/\">home</a>";
 
     response += COOKIE_PAGE_STYLE;
 
