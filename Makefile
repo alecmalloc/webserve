@@ -19,10 +19,10 @@ DEPS = $(OBJS:.o=.d)
 INC_DIRS = $(shell find $(INCL_DIR) -type d)
 INC_FLAGS = $(addprefix -I, $(INC_DIRS))
 
-CC = c++
+CC = g++
 CPPFLAGS = $(INC_FLAGS) -Wall -Werror -Wextra -MMD -MP -g3 -std=c++98
 
-LD = c++
+LD = g++
 LDFLAGS = $(LIBS) -g
 LINKS =
 

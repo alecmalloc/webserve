@@ -171,7 +171,17 @@ static ssize_t	getRecivedBodySize( std::string request ){
 	return ( bodyReceived );
 }
 
+void print_progress( size_t progress, size_t total ) {
+
+	// Move the cursor back to the start of the line (\r)
+	std::cout << "\rProgress: " << progress << "bytes of total: " << total;
+
+	// Flush the output buffer to ensure immediate display
+	std::cout.flush();
+}
+
 static void	readFromClient( Client* client ) {
+
 	//create Buffer and Zero it
 	char	buffer[ BUFFERSIZE ];
 	std::memset( buffer, '\0', BUFFERSIZE );
@@ -179,8 +189,7 @@ static void	readFromClient( Client* client ) {
 	//recv data from client
 	int	bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
 
-	//set null to end and store in client
-	buffer[ bytesRead ] = '\0'; 
+	//store in client
 	client->setContent( buffer );
 	
 	ssize_t	definedBodySize = getDefinedBodySize( client->getContent() );
@@ -196,14 +205,19 @@ static void	readFromClient( Client* client ) {
 
 	//check if done reading and httprequest is valid
 	else if( definedBodySize > 0 ){
-		
-		while( requestedBodysize < definedBodySize ){
+	
+		while( requestedBodysize < definedBodySize && running && bytesRead > 0 ){
+
+			std::memset( buffer, '\0', BUFFERSIZE );
+			print_progress( requestedBodysize, definedBodySize );
+
 			bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
-			buffer[ bytesRead ] = '\0'; 
 			client->setContent( buffer );
+
 			requestedBodysize = getRecivedBodySize( client->getContent() );
 		}
-		client->setComplete( true );
+		if( requestedBodysize >= definedBodySize )
+			client->setComplete( true );
 	}
 	else
 		client->setComplete( true );
@@ -255,7 +269,7 @@ static void	readFromClient( Client* client ) {
 
 static void	checkEvents( Server& server, Client* client,  struct epoll_event& event ){
 	// check for error
-	if( event.events & EPOLLERR || client->getError() ){
+	if( event.events & EPOLLERR ){
 		//close client
 		closeClient( server, client );
 		std::cerr << RED << "ERROR:	Client: fd:	" << END << \
