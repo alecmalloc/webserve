@@ -36,6 +36,7 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
             std::cout << "No location matched, path: " << fullPath << std::endl;
         }
         
+		// only checks for global index file
         std::vector<std::string> indexFiles = _serverConf->getIndex();
         if (!indexFiles.empty()) {
             // Use the first index file in the vector
