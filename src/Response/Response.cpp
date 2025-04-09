@@ -27,12 +27,11 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 	// Find best matching location (longest prefix match)
 	std::string bestMatch = "";
 	
-	for (std::vector<LocationConf>::const_iterator it = locations.begin();
-		 it != locations.end(); ++it) {
+	for (std::vector<LocationConf>::const_iterator it = locations.begin();it != locations.end(); ++it) {
 		std::string locPath = it->getPath();
-		 
+		
 		// DEBUG
-		// std::cout << "DEBUG - Checking location: '" << it->getPath() << "'" << std::endl;
+		std::cout << "DEBUG - Checking location: '" << it->getPath() << "'" << '\n';
 		
 		if (uri.find(locPath) == 0) {  // URI starts with location path
 			if (locPath.length() > bestMatch.length()) {
@@ -43,13 +42,12 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 	}
 
 	// DEBUG
-	// std::cout << "URI: " << uri << std::endl;
-	// std::cout << "Server root: " << _serverConf->getRootDir() << std::endl;
-	// if (_locationConf) {
-    // 	std::cout << "Location path: " << _locationConf->getPath() << std::endl;
-    // 	std::cout << "Location root: " << _locationConf->getRootDir() << std::endl;
-	// }
-	//std::cout << "Final path being used: " << pathInfo.getFullPath() << std::endl;
+	std::cout << "URI: " << uri << '\n';
+	std::cout << "Server root: " << _serverConf->getRootDir() << '\n';
+	if (_locationConf) {
+    	std::cout << "Location path: " << _locationConf->getPath() << std::endl;
+    	std::cout << "Location root: " << _locationConf->getRootDir() << std::endl;
+	}
 	
 	processResponse(reqObj);
 	generateHttpresponse(reqObj);
@@ -119,6 +117,7 @@ void Response::generateErrorResponse(HttpRequest &reqObj) {
 	
 	// check request obj for the code
 	int responseCode = reqObj.getResponseCode();
+	std::cout << responseCode << '\n';
 	std::map<int, std::string>::const_iterator customPageIt = errorPages.find(responseCode);
 	
 	// generate correct headers for our error page
