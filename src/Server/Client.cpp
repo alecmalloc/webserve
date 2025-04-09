@@ -1,17 +1,17 @@
 #include "webserv.hpp"
 
-Client::Client( void ) : _eventFd( -1 ), _socketFd( -1 ), _closed( false ), _complete( false ),  _error( false ) {
+Client::Client( void ) : _eventFd( -1 ), _socketFd( -1 ), _closed( false ), _complete( false ),  _error( false ), _content( "" ) {
 	;
 }
 
 Client::Client( int eventFd, int socketFd ) : _eventFd( eventFd), _socketFd( socketFd ), \
-		_closed( false ), _complete( false ), _error( false ){
+		_closed( false ), _complete( false ), _error( false ), _content( "" ) {
 	;
 }
 
 Client::Client( const Client& og ) : _eventFd( og._eventFd ), _socketFd( og._socketFd ), \
-		_closed( og._closed ), _complete( og._complete ),  _error( og._error),  _content( og._content ), \
-		_request(og._request){
+		_closed( og._closed ), _complete( og._complete ),  _error( og._error),  \
+		_content( og._content ), _request(og._request){
 	;
 }
 
@@ -68,9 +68,7 @@ void	Client::setSocketFd( int fd ){
 }
 
 void	Client::setContent( std::string content ){
-	//std::cout << "Before setContent: _content = " << _content << ", content = " << content << std::endl;
     _content += content;
-    //std::cout << "After setContent: _content = " << _content << std::endl;
 }
 
 void	Client::setClosed( bool closed ){
