@@ -68,7 +68,7 @@ void	Client::setSocketFd( int fd ){
 }
 
 void	Client::setContent( std::string content ){
-    _content += content;
+	_content.append( content );
 }
 
 void	Client::setClosed( bool closed ){
