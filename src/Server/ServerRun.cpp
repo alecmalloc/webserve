@@ -189,32 +189,32 @@ static void	readFromClient( Client* client ) {
 	//recv data from client
 	int	bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
 
-	//store in client
-	client->setContent( buffer );
-	
-	ssize_t	definedBodySize = getDefinedBodySize( client->getContent() );
-	ssize_t	requestedBodysize = getRecivedBodySize( client->getContent() );
-
 	//check if error occured
 	if( bytesRead == -1 )
 		return ;
 
-	//check if client closed connection on a full read of body
-	else if( bytesRead == 0 )
-		client->setClosed( true );
+	//store in client
+	client->setContent( std::string( buffer, bytesRead ) );
+	
+	ssize_t	definedBodySize = getDefinedBodySize( client->getContent() );
+	ssize_t	requestedBodysize = getRecivedBodySize( client->getContent() );
 
 	//check if done reading and httprequest is valid
-	else if( definedBodySize > 0 ){
+	if( definedBodySize > 0 ){
 	
+		bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
+
 		while( requestedBodysize < definedBodySize && running && bytesRead > 0 ){
+
+			client->setContent( std::string( buffer, bytesRead ) );
 
 			std::memset( buffer, '\0', BUFFERSIZE );
 			print_progress( requestedBodysize, definedBodySize );
 
-			bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
-			client->setContent( buffer );
 
 			requestedBodysize = getRecivedBodySize( client->getContent() );
+
+			bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
 		}
 		if( requestedBodysize >= definedBodySize )
 			client->setComplete( true );
@@ -223,49 +223,6 @@ static void	readFromClient( Client* client ) {
 		client->setComplete( true );
 	return;
 }
-
-// //chaged to make it work with split paed sending of chrome 
-// static bool completeHttpRequest(std::string request) {
-//     // First check if we have the full headers
-//     size_t headerEnd = request.find("\r\n\r\n");
-//     if (headerEnd == std::string::npos)
-//         return false;
-        
-//     // Look for Content-Length header
-//     size_t clPos = request.find("Content-Length: ");
-//     if (clPos != std::string::npos) {
-//         // Extract the Content-Length value
-//         size_t valueStart = clPos + 16;
-//         size_t valueEnd = request.find("\r\n", valueStart);
-//         std::string lengthStr = request.substr(valueStart, valueEnd - valueStart);
-        
-//         // C++98 compliant conversion from string to number
-//         std::istringstream ss(lengthStr);
-//         size_t contentLength = 0;
-//         ss >> contentLength;
-        
-//         size_t bodyStart = headerEnd + 4;
-//         size_t bodyReceived = request.length() - bodyStart;
-        
-//         // Request is complete only if we've received all the content
-//         return bodyReceived >= contentLength;
-//     }
-    
-//     // If no Content-Length, assume complete after headers
-//     return true;
-// }
-
-
-//rverConf* selectServerConf(const std::vector<ServerConf>& serverConfs, const std::string& host, int port) {
-//  for (size_t i = 0; i < serverConfs.size(); ++i) {
-//      const ServerConf& conf = serverConfs[i];
-//      // Implement your selection logic here based on host and port
-//      if (conf.getHost() == host && conf.getPort() == port) {
-//           return &serverConfs[i];
-//      }
-//  }
-//  return nullptr; // Return nullptr if no matching configuration is found
-//
 
 static void	checkEvents( Server& server, Client* client,  struct epoll_event& event ){
 	// check for error
