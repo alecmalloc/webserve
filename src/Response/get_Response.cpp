@@ -67,12 +67,13 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
             bool autoIndexEnabled = _locationConf->getAutoIndex();
             if (autoIndexEnabled) {
                 // If autoindex is ON, show directory listing
+                std::cout << "DEBUG: " << pathInfo.getFullPath();
                 setBody(generateDirectoryListing(pathInfo.getFullPath()));
                 ReqObj.setResponseCode(200);
             } else {
                 // If autoindex is OFF and no index file was found
                 ReqObj.setResponseCode(403);
-                std::cout << "$$$$$$$$$$$$$$$$$403\n"; 
+                //std::cout << "$$$$$$$$$$$$$$$$$403\n"; 
                 throw 403;
             }
         } else {

@@ -178,7 +178,7 @@ void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
 	// Validate the POST data
 	if (postData.empty()) {
 		std::cerr << "POST data is empty" << std::endl;
-		throw 400; // Bad Request
+		throw 200; // Bad Request
 	}
 
 	//  // Create upload directory if it doesn't exist

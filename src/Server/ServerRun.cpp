@@ -235,6 +235,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		// hand over content to request obj
 		std::cout << "Reading request from client" << '\n';
 		HttpRequest request(confTMP);
+
 		const std::string request_str = client->getContent();
 		request.handleRequest(request_str);
 		std::cout << request << '\n';

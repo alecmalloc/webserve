@@ -41,6 +41,10 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 		}
 	}
 
+	PathInfo pathInfo( bestMatch );
+	pathInfo.validatePath();
+	reqObj.setPathInfo( pathInfo );
+
 	// DEBUG
 	std::cout << "URI: " << uri << '\n';
 	std::cout << "Server root: " << _serverConf->getRootDir() << '\n';
