@@ -159,6 +159,7 @@ int PathInfo::parsePath() {
 int PathInfo::validatePath() {
     // First parse the path components - do this before validation
     parsePath();
+    std::cout << "HERE HERE HERE" << '\n';
 
     // Check for path traversal attempts using ".." in path
     if (_fullPath.find("..") != std::string::npos)
@@ -179,25 +180,27 @@ int PathInfo::validatePath() {
     _isDirectory = S_ISDIR(statbuf.st_mode);
     _isFile = S_ISREG(statbuf.st_mode);
 
-    // Additional directory check using opendir
-    if (_isDirectory) {
-        DIR* dir = opendir(_fullPath.c_str());
-        if (dir == NULL) {
-            _isDirectory = false;
-            return 404;
-        }
-        closedir(dir);
+    std::cout << "DDDDDDD: " << _isDirectory << '\n';
 
-        // Check directory permissions
-        if (!(statbuf.st_mode & S_IRUSR) || !(statbuf.st_mode & S_IXUSR)) {
-            return 403;
-        }
-    } else if (_isFile) {
-        // Check file permissions
-        if (!(statbuf.st_mode & S_IRUSR)) {
-            return 403;
-        }
-    }
+    // // Additional directory check using opendir
+    // if (_isDirectory) {
+    //     DIR* dir = opendir(_fullPath.c_str());
+    //     if (dir == NULL) {
+    //         _isDirectory = false;
+    //         return 404;
+    //     }
+    //     closedir(dir);
+
+    //     // Check directory permissions
+    //     if (!(statbuf.st_mode & S_IRUSR) || !(statbuf.st_mode & S_IXUSR)) {
+    //         return 403;
+    //     }
+    // } else if (_isFile) {
+    //     // Check file permissions
+    //     if (!(statbuf.st_mode & S_IRUSR)) {
+    //         return 403;
+    //     }
+    // }
 
     return 200;
 }
