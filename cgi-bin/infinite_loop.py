@@ -12,6 +12,7 @@ print("<h1>Running infinite loop to test CGI timeout</h1>")
 print("<p>This page will run indefinitely. You will see a timeout after a while.</p>")
 print("<p>If you see this message for a long time, it's because the script is still running...</p>")
 
+
 sys.stdout.flush()  # Flush stdout buffer to ensure output is written
 
 # Infinite loop to test timeout
