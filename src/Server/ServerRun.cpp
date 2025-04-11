@@ -174,7 +174,7 @@ static ssize_t	getRecivedBodySize( std::string request ){
 void print_progress( size_t progress, size_t total ) {
 
 	// Move the cursor back to the start of the line (\r)
-	std::cout << "\rProgress: " << progress << "bytes of total: " << total;
+	std::cout << "\rProgress: " << progress << "bytes of total: " << total << " \n";
 
 	// Flush the output buffer to ensure immediate display
 	std::cout.flush();
