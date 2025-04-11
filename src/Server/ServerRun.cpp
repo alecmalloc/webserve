@@ -227,8 +227,6 @@ static void	readFromClient( Client* client ) {
 static void	checkEvents( Server& server, Client* client,  struct epoll_event& event ){
 	// check for error
 	if( event.events & EPOLLERR ) {
-		std::cerr << RED << "ERROR:	Client: fd:	" << END << \
-			client->getEventFd() << strerror( errno ) << std::endl;
 		//close client
 		closeClient( server, client );
 		return;
