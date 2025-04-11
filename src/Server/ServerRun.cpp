@@ -108,8 +108,8 @@ static Client*	findClient( Server& server, struct epoll_event event ){
 	//create new client with new fd and add to exxisting clients
 	clients.push_back( newClient );
 
-	std::cout << BLUE << "INFO:	Client: connected:	" << END << clientFd \
-			<< std::endl;
+	// std::cout << BLUE << "INFO:	Client: connected:	" << END << clientFd
+	// 		<< std::endl;
 
 	//return new client
 	return( &clients.back() );
@@ -253,11 +253,10 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		Config confTMP = server.getConf();
 
 		// hand over content to request obj
-		std::cout << "Reading request from client" << '\n';
+		std::cout << "========================REQUEST=IN============================" << '\n';
 		HttpRequest request(confTMP);
 		const std::string request_str = client->getContent();
 		request.handleRequest(request_str);
-		std::cout << request << '\n';
 		
 		// Get server configs
 		std::vector<ServerConf> serverTMPConf = confTMP.getServerConfs();
@@ -302,6 +301,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 		// write response to socket
 		write(client->getSocketFd(), response.getHttpResponse().c_str(), response.getHttpResponse().size());
+		std::cout << "========================RESPONSE=OUT==========================" << '\n';
 
 		client->clearContent();
 		client->setComplete( false );

@@ -299,7 +299,7 @@ void HttpRequest::parseBody(const std::string& rawRequest) {
         setBody(bodyContent);
 
         // Debug output
-        std::cout << "Read POST body, length: " << bodyContent.length() << std::endl;
+        // std::cout << "Read POST body, length: " << bodyContent.length() << std::endl;
     } else {
         std::cerr << "Warning: Incomplete body received. Expected " 
                     << contentLength << " bytes, got " 
@@ -369,7 +369,7 @@ void HttpRequest::validateRequestPath(void) {
 
     // Protect against empty/null values
     if (_server.getRootDir().empty()) {
-        std::cout << "Warning: Server root is empty" << std::endl;
+        // std::cout << "Warning: Server root is empty" << std::endl;
         _response_code = 500;
         return;
     }

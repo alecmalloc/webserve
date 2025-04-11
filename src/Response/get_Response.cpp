@@ -33,7 +33,7 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
         } else {
             // No location matched
             fullPath = _serverConf->getRootDir() + uri;
-            std::cout << "No location matched, path: " << fullPath << std::endl;
+            // std::cout << "No location matched, path: " << fullPath << std::endl;
         }
         
         std::vector<std::string> indexFiles = _serverConf->getIndex();
@@ -42,7 +42,7 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
             std::string indexFilePath = pathInfo.getDirName() + indexFiles[0];
             
             // Try to open the index file - FIXED: using indexFilePath instead of fullPath
-            std::cout << "Trying to open index file: " << indexFilePath << std::endl;
+            // std::cout << "Trying to open index file: " << indexFilePath << std::endl;
             std::ifstream file(indexFilePath.c_str(), std::ios::in | std::ios::binary);
             
             if (file) {
@@ -82,7 +82,7 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
         }
     }
     else if (pathInfo.isFile()) {
-        std::cout << "Path is a file" << std::endl;
+        // std::cout << "Path is a file" << std::endl;
         std::string fullPath = pathInfo.getFullPath();
         std::ifstream file(fullPath.c_str(), std::ios::in | std::ios::binary);
         
@@ -98,7 +98,7 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
         setBody(contents.str());
         ReqObj.setResponseCode(200);
     } else {
-        std::cerr << "Path is neither a file nor a directory" << std::endl;
+        // std::cerr << "Path is neither a file nor a directory" << std::endl;
         ReqObj.setResponseCode(404);
         throw 404; // Not Found
     }
