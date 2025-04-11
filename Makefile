@@ -26,7 +26,10 @@ LD = g++
 LDFLAGS = $(LIBS) -g
 LINKS =
 
-all: $(NAME)
+all: $(NAME) folders
+
+folders:
+	mkdir -p uploads
 
 $(NAME): $(OBJS)
  ifdef $(LIB)
