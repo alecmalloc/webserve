@@ -174,7 +174,7 @@ static ssize_t	getRecivedBodySize( std::string request ){
 void print_progress( size_t progress, size_t total ) {
 
 	// Move the cursor back to the start of the line (\r)
-	std::cout << "\rProgress: " << progress << "bytes of total: " << total << " \n";
+	std::cout << "\rProgress: " << progress << "bytes of total: " << total;
 
 	// Flush the output buffer to ensure immediate display
 	std::cout.flush();
@@ -216,6 +216,7 @@ static void	readFromClient( Client* client ) {
 
 			bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
 		}
+		std::cout << "\n";
 		if( requestedBodysize >= definedBodySize )
 			client->setComplete( true );
 	}
