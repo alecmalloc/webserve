@@ -53,7 +53,7 @@ static int getVectors(ServerConf server, std::vector<std::string>& ext,
     
     for (std::vector<LocationConf>::const_iterator it = locations.begin(); 
          it != locations.end(); ++it) {
-        std::cerr << "Location Path: " << it->getPath() << ", Root Dir: " << it->getRootDir() << std::endl;
+        //std::cerr << "Location Path: " << it->getPath() << ", Root Dir: " << it->getRootDir() << std::endl;
         
         std::string Compare_dir = it->getPath();
         
@@ -63,7 +63,7 @@ static int getVectors(ServerConf server, std::vector<std::string>& ext,
             path = it->getCgiPath();
             
             for (std::vector<std::string>::const_iterator extIt = ext.begin(); extIt != ext.end(); ++extIt) {
-                std::cerr << *extIt << " ";
+                //std::cerr << *extIt << " ";
             }
             std::cerr << std::endl;
             return (0);

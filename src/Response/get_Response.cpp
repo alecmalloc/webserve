@@ -25,11 +25,11 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
         if (_locationConf && uri.find(_locationConf->getPath()) == 0) {
             // URI already starts with location path, just use the URI as-is
             fullPath = _serverConf->getRootDir() + uri;
-            std::cout << "Path constructed from URI only: " << fullPath << std::endl;
+            //std::cout << "Path constructed from URI only: " << fullPath << std::endl;
         } else if (_locationConf) {
             // Location doesn't match URI prefix, need to combine them
             fullPath = _serverConf->getRootDir() + _locationConf->getPath() + uri;
-            std::cout << "Path constructed from location + URI: " << fullPath << std::endl;
+            //std::cout << "Path constructed from location + URI: " << fullPath << std::endl;
         } else {
             // No location matched
             fullPath = _serverConf->getRootDir() + uri;
@@ -63,7 +63,7 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
         
         // If we reach here, no index file was found or successfully opened
         if (_locationConf) {
-			std::cout << "AUTO INDEXING \n";
+			//std::cout << "AUTO INDEXING \n";
             bool autoIndexEnabled = _locationConf->getAutoIndex();
             if (autoIndexEnabled) {
                 // If autoindex is ON, show directory listing
@@ -72,7 +72,6 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
             } else {
                 // If autoindex is OFF and no index file was found
                 ReqObj.setResponseCode(403);
-                std::cout << "$$$$$$$$$$$$$$$$$403\n"; 
                 throw 403;
             }
         } else {
