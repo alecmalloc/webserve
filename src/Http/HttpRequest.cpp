@@ -369,7 +369,7 @@ void HttpRequest::validateRequestPath(void) {
 
     // Protect against empty/null values
     if (_server.getRootDir().empty()) {
-        std::cout << "Warning: Server root is empty" << std::endl;
+        // std::cout << "Warning: Server root is empty" << std::endl;
         _response_code = 500;
         return;
     }

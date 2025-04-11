@@ -98,7 +98,7 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
         setBody(contents.str());
         ReqObj.setResponseCode(200);
     } else {
-        std::cerr << "Path is neither a file nor a directory" << std::endl;
+        // std::cerr << "Path is neither a file nor a directory" << std::endl;
         ReqObj.setResponseCode(404);
         throw 404; // Not Found
     }
