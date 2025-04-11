@@ -57,10 +57,7 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 
 
 
-void Response::generateHttpresponse(HttpRequest &reqObj){
-	if (getStatusCode() == 0) {
-        setStatusCode(reqObj.getResponseCode());
-    }
+void Response::generateHttpresponse(HttpRequest &reqObj) {
 	generateHeader(reqObj);
 	std::map<std::string, std::string> headerMap = getHeaderMap();
 	std::stringstream header ;

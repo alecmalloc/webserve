@@ -19,6 +19,8 @@ DEPS = $(OBJS:.o=.d)
 INC_DIRS = $(shell find $(INCL_DIR) -type d)
 INC_FLAGS = $(addprefix -I, $(INC_DIRS))
 
+FOLDERS = uploads session
+
 CC = g++
 CPPFLAGS = $(INC_FLAGS) -Wall -Werror -Wextra -MMD -MP -g3 -std=c++98
 
@@ -29,7 +31,7 @@ LINKS =
 all: $(NAME) folders
 
 folders:
-	mkdir -p uploads
+	mkdir -p $(FOLDERS)
 
 $(NAME): $(OBJS)
  ifdef $(LIB)
@@ -54,7 +56,7 @@ $(BUILD_DIR)/%_bonus.o: $(SRC_DIR)/%_bonus.cpp
 	$(CC) $(CPPFLAGS) -c $< -o $@
 
 clean:
-	$(RM) -r $(BUILD_DIR)
+	$(RM) -r $(BUILD_DIR) $(FOLDERS)
 
 fclean: clean
 	$(RM) $(NAME)
