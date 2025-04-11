@@ -78,6 +78,13 @@ static int	createSocket( const char* ip, int port ){
 		return( -1 );
 	}
 
+	options = setsockopt( newSocket, SOL_SOCKET, SO_REUSEPORT, &options, sizeof( options ) );
+
+	if( options == -1 ){
+		close( newSocket );
+		return( -1 );
+	}
+
 	//bind addr to socket
 	options = bind( newSocket,( struct sockaddr* ) &addr, sizeof( addr ) );
 	 

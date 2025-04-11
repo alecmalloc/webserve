@@ -48,24 +48,19 @@ static int getVectors(ServerConf server, std::vector<std::string>& ext,
         uriPath = uriPath.substr(0, lastSlash+1);
     }
     
-    std::cerr << "DEBUG: Extracted URI path: " << uriPath << std::endl;
-    
     // Improve location matching
     const std::vector<LocationConf>& locations = server.getLocationConfs();
-    std::cerr << "DEBUG: All locations:" << std::endl;
     
     for (std::vector<LocationConf>::const_iterator it = locations.begin(); 
          it != locations.end(); ++it) {
         std::cerr << "Location Path: " << it->getPath() << ", Root Dir: " << it->getRootDir() << std::endl;
         
         std::string Compare_dir = it->getPath();
-        std::cerr << "DEBUG: Comparing location '" << Compare_dir << "' with URI path '" << uriPath << "'" << std::endl;
         
         // Match based on path prefix, not exact match
         if (uriPath.find(Compare_dir) == 0) {
             ext = it->getCgiExt();
             path = it->getCgiPath();
-            std::cerr << "DEBUG: Matched location: " << it->getRootDir() + it->getPath() << std::endl;
             
             for (std::vector<std::string>::const_iterator extIt = ext.begin(); extIt != ext.end(); ++extIt) {
                 std::cerr << *extIt << " ";
@@ -85,22 +80,17 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 
 	//get vectors
 	if( getVectors( req.getServer(), ext, path, req.getUri() ) == -1 ){
-		std::cerr << "DEBUG: Failed to get CGI vectors for URI: " << req.getUri() << std::endl;
 		return( -1 );
 	}
 		
 
 	std::string uri = stripQueryParams(req.getUri());
     
-    // Debug output
-    std::cout << "Checking CGI path (without query): " << uri << std::endl;
-    
 	std::string			end;
 	std::string::size_type		dot = uri.rfind( '.', uri.npos );
 
 	//return if no ending is found ".cgi"
 	if( dot == std::string::npos ){
-		std::cerr << "DEBUG: No file extension found in URI: " << uri << std::endl;
 		return( -1 );
 	}
 	
@@ -113,7 +103,6 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 
 	//return if ending is not inside cgiExt
 	if( it == ext.end() ){
-		std::cerr << "DEBUG: File extension " << end << " not in CGI extensions" << std::endl;
 		return( -1 );
 	}
 	
@@ -121,12 +110,10 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
     
     
     
-    // Use your root directory + the clean URI
     std::string fullPath = "." + uri;
-    std::cout << "DEBUG: Full path for access check: " << fullPath << std::endl;
+
 	//check if file is accesible
 	if( access( fullPath.c_str(), X_OK ) == -1 ){
-	std::cerr << "DEBUG: File " << uri << " is not accessible or executable" << std::endl;	
 	return( -1 );
 	}
 	std::vector< std::string >::iterator extIt = ext.begin();
@@ -141,10 +128,10 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 		pathIt++;
 	}
 	if( interpreter.empty() ){
-        std::cerr << "DEBUG: No interpreter found for file extension " << end << std::endl;
+        //std::cerr << "DEBUG: No interpreter found for file extension " << end << std::endl;
 		return( -1 );
 	}
-	 std::cerr << "DEBUG: Interpreter for " << uri << " is " << interpreter << std::endl;
+	 //std::cerr << "DEBUG: Interpreter for " << uri << " is " << interpreter << std::endl;
 	return( 0 );
 }
 
@@ -186,7 +173,7 @@ static void	setEnv( HttpRequest& req, char*** env ){
 	//set env via strings 
 	// Extract query string separately
     std::string queryString = extractQueryString(req.getUri());
-	std::cout << "QUEERYSTRING" << queryString << ":::\n";
+
 	std::map< std::string, std::string > tmpEnv;
 
 	tmpEnv[ "REQUEST_METHOD" ]	= req.getMethod().empty() ? "GET" : req.getMethod();
@@ -216,16 +203,6 @@ static void	setEnv( HttpRequest& req, char*** env ){
                        req.getHeaders().at("Host")[0] + req.getUri() :
                        ip + ":" + port + req.getUri();
 
-
-	/*cnaged to make it multi browser compatible
-	tmpEnv[ "SERVER_NAME" ]   	= req.getHeaders().count( "Host" ) ? \
-						req.getHeaders().at( "Host" )[0] : \
-						"localhost";
-	tmpEnv[ "SERVER_PORT" ]   	= port;
-	tmpEnv[ "REMOTE_ADDR" ]   	= ip;
-	tmpEnv[ "REQUEST_URI" ]		= req.getUri().empty() ? "" : req.getUrl().empty() \
-						? "" : req.getUrl();
-	*/
 	
 	//transfer headers to be HTTP_...
 	const std::map< std::string, std::vector< std::string > >& headers = req.getHeaders();
@@ -285,7 +262,6 @@ static int	childProcess( HttpRequest& req, int* inputPipe, int* outputPipe, \
                     const_cast<char*>(scriptPath.c_str()), 
                     NULL };
 
-	//std::cerr << "DEBUG: Executing interpreter: " << inter << " with script: " << path << std::endl;
 	//execute
 	execve( inter.c_str(), args, env );
 
@@ -346,8 +322,6 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
             body.erase(body.size() -1 );
         }
 		req.setBody(body);
-		std::cerr << "DEBUG: Writing POST body: '" << req.getBody() << "'" << std::endl;
-        std::cerr << "DEBUG: Body size: " << req.getBody().size() << std::endl;
 
 		size_t bytesWritten = 0;
 		size_t totalBytes = body.size();
@@ -355,17 +329,17 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 		
 		while (bytesWritten < totalBytes) {
 			ssize_t result = write(inputPipe[1], data + bytesWritten, totalBytes - bytesWritten);
-			std::cerr << "DEBUG: Write result: " << result << " bytes" << std::endl;
+			//std::cerr << "DEBUG: Write result: " << result << " bytes" << std::endl;
     
 			if (result <= 0) {
-				std::cerr << "DEBUG: Write error: " << strerror(errno) << std::endl;
+				//std::cerr << "DEBUG: Write error: " << strerror(errno) << std::endl;
 				// Handle error
 				break;
 			}
 			bytesWritten += result;
 		}
 
-		std::cerr << "DEBUG: Total bytes written: " << bytesWritten << "/" << totalBytes << std::endl;
+		//std::cerr << "DEBUG: Total bytes written: " << bytesWritten << "/" << totalBytes << std::endl;
 		
 		// Add a small delay to ensure data is transferred before closing pipe
 		usleep(5000);  // 1ms delay
@@ -381,40 +355,54 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 	pfd.fd 		= outputPipe[0];
 	pfd.events 	= POLLIN;	
 
-	//wait for child to write to fd
-	pollRet = poll( &pfd, 1, TIMEOUT_TIME );
-
-	if( pollRet == -1 ){
-		std::cerr << RED << "ERROR: Poll: " << strerror( errno ) << END << std::endl;
-		close( outputPipe[0] );
-		kill( pid, SIGKILL );
-		waitpid( pid, &status, 0 );
-		return( -1 );
-	}
-
-	//if return == TIMEOUT
-	if( pollRet == 0 ){
-		std::cout << BLUE << "INFO: Cgi: Timeout" << END << std::endl;
-		close( outputPipe[0] );
-		kill( pid, SIGKILL );
-		waitpid( pid, &status, 0 );
-		return( -1 );
-	}
 
 	//read from open pipe into buffer and store in response string
 	char		buffer[ BUFFERSIZE ];
 	std::memset( buffer, '\0', BUFFERSIZE );
 	std::string	response;
+	time_t		startTime = time( NULL );
 	size_t		bytesRead;
 
-	while( ( bytesRead = read( outputPipe[0], buffer, BUFFERSIZE - 1 ) ) > 0){
-		response += buffer;
-		std::memset( buffer, '\0', BUFFERSIZE );
+	while( true ){
+	
+		//wait for child to write to fd
+		pollRet = poll( &pfd, 1, TIMEOUT_TIME );
+
+		if( pollRet == -1 ){
+			std::cerr << RED << "ERROR: Poll: " << strerror( errno ) << END << std::endl;
+			close( outputPipe[0] );
+			kill( pid, SIGKILL );
+			waitpid( pid, &status, 0 );
+			return( -1 );
+		}
+
+		//if return == TIMEOUT
+		else if( pollRet == 0 || ( startTime - time( NULL ) ) > TIMEOUT_TIME ){
+			std::cout << BLUE << "INFO: Cgi: Timeout" << END << std::endl;
+			close( outputPipe[0] );
+			kill( pid, SIGKILL );
+			waitpid( pid, &status, 0 );
+			req.setResponseCode( 504 );
+			return( -1 );
+		}
+		else{
+			bytesRead = read( outputPipe[0], buffer, BUFFERSIZE - 1 );
+			if( bytesRead > MAX_BYTES ){
+				std::cerr << "CGI: Limit exceeded" << std::endl;
+				kill( pid, SIGKILL );
+				break;
+			}
+			if( bytesRead > 0 ){
+				response += std::string( buffer, BUFFERSIZE );
+				std::memset( buffer, '\0', BUFFERSIZE );
+				startTime = time( NULL );
+			}
+			else if( bytesRead == 0 )
+				break;
+		}
 	}
 
 	response = getBody(response);
-	//print response for testing
-	std::cout << "CGI output:\n" <<  response << std::endl;
 	req.setCgiResponseString(response);
 	//close final pipe
 	close( outputPipe[0] );
