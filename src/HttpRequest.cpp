@@ -299,7 +299,7 @@ void HttpRequest::parseBody(const std::string& rawRequest) {
         setBody(bodyContent);
 
         // Debug output
-        std::cout << "Read POST body, length: " << bodyContent.length() << std::endl;
+        // std::cout << "Read POST body, length: " << bodyContent.length() << std::endl;
     } else {
         std::cerr << "Warning: Incomplete body received. Expected " 
                     << contentLength << " bytes, got " 
