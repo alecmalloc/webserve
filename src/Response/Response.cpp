@@ -71,7 +71,7 @@ void Response::generateHttpresponse(HttpRequest &reqObj) {
 
 	// needed for cookies to work
 	header << "Set-Cookie: " << headerMap["Set-Cookie"] << "\r\n";
-	std::cout << "SetCookie found: " << headerMap["Set-Cookie"] << '\n';
+	// std::cout << "SetCookie found: " << headerMap["Set-Cookie"] << '\n';
 
 	//header << "Last-Modified: " << headerMap["Last-Modified"] << "\r\n";
 	//header << "ETag: " << headerMap["ETag"] << "\r\n";
@@ -186,8 +186,7 @@ bool Response::isCgiRequest(const std::string& uri) {
 void		Response::processResponse(HttpRequest &ReqObj){
 
 	// DEBUG
-	std::cout << std::endl << "RESPONSE PROCESSING:" << '\n';
-	std::cout << "Current URI: " << ReqObj.getUri() << '\n';
+	// std::cout << "Current URI: " << ReqObj.getUri() << '\n';
 
 	// DEBUG
 	// print out the location that has been matched
