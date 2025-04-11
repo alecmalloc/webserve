@@ -216,9 +216,10 @@ static void	readFromClient( Client* client ) {
 
 			bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
 		}
-		std::cout << "\n";
-		if( requestedBodysize >= definedBodySize )
+		if( requestedBodysize >= definedBodySize ){
+			std::cout << "\r";
 			client->setComplete( true );
+		}
 	}
 	else
 		client->setComplete( true );
