@@ -128,7 +128,7 @@ static void	closeClient( Server& server, Client* client ){
 
 
 static ssize_t	getDefinedBodySize( std::string request ){
-	
+
 	// find content length value
 	size_t contentLenPos = request.find("Content-Length:");
 
@@ -140,15 +140,15 @@ static ssize_t	getDefinedBodySize( std::string request ){
 	while (contentLenPos < request.size() && isspace(request[contentLenPos])) {
 		contentLenPos++;
 	}
-	
+
 	// find the end of the line
 	size_t lineEnd = request.find("\r\n", contentLenPos);
 	if (lineEnd == std::string::npos)
 		return -1;
-	
+
 	// extract the content length value string
 	std::string contentLenStr = request.substr(contentLenPos, lineEnd - contentLenPos);
-	
+
 	// Convert to integer
 	size_t contentLength = 0;
 	std::istringstream ss(contentLenStr);
@@ -163,7 +163,7 @@ static ssize_t	getRecivedBodySize( std::string request ){
 	size_t headerEnd = request.find("\r\n\r\n");
 	if (headerEnd == std::string::npos)
 		return( -1 );
-	
+
 	size_t bodyStart = headerEnd + 4;
 	size_t bodyReceived = request.length() - bodyStart;
 
@@ -195,13 +195,13 @@ static void	readFromClient( Client* client ) {
 
 	//store in client
 	client->setContent( std::string( buffer, bytesRead ) );
-	
+
 	ssize_t	definedBodySize = getDefinedBodySize( client->getContent() );
 	ssize_t	requestedBodysize = getRecivedBodySize( client->getContent() );
 
 	//check if done reading and httprequest is valid
 	if( definedBodySize > 0 ){
-	
+
 		bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
 
 		while( requestedBodysize < definedBodySize && running && bytesRead > 0 ){
@@ -259,7 +259,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		HttpRequest request(confTMP);
 		const std::string request_str = client->getContent();
 		request.handleRequest(request_str);
-		
+
 		// Get server configs
 		std::vector<ServerConf> serverTMPConf = confTMP.getServerConfs();
 
@@ -328,7 +328,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		closeClient( server, client );
 		return;
 	}
-			
+
 }
 
 static void	mainLoop( Server& server ){
