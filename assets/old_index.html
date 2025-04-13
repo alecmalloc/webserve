@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webserv Test Suite</title>
+    <title>LOCATION BASED INDEX FOR ASSETS DIR aka old_index.html </title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -69,7 +69,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Webserv Test Suite</h1>
+        <h1>LOCATION BASED INDEX FOR ASSETS DIR aka old_index.html</h1>
 
         <!-- Directory Listing Test -->
         <div class="test-section">
@@ -95,7 +95,7 @@
 		<!-- CGI Test -->
         <div class="test-section">
             <h2>CGI Tests</h2>
-            
+
             <!-- Python CGI Test -->
             <form action="/cgi-bin/test.py" method="POST">
                 <h3>Python CGI Test</h3>
@@ -122,7 +122,7 @@
 				</select>
 				<button type="submit" class="btn">Test GET Request</button>
 			</form>
-			
+
 			<p>You can also test direct URL parameters:</p>
 			<a href="/cgi-bin/get_test.py?name=test&id=123" class="btn">Test GET with URL Parameters</a>
 		</div>
@@ -140,7 +140,7 @@
             <h2>Redirection Test</h2>
             <a href="/redirect/" class="btn">Test Redirection</a>
         </div>
-		
+
 		<div class="test-section">
 			<h2>CGI File Upload Test</h2>
 			<p>Test if file uploads work through CGI scripts</p>
@@ -155,7 +155,7 @@
             <a href="/forbidden" class="btn">Test 403 Error</a>
         </div>
     </div>
-	
+
 	<form action="/cgi-bin/advanced_test.php" method="POST" enctype="multipart/form-data">
 		<h3>Advanced PHP CGI Test</h3>
 		<input type="text" name="message" placeholder="Enter a message" required>

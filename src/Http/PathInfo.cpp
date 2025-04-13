@@ -1,7 +1,7 @@
 #include "webserv.hpp"
 
 std::string PathInfo::getFullPath() const {
-   return _fullPath; 
+   return _fullPath;
 }
 
 std::string PathInfo::getDirName() const {
@@ -87,7 +87,7 @@ PathInfo& PathInfo::operator=(const PathInfo& other) {
 }
 
 PathInfo::~PathInfo() {
-    
+
 }
 /*changed function beacuse i need path info even if path is invalid for indexing xoxo linus
 int PathInfo::validatePath() {
@@ -123,7 +123,7 @@ int PathInfo::validatePath() {
         if (!(statbuf.st_mode & S_IRUSR))
             return 403;
     }
-    
+
     return 200;
 }
 
@@ -150,7 +150,7 @@ int PathInfo::parsePath() {
     // additional validation for directory and filename
     if (_dirName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\._-") != std::string::npos)
         return 400;
-    if (_fileName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-") != std::string::npos) 
+    if (_fileName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-") != std::string::npos)
         return 400;
 
     return 200;
@@ -166,13 +166,13 @@ int PathInfo::validatePath() {
 
     // Create stat structure to store file information
     struct stat statbuf;
-    
+
     // Try to get file status
     if (stat(_fullPath.c_str(), &statbuf) != 0) {
         // Even if file doesn't exist, we keep the parsed path information
         _isDirectory = false;
         _isFile = false;
-        return 404; // Not Found
+        //return 404; // Not Found
     }
 
     // Set file type flags based on stat results

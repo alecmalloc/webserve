@@ -26,14 +26,14 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 
 	// Find best matching location (longest prefix match)
 	std::string bestMatch = "";
-	
+
 	for (std::vector<LocationConf>::const_iterator it = locations.begin();
 		 it != locations.end(); ++it) {
 		std::string locPath = it->getPath();
-		 
+
 		// DEBUG
 		// std::cout << "DEBUG - Checking location: '" << it->getPath() << "'" << std::endl;
-		
+
 		if (uri.find(locPath) == 0) {  // URI starts with location path
 			if (locPath.length() > bestMatch.length()) {
 				bestMatch = locPath;
@@ -50,7 +50,7 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
     // 	std::cout << "Location root: " << _locationConf->getRootDir() << std::endl;
 	// }
 	//std::cout << "Final path being used: " << pathInfo.getFullPath() << std::endl;
-	
+	//std::cout <<  reqObj << "\n";
 	processResponse(reqObj);
 	generateHttpresponse(reqObj);
 }
@@ -85,7 +85,7 @@ void Response::generateHttpresponse(HttpRequest &reqObj) {
 
 std::string Response::getServerName(){
 	std::vector<std::string> server = _serverConf->getServerConfNames();
-	
+
 	// Check if the vector has any elements
 	if (!server.empty()) {
 		// Return the first server name from the vector
@@ -98,8 +98,8 @@ std::string Response::getServerName(){
 // set the Response to a certain code (template)
 void Response::setBodyErrorPage(int httpCode) {
 	setBody("<html><body><h1>"
-	+ Response::intToString(httpCode) 
-	+ " " 
+	+ Response::intToString(httpCode)
+	+ " "
 	+ genarateReasonPhrase(httpCode)
 	+ "Error "
 	+ intToString(httpCode)
@@ -115,11 +115,11 @@ void Response::generateErrorResponse(HttpRequest &reqObj) {
 	// for (std::map<int, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it) {
 	// 	std::cout << "Error Code: " << it->first << ", Error Page: " << it->second << std::endl;
 	// }
-	
+
 	// check request obj for the code
 	int responseCode = reqObj.getResponseCode();
 	std::map<int, std::string>::const_iterator customPageIt = errorPages.find(responseCode);
-	
+
 	// generate correct headers for our error page
 	generateHeader(reqObj);
 
@@ -136,7 +136,7 @@ void Response::generateErrorResponse(HttpRequest &reqObj) {
 			contents << file.rdbuf();
 			file.close();
 			setBody(contents.str());
-		//updates the path to the one for the error pages 
+		//updates the path to the one for the error pages
 		PathInfo errorPath(errorPagePath);
 		errorPath.parsePath();
 		reqObj.setPathInfo(errorPath);
@@ -157,8 +157,8 @@ void Response::generateErrorResponse(HttpRequest &reqObj) {
 
 bool Response::isCgiRequest(const std::string& uri) {
     // Check if URI matches CGI patterns
-    if (_locationConf && 
-        !_locationConf->getCgiPath().empty() && 
+    if (_locationConf &&
+        !_locationConf->getCgiPath().empty() &&
         !_locationConf->getCgiExt().empty())  {
 
         // Strip query parameters by finding the first '?'
@@ -185,23 +185,10 @@ bool Response::isCgiRequest(const std::string& uri) {
 
 void		Response::processResponse(HttpRequest &ReqObj){
 
-	// DEBUG
-	// std::cout << "Current URI: " << ReqObj.getUri() << '\n';
-
-	// DEBUG
-	// print out the location that has been matched
-	// if (_locationConf) {
-	// 	std::cout << "Matched Location: " << _locationConf->getPath() << std::endl;
-	// } else {
-	// 	std::cout << "No location configuration matched" << std::endl;
-	// }
-
-	// this try catch tries to handle the request and if it encounters any issues it catches and returns that as the error page
 	try {
 		PathInfo pathInfo = ReqObj.getPathInfo();
-	
+		pathInfo.validatePath();
 		// Validate and parse the path
-		// int code = pathInfo.validatePath();
 
 		// CGI REQUEST CHECK HANDLER
 		// note this is the only part of the check that returns

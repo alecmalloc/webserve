@@ -28,7 +28,7 @@ class Response {
 		const ServerConf*							_serverConf;
 		LocationConf* 								_locationConf;
 
-		// to make cookies work 
+		// to make cookies work
 		// cookie value we want to have
 		std::string									_setCookieValue;
 
@@ -56,6 +56,12 @@ class Response {
 		int checkContentLength(HttpRequest& ReqObj);
 
 		void HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo);
+		//helpers for get req
+		std::string constructFullPath(const std::string uri);
+		bool serveFileIfExists(const std::string& fullPath, HttpRequest& ReqObj);
+		bool serveRootIndexfile(HttpRequest& ReqObj);
+		bool serveLocationIndex(HttpRequest& ReqObj);
+
 		void HandleDeleteRequest(HttpRequest& ReqObj, PathInfo& pathInfo);
 		void HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo);
 
