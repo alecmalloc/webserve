@@ -46,7 +46,7 @@ std::string Response::getContentType(HttpRequest &reqObj, const std::string& ext
     }
 	if(reqObj.getResponseCode() != 200)
 		return "text/html; charset=utf-8"; // might not be correct but if error is html response ?
-	return("text/html");//change so default is html 
+	return("text/html");//change so default is html
 		//return "application/octet-stream"; // Default content type
 }
 
@@ -60,7 +60,7 @@ void	Response::generateHeader(HttpRequest &reqObj){
     headerMap["Date"] = getCurrentDateTime();
 	headerMap["Server"] = getServerName();
 	// Get the file extension from the PathInfo object
-	
+
     std::string extension = reqObj.getPathInfo().getExtension();
     headerMap["Content-Type"] = getContentType(reqObj, extension);
 
@@ -78,8 +78,8 @@ void	Response::generateHeader(HttpRequest &reqObj){
     //headerMap["Last-Modified"] = getCurrentDateTime(); // Example value
     //headerMap["ETag"] = "\"123456789\""; // Example value
     //headerMap["Location"] = "/new-resource"; // Example value
-	
-	if(reqObj.getResponseCode() == 201){//for Post methode specify headers 
+
+	if(reqObj.getResponseCode() == 201){//for Post methode specify headers
 		headerMap["Location"] = reqObj.getUri(); // Stay on same page
 		headerMap["Content-Type"] = "text/html; charset=utf-8"; // Specify charset
 		headerMap["Cache-Control"] = "no-store, no-cache, must-revalidate";
@@ -88,7 +88,6 @@ void	Response::generateHeader(HttpRequest &reqObj){
 
 	setHeaderMap(headerMap);
 }
-
 
 std::string Response::generateDirectoryListing(const std::string& path) {
     std::stringstream html;
@@ -106,25 +105,39 @@ std::string Response::generateDirectoryListing(const std::string& path) {
     if ((dir = opendir(path.c_str())) != NULL) {
         while ((entry = readdir(dir)) != NULL) {
             std::string name = entry->d_name;
+
+            // Skip "." and ".."
+            if (name == "." || name == "..") {
+                continue;
+            }
+
             std::string fullPath = path + "/" + name;
             struct stat statbuf;
-            
+
             if (stat(fullPath.c_str(), &statbuf) == 0) {
                 // Format last modified time
                 char timeStr[100];
-                strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", 
+                strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S",
                         localtime(&statbuf.st_mtime));
 
                 // Add row to table
-                html << "<tr><td><a href=\"" << name;
-                if (S_ISDIR(statbuf.st_mode))
+                html << "<tr><td><a href=\"";
+                html << path; // Include the full directory path
+                if (path[path.length() - 1] != '/') {
                     html << "/";
+                }
+                html << name; // Append the file/directory name
+                if (S_ISDIR(statbuf.st_mode)) {
+                    html << "/"; // Add trailing slash for directories
+                }
                 html << "\">" << name;
-                if (S_ISDIR(statbuf.st_mode))
+                if (S_ISDIR(statbuf.st_mode)) {
                     html << "/";
+                }
                 html << "</a></td><td>" << timeStr << "</td><td>";
-                if (!S_ISDIR(statbuf.st_mode))
+                if (!S_ISDIR(statbuf.st_mode)) {
                     html << statbuf.st_size;
+                }
                 html << "</td></tr>\n";
             }
         }
@@ -146,7 +159,7 @@ std::string Response::genarateReasonPhrase(int httpCode){
 
 	std::string reasonPhrase;
 
-    // matches http code to a string for response 
+    // matches http code to a string for response
 	switch (httpCode){
 		 case 100:
             reasonPhrase = "Continue";

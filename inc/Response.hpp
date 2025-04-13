@@ -64,6 +64,7 @@ class Response {
 
 		void HandleDeleteRequest(HttpRequest& ReqObj, PathInfo& pathInfo);
 		void HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo);
+		void genarateUploadSucces(HttpRequest& ReqObj);
 
         // Getters
 		const std::map<int, std::string>& getErrorPages() const;

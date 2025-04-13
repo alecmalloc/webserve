@@ -86,7 +86,6 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
         return;
     }
 
-	//std::cout << pathInfo << "Path info in handel get request \n";
 	if(pathInfo.isFile()){
 		if(serveFileIfExists(fullPath, ReqObj) == true)
 			return;
