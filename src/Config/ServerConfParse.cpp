@@ -152,6 +152,21 @@ void parseChunkSize(ServerConf& server, std::stringstream& ss) {
         throw(std::runtime_error("Line not ended on ; " + tmp));
 }
 
+void	parseAutoIndex( ServerConf& server, std::stringstream& ss ){
+	std::string	tmp;
+
+	while( ss >> tmp ){
+		if( cutEnding( tmp ) == "on" )
+			server.setAutoIndex( true );
+		else if( cutEnding( tmp ) == "off" )
+			server.setAutoIndex( false );
+		else 
+			throw( std::runtime_error( "Wrong Auto Index " + tmp ) );
+	}
+	if( tmp.at( tmp.size() - 1 ) != ';' )
+		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
+}
+
 template< typename T >
 void	parseRootDir( T& temp, std::stringstream& ss ){
 	std::string	tmp;
@@ -176,11 +191,11 @@ void	parseIndex( T& temp, std::stringstream& ss ){
 
 void	Config::parseServerConfBlock( ServerConf& server ){
 	const std::string	optionsArray[] =  \
-	{ LISTEN, SERVER, ERROR, CLIENT, ROOT, INDEX, "use_chunked_encoding", "chunk_size"};
+	{ LISTEN, SERVER, ERROR, CLIENT, ROOT, AINDEX, INDEX, "use_chunked_encoding", "chunk_size"};
 
 	void ( *functionArray[] )( ServerConf&, std::stringstream& ) = \
 	{ parseListen, parseServerConfName, parseErrorPage, parseBodySize, \
-		parseRootDir, parseIndex, parseChunkedEncoding, parseChunkSize};
+		parseRootDir, parseAutoIndex, parseIndex, parseChunkedEncoding, parseChunkSize};
 
 	std::string		tmp;
 
@@ -191,7 +206,7 @@ void	Config::parseServerConfBlock( ServerConf& server ){
 		std::stringstream	ss( tmp );
 		std::string		key;
 		ss >> key;
-		for( int i = 0; i < 8; i++ ){
+		for( int i = 0; i < 9; i++ ){
 			if( !key.empty() && key.at( 0 ) == '#' ){
 				break;
 			}
@@ -203,7 +218,7 @@ void	Config::parseServerConfBlock( ServerConf& server ){
 				parseLocationConfBlock( server, ss );
 				break;
 			}
-			else if ( i == 7 && !key.empty() ){
+			else if ( i == 8 && !key.empty() ){
 				throw( std::runtime_error( "Not an valid configuration "\
 							+ tmp ) );
 

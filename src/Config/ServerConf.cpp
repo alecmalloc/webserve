@@ -5,7 +5,7 @@
 
 //constructors
 
-ServerConf::ServerConf( void ) : _bodySize( 0 ) {;}
+ServerConf::ServerConf( void ) : _bodySize( 0 ), _autoIndex( false ) {;}
 
 ServerConf::ServerConf( const ServerConf& og ){
 	_ipPort = og._ipPort;
@@ -15,6 +15,7 @@ ServerConf::ServerConf( const ServerConf& og ){
 	_bodySize = og._bodySize;
 	_rootDir = og._rootDir;
 	_index = og._index;
+	_autoIndex = og._autoIndex;
 }
 
 ServerConf::~ServerConf( void ) {;}
@@ -30,6 +31,7 @@ ServerConf&		ServerConf::operator =( const ServerConf& og ) {
 		_bodySize = og._bodySize;
 		_rootDir = og._rootDir;
 		_index = og._index;
+		_autoIndex = og._autoIndex;
 	}
 	return( *this );
 }
@@ -137,6 +139,10 @@ const std::map< int, std::string >	ServerConf::getErrorPages( void ) const {
 	return( _errorPages );
 }
 
+bool                             ServerConf::getAutoIndex( void ) const{
+	return( _autoIndex );	
+ }
+
 size_t				ServerConf::getBodySize( void ) const {
 	return( _bodySize );
 }
@@ -180,6 +186,10 @@ void	ServerConf::setBodySize( size_t size ){
 
 void	ServerConf::setRootDir( std::string tmp ){
 	_rootDir = tmp;
+}
+
+void	ServerConf:: setAutoIndex( bool status ){
+	_autoIndex = status;
 }
 
 void	ServerConf::setIndex( std::string tmp ){

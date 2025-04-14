@@ -26,9 +26,10 @@ class ServerConf {
 		const std::map< int, std::string >		getErrorPages( void ) const ;
 		size_t 						getBodySize( void ) const ;
 		const std::string				getRootDir( void ) const;
+		bool						getAutoIndex( void ) const;
 		const std::vector< std::string >		getIndex( void ) const;
-		bool getChunkedTransfer( void ) const;
-        size_t getChunkSize( void ) const;
+		bool						getChunkedTransfer( void ) const;
+		size_t						getChunkSize( void ) const;
 
 		//setter functions
 		void	setIpPort( std::string ip, int port );
@@ -37,9 +38,10 @@ class ServerConf {
 		void	setErrorPage( int errorCode, std::string path );
 		void	setBodySize( size_t size );
 		void	setRootDir( std::string tmp );
+		void	setAutoIndex( bool status );
 		void	setIndex( std::string );
 		void	setChunkedTransfer( bool chunked );
-        void	setChunkSize( size_t size );
+ 		void	setChunkSize( size_t size );
 
 		//member functions
 		void	checkAccess( void );
@@ -65,6 +67,9 @@ class ServerConf {
 
 		//store indexes
 		std::vector< std::string >	_index;
+	
+		//directory listing
+		bool				_autoIndex;
 
 		//flag to indicate if chunked transfer is enabled
         bool _chunkedTransfer;
