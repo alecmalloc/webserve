@@ -35,7 +35,7 @@ bool Response::serveFileIfExists(const std::string& fullPath, HttpRequest& ReqOb
     return false; // File not found
 }
 
-bool Response::serveRootIndexfile(HttpRequest& ReqObj){
+bool Response::serveRootIndexfile(HttpRequest& ReqObj,std::string fullPath){
 	std::vector<std::string> indexFiles = _serverConf->getIndex();
     if (!indexFiles.empty()) {
 		for (std::vector<std::string>::iterator it = indexFiles.begin(); it != indexFiles.end(); ++it) {
@@ -49,6 +49,13 @@ bool Response::serveRootIndexfile(HttpRequest& ReqObj){
 			}
 		}
 	}
+
+	if(_serverConf->getAutoIndex() == true){
+		setBody(generateDirectoryListing(fullPath));
+		ReqObj.setResponseCode(200);
+		return(true);
+	}
+
 	//no root index file
 	ReqObj.setResponseCode(404);
 	throw 404;
@@ -95,10 +102,11 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
 		}
 	}
 
-	//if Uri is root server root index file
-	if(uri == "/" || uri == "."){
-		if (serveRootIndexfile(ReqObj) == true)
-			return;
+	//std::cout << "serverconf root dir " << _serverConf->getRootDir() << "and uri " << uri << "and full path " << fullPath <<"\n";
+// Check if the URI is the root directory
+	if (uri == "/" || fullPath == _serverConf->getRootDir() || fullPath == "./" || fullPath == "/") {
+  		if (serveRootIndexfile(ReqObj, fullPath) == true)
+        	return;
 	}
 
     if (_locationConf) {
@@ -108,8 +116,9 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
 		if(serveLocationIndex(ReqObj) == true){
 			return;
 		}
+		std::cout << "loc conf auto index " << _locationConf->getAutoIndex() << " server conf auto " << _serverConf->getAutoIndex() << "\n";
 
-  	  if( _locationConf->getAutoIndex() == true){
+  	  if( _locationConf->getAutoIndex() == true || (_serverConf->getAutoIndex() == true && _locationConf->getAutoIndex() != false)){
 			setBody(generateDirectoryListing(pathInfo.getFullPath()));
 			ReqObj.setResponseCode(200);
 			return;

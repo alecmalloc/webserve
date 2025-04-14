@@ -32,7 +32,7 @@ int Response::checkContentLength(HttpRequest& ReqObj){
 	size_t maxBodySize = _serverConf->getBodySize();
 			//_locationConf->getClientMaxBodySize() :  // If location config exists, use its limit->> dont have that parsed idk if we wna tto include
 			//_serverConf->getClientMaxBodySize();     // Otherwise, use server's default limit
-	std::cout << "C0ntent size " << contentLength << "   and max body len " << maxBodySize << "\n";
+	//std::cout << "C0ntent size " << contentLength << "   and max body len " << maxBodySize << "\n";
 	if (contentLength > maxBodySize) {
 		throw 413;
 		return 413;
