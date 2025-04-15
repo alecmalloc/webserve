@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <string>
+#include <climits>
 
 static std::string	cutEnding( std::string tmp ){
 	//if string ends on ; cut it
@@ -111,9 +112,10 @@ void	parseErrorPage( ServerConf& server, std::stringstream& ss ){
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
-int ParseSizeWithUnits(std::string str){
+size_t ParseSizeWithUnits(std::string str){
 	size_t multiplier = 1;
 	char unit = str[str.size() -2]; // skip '0\ and ;
+
 
 	if (unit == 'K' || unit == 'k') {
         multiplier = 1024; // Kilobytes
@@ -122,7 +124,8 @@ int ParseSizeWithUnits(std::string str){
     } else if (unit == 'G' || unit == 'g') {
         multiplier = 1024 * 1024 * 1024; // Gigabytes
     } else if (!isdigit(unit)) {
-        return (-1);
+		throw( std::runtime_error( "Wrong Max Body Size" ) );
+        return 0;
     }
 
 	// Convert the numeric part of the string to a size_t
@@ -130,23 +133,25 @@ int ParseSizeWithUnits(std::string str){
     std::istringstream(str.substr(0, str.length() - (isdigit(unit) ? 0 : 1))) >> sizeValue;
 
 	if (sizeValue == 0 && str[0] != '0') {
-        return(-1);
+        throw( std::runtime_error( "Wrong Max Body Size" ) );
+        return 0;
     }
-
-	return(sizeValue * multiplier);
+	
+	size_t result = sizeValue * multiplier;
+	return result;
 }
 
 void	parseBodySize( ServerConf& server, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
-		int			size;
+		size_t			size;
 		if( tmp.at( tmp.size() - 1 ) != ';' )
 			throw( std::runtime_error( "Line not ended on ; " + tmp ) );
+		if(tmp[0] == '-'){
+			throw( std::runtime_error( "negativ values not allowed " + tmp ) );
+		}
 		size = ParseSizeWithUnits(tmp);
-		//std::cout << "SSIZE " << size << "\n";
-		if( size < 0)
-			throw( std::runtime_error( "Wrong Max Body Size" ) );
 		server.setBodySize( size );
 	}
 
