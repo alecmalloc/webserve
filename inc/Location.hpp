@@ -21,7 +21,7 @@ class LocationConf {
 		const std::vector< std::string >	getAllowedMethods( void ) const;
 		const std::map< std::string, std::string >	getAllowedRedirects( void ) const;
 		const std::string			getRootDir( void ) const;
-		bool				getAutoIndex( void ) const;
+		int					getAutoIndex( void ) const;
 		const std::vector< std::string >	getIndex( void ) const;
 		const std::vector< std::string >	getCgiPath( void ) const;
 		const std::vector< std::string >	getCgiExt( void ) const;
@@ -32,7 +32,7 @@ class LocationConf {
 		void	setAllowedMethod( std::string );
 		void	setAllowedRedirects( std::string, std::string );
 		void	setRootDir( std::string );
-		void	setAutoIndex( bool );
+		void	setAutoIndex( int );
 		void	setIndex( std::string );
 		void	setCgiPath( std::string );
 		void	setCgiExt( std::string );
@@ -55,7 +55,7 @@ class LocationConf {
 		std::string			_rootDir;
 
 		//directory listing
-		bool				_autoIndex;
+		int				_autoIndex;
 
 		//index
 		std::vector< std::string >	_index;

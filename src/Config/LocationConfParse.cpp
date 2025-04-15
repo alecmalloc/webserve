@@ -96,9 +96,9 @@ void	parseAutoIndex( LocationConf& location, std::stringstream& ss ){
 
 	while( ss >> tmp ){
 		if( cutEnding( tmp ) == "on" )
-			location.setAutoIndex( true );
+			location.setAutoIndex( 1 );
 		else if( cutEnding( tmp ) == "off" )
-			location.setAutoIndex( false );
+			location.setAutoIndex( -1 );
 		else 
 			throw( std::runtime_error( "Wrong Auto Index " + tmp ) );
 	}
