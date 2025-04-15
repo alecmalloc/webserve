@@ -122,11 +122,7 @@ std::string Response::generateDirectoryListing(const std::string& path) {
 
                 // Add row to table
                 html << "<tr><td><a href=\"";
-                html << path; // Include the full directory path
-                if (path[path.length() - 1] != '/') {
-                    html << "/";
-                }
-                html << name; // Append the file/directory name
+                html << name; // Append only the file/directory name
                 if (S_ISDIR(statbuf.st_mode)) {
                     html << "/"; // Add trailing slash for directories
                 }

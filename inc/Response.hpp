@@ -59,7 +59,7 @@ class Response {
 		//helpers for get req
 		std::string constructFullPath(const std::string uri);
 		bool serveFileIfExists(const std::string& fullPath, HttpRequest& ReqObj);
-		bool serveRootIndexfile(HttpRequest& ReqObj);
+		bool serveRootIndexfile(HttpRequest& ReqObj, std::string fullPath);
 		bool serveLocationIndex(HttpRequest& ReqObj);
 
 		void HandleDeleteRequest(HttpRequest& ReqObj, PathInfo& pathInfo);

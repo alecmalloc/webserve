@@ -38,7 +38,7 @@ static bool	checkIp( std::string tmp ){
 			tmp = tmp.substr( pos + 1, tmp.size() );
 		i = pos;
 		pos = tmp.find( '.' );
-	}	
+	}
 	return( true );
 }
 
@@ -70,7 +70,7 @@ void	parseListen( ServerConf& server, std::stringstream& ss ){
 			throw( std::runtime_error( "Wrong Port" + \
 				tmp.substr( tmp.find( ':' ), tmp.size()  ) ) );
 		ip = tmp.substr( 0, tmp.find( ':' ) );
-		port = checkPort( tmp.substr( tmp.find( ':' ) + 1, tmp.size() ) ); 
+		port = checkPort( tmp.substr( tmp.find( ':' ) + 1, tmp.size() ) );
 	}
 	else if( tmp.find( '.' ) != tmp.npos ){
 		if( !checkIp( tmp ) )
@@ -80,7 +80,7 @@ void	parseListen( ServerConf& server, std::stringstream& ss ){
 	else{
 		if( checkPort( tmp ) == -1 )
 			throw( std::runtime_error( "Wrong Port" + tmp ) );
-		port = checkPort( tmp.substr( tmp.find( ':' ) + 1, tmp.size() ) ); 
+		port = checkPort( tmp.substr( tmp.find( ':' ) + 1, tmp.size() ) );
 	}
 	server.setIpPort( cutEnding( ip ), port );
 }
@@ -111,20 +111,45 @@ void	parseErrorPage( ServerConf& server, std::stringstream& ss ){
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
+int ParseSizeWithUnits(std::string str){
+	size_t multiplier = 1;
+	char unit = str[str.size() -2]; // skip '0\ and ;
+
+	if (unit == 'K' || unit == 'k') {
+        multiplier = 1024; // Kilobytes
+    } else if (unit == 'M' || unit == 'm') {
+        multiplier = 1024 * 1024; // Megabytes
+    } else if (unit == 'G' || unit == 'g') {
+        multiplier = 1024 * 1024 * 1024; // Gigabytes
+    } else if (!isdigit(unit)) {
+        return (-1);
+    }
+
+	// Convert the numeric part of the string to a size_t
+    size_t sizeValue = 0;
+    std::istringstream(str.substr(0, str.length() - (isdigit(unit) ? 0 : 1))) >> sizeValue;
+
+	if (sizeValue == 0 && str[0] != '0') {
+        return(-1);
+    }
+
+	return(sizeValue * multiplier);
+}
+
 void	parseBodySize( ServerConf& server, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
-		std::stringstream	sstmp( tmp );
 		int			size;
-
-		sstmp >> size; 
+		if( tmp.at( tmp.size() - 1 ) != ';' )
+			throw( std::runtime_error( "Line not ended on ; " + tmp ) );
+		size = ParseSizeWithUnits(tmp);
+		//std::cout << "SSIZE " << size << "\n";
 		if( size < 0)
 			throw( std::runtime_error( "Wrong Max Body Size" ) );
 		server.setBodySize( size );
 	}
-	if( tmp.at( tmp.size() - 1 ) != ';' )
-		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
+
 }
 
 void parseChunkedEncoding(ServerConf& server, std::stringstream& ss) {
@@ -160,7 +185,7 @@ void	parseAutoIndex( ServerConf& server, std::stringstream& ss ){
 			server.setAutoIndex( true );
 		else if( cutEnding( tmp ) == "off" )
 			server.setAutoIndex( false );
-		else 
+		else
 			throw( std::runtime_error( "Wrong Auto Index " + tmp ) );
 	}
 	if( tmp.at( tmp.size() - 1 ) != ';' )
@@ -173,7 +198,7 @@ void	parseRootDir( T& temp, std::stringstream& ss ){
 
 	while( ss >> tmp )
 		temp.setRootDir( makePath( cutEnding( tmp ), 1 ) );
-	
+
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
@@ -227,5 +252,5 @@ void	Config::parseServerConfBlock( ServerConf& server ){
 		getline( _configFile, tmp );
 	}
 	server.checkAccess();
-		
+
 }

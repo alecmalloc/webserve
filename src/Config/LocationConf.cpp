@@ -1,7 +1,7 @@
 #include "Location.hpp"
 
 //constructors 
-LocationConf::LocationConf( void ) : _autoIndex( false ) {;}
+LocationConf::LocationConf( void ) : _autoIndex( 0 ) {;}
 
 LocationConf::~LocationConf( void ) {;}
 
@@ -134,7 +134,7 @@ std::ostream&	operator <<( std::ostream& os, const LocationConf& loc ) {
  	return( _rootDir );
  }
 
-bool                             LocationConf::getAutoIndex( void ) const{
+int                             LocationConf::getAutoIndex( void ) const{
 	return( _autoIndex );	
  }
 
@@ -171,7 +171,7 @@ void	LocationConf:: setRootDir( std::string rootDir ){
 	_rootDir = rootDir;
 }
 
-void	LocationConf:: setAutoIndex( bool status ){
+void	LocationConf:: setAutoIndex( int status ){
 	_autoIndex = status;
 }
 
