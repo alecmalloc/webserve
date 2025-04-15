@@ -80,7 +80,7 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 
 	//get vectors
 	if( getVectors( req.getServer(), ext, path, req.getUri() ) == -1 ){
-		return( -1 );
+		return( 404);
 	}
 		
 
@@ -91,7 +91,7 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 
 	//return if no ending is found ".cgi"
 	if( dot == std::string::npos ){
-		return( -1 );
+		return( 404);
 	}
 	
 
@@ -103,19 +103,18 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 
 	//return if ending is not inside cgiExt
 	if( it == ext.end() ){
-		return( -1 );
+		return( 404);
 	}
-	
-	// Construct the full file path by combining the root directory with the URI
-    
-    
-    
     std::string fullPath = "." + uri;
 
 	//check if file is accesible
-	if( access( fullPath.c_str(), X_OK ) == -1 ){
-	return( -1 );
+	if( access( fullPath.c_str(), F_OK ) == -1 ){
+	return( 404);
 	}
+	//check if file is executealbe
+	if( access( fullPath.c_str(), X_OK ) == -1 ){
+		return( 403);
+		}
 	std::vector< std::string >::iterator extIt = ext.begin();
 	std::vector< std::string >::iterator pathIt = path.begin();
 
@@ -129,10 +128,10 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 	}
 	if( interpreter.empty() ){
         //std::cerr << "DEBUG: No interpreter found for file extension " << end << std::endl;
-		return( -1 );
+		return( 500);
 	}
 	 //std::cerr << "DEBUG: Interpreter for " << uri << " is " << interpreter << std::endl;
-	return( 0 );
+	return( 200 );
 }
 
 // COMMENTED OUT BECAUSE WE DONT NEED AND REQUEST DOESNT HAVE FD ANYMORE
@@ -373,6 +372,7 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 			close( outputPipe[0] );
 			kill( pid, SIGKILL );
 			waitpid( pid, &status, 0 );
+			throw(500);
 			return( -1 );
 		}
 
@@ -383,6 +383,7 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 			kill( pid, SIGKILL );
 			waitpid( pid, &status, 0 );
 			req.setResponseCode( 504 );
+			throw(504);
 			return( -1 );
 		}
 		else{
@@ -390,6 +391,7 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 			if( bytesRead > MAX_BYTES ){
 				std::cerr << "CGI: Limit exceeded" << std::endl;
 				kill( pid, SIGKILL );
+				throw(500);
 				break;
 			}
 			if( bytesRead > 0 ){
@@ -429,6 +431,7 @@ int	handleCgi( HttpRequest& req ){
 		//std::cout << "body size " << body.size() << "max body size " << maxBodySize << "\n";
 		if(body.size() > maxBodySize ){
 			std::cerr << RED << "ERROR: Cgi: POST TO BIG" << END << std::endl;
+			throw(413);
 			return (-1);//mabe add a error page here 
 		}
 		while (!body.empty() && (body[body.size()-1] == '\n' || body[body.size()-1] == '\r')) {
@@ -439,21 +442,25 @@ int	handleCgi( HttpRequest& req ){
 	}
 	//check file ending and access to it  and store interpreter for executuing
 	std::string	interpreter;
-	if( checkFile( req, interpreter ) == -1 ){
+	int checkFileRes = checkFile( req, interpreter );
+	if( checkFileRes != 200){
 		std::cerr << RED << "ERROR: Cgi: not found " << req.getUri() << END << \
 			std::endl;
+		throw(checkFileRes);
 		return( -1 );
 	}
 
 	//open pipes for sending data
 	if( pipe( inputPipe ) < 0 ){
 		std::cerr << RED << "ERROR: Cgi: Pipe" << END << std::endl;
+		throw(500);
 		return( -1 );
 	}
 
 	if( pipe( outputPipe ) < 0 ){
 		std::cerr << RED << "ERROR: Cgi: Pipe" << END << std::endl;
 		closePipe( inputPipe );
+		throw(500);
 		return( -1 );
 	}
 
@@ -466,6 +473,7 @@ int	handleCgi( HttpRequest& req ){
 		std::cerr << RED << "ERROR: Cgi: Fork" << END << std::endl;
 		closePipe( inputPipe );
 		closePipe( outputPipe );
+		throw(500);
 		return( -1 );
 	}
 
