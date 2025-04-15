@@ -420,10 +420,17 @@ int	handleCgi( HttpRequest& req ){
 	int	inputPipe[2], outputPipe[2];
 	pid_t	pid;
 
+	size_t maxBodySize = req.getServer().getBodySize();//later add here location conf maxbody size 
+
 	//clean body first 
 	if (req.getMethod() == "POST") {
         // Create a local copy of the body first
         std::string body = req.getBody();
+		//std::cout << "body size " << body.size() << "max body size " << maxBodySize << "\n";
+		if(body.size() > maxBodySize ){
+			std::cerr << RED << "ERROR: Cgi: POST TO BIG" << END << std::endl;
+			return (-1);//mabe add a error page here 
+		}
 		while (!body.empty() && (body[body.size()-1] == '\n' || body[body.size()-1] == '\r')) {
             body.erase(body.size() -1 );
         }
