@@ -108,7 +108,6 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
   		if (serveRootIndexfile(ReqObj, fullPath) == true)
         	return;
 	}
-
     if (_locationConf) {
 
 		if(pathInfo.isDirectory()){
@@ -118,7 +117,7 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
 		}
 		std::cout << "loc conf auto index " << _locationConf->getAutoIndex() << " server conf auto " << _serverConf->getAutoIndex() << "\n";
 
-  	  if( _locationConf->getAutoIndex() == true || (_serverConf->getAutoIndex() == true && _locationConf->getAutoIndex() != false)){
+  	  if( _locationConf->getAutoIndex() == true || (_serverConf->getAutoIndex() == true && _locationConf->getAutoIndex() == 0 )){
 			setBody(generateDirectoryListing(pathInfo.getFullPath()));
 			ReqObj.setResponseCode(200);
 			return;
