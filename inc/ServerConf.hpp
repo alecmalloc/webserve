@@ -72,10 +72,10 @@ class ServerConf {
 		bool				_autoIndex;
 
 		//flag to indicate if chunked transfer is enabled
-        bool _chunkedTransfer;
-
-        //size of each chunk
-        size_t _chunkSize;
+	        bool				_chunkedTransfer;
+	
+	        //size of each chunk
+		size_t				_chunkSize;
 };
 
 #endif

@@ -1,7 +1,7 @@
 #include "Location.hpp"
 
 //constructors 
-LocationConf::LocationConf( void ) : _autoIndex( 0 ) {;}
+LocationConf::LocationConf( void ) : _autoIndex( 0 ), _bodySizeInitilized( false ), _bodySize( 0 ) {;}
 
 LocationConf::~LocationConf( void ) {;}
 
@@ -17,6 +17,8 @@ LocationConf::LocationConf( const LocationConf& og ){
 	_cgiPath = og._cgiPath;
 	_cgiExt = og._cgiExt;
 	_uploadDir = og._uploadDir;
+	_bodySize = og._bodySize;
+	_bodySizeInitilized = og._bodySizeInitilized;
 }
 
 //operator overloads
@@ -33,6 +35,8 @@ LocationConf&	LocationConf::operator =( const LocationConf& og ){
 		_cgiPath = og._cgiPath;
 		_cgiExt = og._cgiExt;
 		_uploadDir = og._uploadDir;
+		_bodySize = og._bodySize;
+		_bodySizeInitilized = og._bodySizeInitilized;
 	}
 	return( *this );
 }
@@ -154,6 +158,15 @@ int                             LocationConf::getAutoIndex( void ) const{
 	 return( _uploadDir );
  }
 
+size_t	LocationConf::getBodySize( void ) const{
+	return( _bodySize );
+}
+
+bool	LocationConf::getBodySizeInitilized( void ) const{
+	return( _bodySizeInitilized );
+}
+
+
 //setter funcitons
 void	LocationConf:: setPath( std::string path ){
 	_path =  path;
@@ -189,4 +202,9 @@ void	LocationConf:: setCgiExt( std::string key ){
 
 void	LocationConf:: setUploadDir( std::string uploadDir ){
 	_uploadDir = uploadDir;
+}
+
+void	LocationConf::setBodySize( size_t val ){
+	_bodySize = val;
+	_bodySizeInitilized = true;
 }

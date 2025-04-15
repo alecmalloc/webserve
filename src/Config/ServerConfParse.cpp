@@ -112,7 +112,7 @@ void	parseErrorPage( ServerConf& server, std::stringstream& ss ){
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
-size_t ParseSizeWithUnits(std::string str){
+static size_t ParseSizeWithUnits(std::string str){
 	size_t multiplier = 1;
 	char unit = str[str.size() -2]; // skip '0\ and ;
 
