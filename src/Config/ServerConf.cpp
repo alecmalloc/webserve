@@ -16,6 +16,7 @@ ServerConf::ServerConf( const ServerConf& og ){
 	_rootDir = og._rootDir;
 	_index = og._index;
 	_autoIndex = og._autoIndex;
+	_allowedRedirects = og._allowedRedirects;
 }
 
 ServerConf::~ServerConf( void ) {;}
@@ -32,6 +33,7 @@ ServerConf&		ServerConf::operator =( const ServerConf& og ) {
 		_rootDir = og._rootDir;
 		_index = og._index;
 		_autoIndex = og._autoIndex;
+		_allowedRedirects = og._allowedRedirects;
 	}
 	return( *this );
 }
@@ -155,6 +157,10 @@ const std::vector< std::string >	ServerConf::getIndex( void ) const{
 	return( _index );
 }
 
+const std::map< std::string, std::string >     ServerConf::getAllowedRedirects( void ) const{
+	return( _allowedRedirects );
+}
+
 //setter functions
 
 void ServerConf::setChunkedTransfer( bool chunked ) {
@@ -194,4 +200,8 @@ void	ServerConf:: setAutoIndex( bool status ){
 
 void	ServerConf::setIndex( std::string tmp ){
 	_index.push_back( tmp );
+}
+
+void	ServerConf:: setAllowedRedirects( std::string redirect, std::string path ){
+	_allowedRedirects[ redirect ] = path;
 }

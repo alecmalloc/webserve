@@ -197,6 +197,37 @@ void	parseAutoIndex( ServerConf& server, std::stringstream& ss ){
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
+static bool	validRedirect( std::string tmp ) {
+	//check if redirect is alloewd
+	std::string	allowedRedirects[] = ALLOWED_REDIRECTS;
+	for( int i = 0; \
+		i != sizeof( allowedRedirects ) / sizeof( allowedRedirects[0] ) + 1; \
+		i++ ){
+		if ( i == sizeof( allowedRedirects ) / sizeof( allowedRedirects[0] ) )
+			return( false );
+		else if ( allowedRedirects[i] == tmp )
+			return( true );
+	}
+	return( false );
+}
+
+void	parseAllowedRedirects( ServerConf& server, std::stringstream& ss ){
+	std::string	tmp;
+
+	while( ss >> tmp ){
+		std::string	error;
+		std::stringstream	sstmp( tmp );
+		sstmp >> error;
+		if( !validRedirect( error ) )
+			throw( std::runtime_error( "Redirect Code " + error \
+				+ " not allowed" ) );
+		ss >> tmp;
+		server.setAllowedRedirects( error, makePath( cutEnding( tmp ), 0 ) );
+	}
+	if( tmp.at( tmp.size() - 1 ) != ';' )
+		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
+}
+
 template< typename T >
 void	parseRootDir( T& temp, std::stringstream& ss ){
 	std::string	tmp;
@@ -221,11 +252,13 @@ void	parseIndex( T& temp, std::stringstream& ss ){
 
 void	Config::parseServerConfBlock( ServerConf& server ){
 	const std::string	optionsArray[] =  \
-	{ LISTEN, SERVER, ERROR, CLIENT, ROOT, AINDEX, INDEX, "use_chunked_encoding", "chunk_size"};
+	{ LISTEN, SERVER, ERROR, CLIENT, ROOT, AINDEX, INDEX, REDIRECT, \
+		"use_chunked_encoding", "chunk_size" };
 
 	void ( *functionArray[] )( ServerConf&, std::stringstream& ) = \
 	{ parseListen, parseServerConfName, parseErrorPage, parseBodySize, \
-		parseRootDir, parseAutoIndex, parseIndex, parseChunkedEncoding, parseChunkSize};
+		parseRootDir, parseAutoIndex, parseIndex, parseAllowedRedirects, \
+			parseChunkedEncoding, parseChunkSize};
 
 	std::string		tmp;
 
@@ -236,7 +269,7 @@ void	Config::parseServerConfBlock( ServerConf& server ){
 		std::stringstream	ss( tmp );
 		std::string		key;
 		ss >> key;
-		for( int i = 0; i < 9; i++ ){
+		for( int i = 0; i < 10; i++ ){
 			if( !key.empty() && key.at( 0 ) == '#' ){
 				break;
 			}
@@ -248,7 +281,7 @@ void	Config::parseServerConfBlock( ServerConf& server ){
 				parseLocationConfBlock( server, ss );
 				break;
 			}
-			else if ( i == 8 && !key.empty() ){
+			else if ( i == 9 && !key.empty() ){
 				throw( std::runtime_error( "Not an valid configuration "\
 							+ tmp ) );
 
@@ -257,5 +290,7 @@ void	Config::parseServerConfBlock( ServerConf& server ){
 		getline( _configFile, tmp );
 	}
 	server.checkAccess();
+	if( server.getRootDir().empty() || server.getIpPort().empty() )
+		throw( std::runtime_error( "RootDir or Listen Directive not set" ) );
 
 }
