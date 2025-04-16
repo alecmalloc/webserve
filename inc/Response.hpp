@@ -27,6 +27,8 @@ class Response {
 		std::string									_reasonPhrase;
 		const ServerConf*							_serverConf;
 		LocationConf* 								_locationConf;
+		// for redirects
+		std::string									_redirectDest;
 
 		// to make cookies work
 		// cookie value we want to have
@@ -65,7 +67,7 @@ class Response {
 
 		
 		// Handlers
-		void HandleRedirectRequest(HttpRequest& ReqObj);
+		void HandleRedirectRequest(HttpRequest& ReqObj, std::map<std::string, std::string > redirect);
 		void HandleDeleteRequest(HttpRequest& ReqObj, PathInfo& pathInfo);
 		void HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo);
 		void genarateUploadSucces(HttpRequest& ReqObj);
@@ -85,6 +87,7 @@ class Response {
 		std::string getServerName();
 		std::string getCurrentDateTime();
 		std::string getContentType(HttpRequest &reqObj, const std::string& extension);
+		std::string getRedirectDest();
 
         // Setters
         void setHttpResponse(const std::string& httpResponse) { _httpResponse = httpResponse; }
@@ -96,6 +99,7 @@ class Response {
         void setFilename(const std::string& filename) { _filename = filename; }
         void setStatusCode(int statusCode) { m_statusCode = statusCode; }
 		void setReasonPhrase(const std::string &reasonPhrase);
+		void setRedirectDest(const std::string& redirectDest) { _redirectDest = redirectDest; };
 
 		// for cookie setter
 		void setSetCookieValue(std::string value);

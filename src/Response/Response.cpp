@@ -17,6 +17,10 @@ std::string Response::getReasonPhrase() const {
 	return _reasonPhrase;
 }
 
+std::string Response::getRedirectDest() {
+	return _redirectDest;
+}
+
 Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 	: _serverConf(serverConf), _locationConf(NULL), _setCookieValue(""){
 	// Get locations from server config
@@ -30,9 +34,6 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 	for (std::vector<LocationConf>::const_iterator it = locations.begin();
 		 it != locations.end(); ++it) {
 		std::string locPath = it->getPath();
-
-		// DEBUG
-		// std::cout << "DEBUG - Checking location: '" << it->getPath() << "'" << std::endl;
 
 		if (uri.find(locPath) == 0) {  // URI starts with location path
 			if (locPath.length() > bestMatch.length()) {
@@ -100,12 +101,6 @@ void Response::setBodyErrorPage(int httpCode) {
 void Response::generateErrorResponse(HttpRequest &reqObj) {
 	// Retrieve the error pages map
 	const std::map<int, std::string>& errorPages = _serverConf->getErrorPages();
-
-	// ONLY NEEDED DURING DEBUGGING: COMMENTING OUT
-	// // Loop over the error pages and print them
-	// for (std::map<int, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it) {
-	// 	std::cout << "Error Code: " << it->first << ", Error Page: " << it->second << std::endl;
-	// }
 
 	// check request obj for the code
 	int responseCode = reqObj.getResponseCode();
@@ -195,11 +190,16 @@ void		Response::processResponse(HttpRequest &ReqObj){
 
 		// redirect request would override all request heirarchy
 		// for example we could perform a GET, POST or DELETE in an old folder and that request would need to be redirected and passed on
-		// REDIRECT REQUEST HANDLER
-		
-		if (checkRequestIsRedirect()) {
+		// get map of location redirects
+		std::map<std::string, std::string > locationRedirect = _locationConf->getAllowedRedirects();
+		// get map of server redirects
+		std::map<std::string, std::string > serverRedirects = ReqObj.getServer().getAllowedRedirects();
+
+		if (!locationRedirect.empty() || !serverRedirects.empty()) {
 			std::cout << "REDIRECT" << '\n';
-			HandleRedirectRequest(ReqObj);
+			// ternary operator evaluate which one to pass to handle redirect
+			std::map<std::string, std::string > redirect = locationRedirect.empty() ? serverRedirects : locationRedirect;
+			HandleRedirectRequest(ReqObj, redirect);
 		}
 
 		// GET REQUEST HANDLER
@@ -223,8 +223,6 @@ void		Response::processResponse(HttpRequest &ReqObj){
 	catch(int error)
 	{
 		ReqObj.setResponseCode(error);
-		// for debugging
-		// std::cout << "CODE " << ReqObj.getResponseCode() << ":\n";
 		generateErrorResponse(ReqObj);
 	}
 

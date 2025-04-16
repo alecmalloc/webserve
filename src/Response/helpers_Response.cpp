@@ -79,6 +79,11 @@ void	Response::generateHeader(HttpRequest &reqObj){
     //headerMap["ETag"] = "\"123456789\""; // Example value
     //headerMap["Location"] = "/new-resource"; // Example value
 
+    // for redirects
+    if (reqObj.getResponseCode() == 301 || reqObj.getResponseCode() == 302) {
+        headerMap["Location"] = getRedirectDest();
+    }
+
 	if(reqObj.getResponseCode() == 201){//for Post methode specify headers
 		headerMap["Location"] = reqObj.getUri(); // Stay on same page
 		headerMap["Content-Type"] = "text/html; charset=utf-8"; // Specify charset
