@@ -202,6 +202,11 @@ void		Response::processResponse(HttpRequest &ReqObj){
 			return;
 		}
 
+		// redirect request would override all request heirarchy
+		// for example we could perform a GET, POST or DELETE in an old folder and that request would need to be redirected and passed on
+		// REDIRECT REQUEST HANDLER
+		if ()
+
 		// GET REQUEST HANDLER
 		if (ReqObj.getMethod() == "GET") {
 			std::cout << "GET REQUEST" << std::endl;
