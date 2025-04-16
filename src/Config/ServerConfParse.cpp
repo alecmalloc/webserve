@@ -15,6 +15,8 @@ static std::string	cutEnding( std::string tmp ){
 }
 
 static std::string	makePath( std::string tmp, int root ){
+	if( tmp.empty() )
+		throw( std::runtime_error( "Invalid root" ) );
 	if( tmp.at( 0 ) != '/' && !root )
 		tmp = "/" + tmp;
 	if( tmp.at( tmp.size() - 1 ) == '/' )
