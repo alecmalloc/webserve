@@ -257,5 +257,7 @@ void	Config::parseServerConfBlock( ServerConf& server ){
 		getline( _configFile, tmp );
 	}
 	server.checkAccess();
+	if( server.getRootDir().empty() || server.getIpPort().empty() )
+		throw( std::runtime_error( "RootDir or Listen Directive not set" ) );
 
 }
