@@ -322,19 +322,22 @@ void HttpRequest::parseBody(const std::string& rawRequest) {
 // //  match server block from conf
 // this doesnt even work lol, only checks for hostname in IPS??
 void HttpRequest::matchServerBlock(void) {
-    std::vector<ServerConf> server_list;
-    server_list = _conf.getServerConfs();
+    std::vector<ServerConf> serverTmpConf = _conf.getServerConfs();
 
-    // loop over serverConfs and match server names and ips
-    for (std::vector<ServerConf>::iterator it = server_list.begin(); it != server_list.end(); ++it) {
-        std::vector<std::string> server_names = it->getServerConfNames();
-        std::map<std::string, std::set<int> > ipPorts = it->getIpPort();
-
-        // check for both port match and hostname match! restrictive!
-        if (ipPorts.find(_hostname) != ipPorts.end() && std::find(server_names.begin(), server_names.end(), _hostname) != server_names.end()) {
-            _server = (*it);
+    // Match server based on hostname and port
+    for (size_t i = 0; i < serverTmpConf.size(); i++) {
+        // Check server names
+        const std::vector<std::string>& serverNames = serverTmpConf[i].getServerConfNames();
+        if (std::find(serverNames.begin(), serverNames.end(), _hostname) != serverNames.end()) {
+            // Check if port matches too
+            const std::map<std::string, std::set<int> > ports = serverTmpConf[i].getIpPort();
+            for (std::map<std::string, std::set<int> >::const_iterator it = ports.begin(); it != ports.end(); ++it) {
+                if (it->second.find(_port) != it->second.end()) {
+                    _server = serverTmpConf[i];
+                    return;
+                }
+            }
         }
-
     }
 }
 
@@ -367,8 +370,6 @@ void HttpRequest::handleRequest(const std::string& rawRequest) {
     // match server block from conf
     matchServerBlock();
 
-	//std::cout << "raw req string :" << rawRequest << ":\n";
-	// validate and load into PathInfo obj
     validateRequestPath();
     if (_response_code != 200)
         return ;
@@ -422,9 +423,7 @@ void HttpRequest::validateRequestPath(void) {
     }
 
     _pathInfo.parsePath();
-
-    if ((_response_code = _pathInfo.validatePath()) != 200)
-        return;
+    _pathInfo.validatePath();
 }
 
 
