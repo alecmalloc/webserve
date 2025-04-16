@@ -141,7 +141,7 @@ void	parseUploadDir( LocationConf& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp )
-		location.setUploadDir( makePath( cutEnding( tmp ), 0 ) );
+		location.setUploadDir( location.getPath() + makePath( cutEnding( tmp ), 0 ) );
 	if( tmp.at( tmp.size() - 1) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
