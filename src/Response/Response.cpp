@@ -5,7 +5,7 @@
 Response::~Response(){}
 
 Response::Response()
-	: _serverConf(NULL), _locationConf(NULL), _setCookieValue("") {
+	: _serverConf(NULL), _locationConf(NULL), _redirectDest("") ,_setCookieValue("") {
 	// Default constructor implementation
 }
 
@@ -17,8 +17,12 @@ std::string Response::getReasonPhrase() const {
 	return _reasonPhrase;
 }
 
-Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
-	: _serverConf(serverConf), _locationConf(NULL), _setCookieValue(""){
+std::string Response::getRedirectDest() {
+	return _redirectDest;
+}
+
+Response::Response(HttpRequest& reqObj, ServerConf* serverConf)
+	: _serverConf(serverConf), _locationConf(NULL), _redirectDest(""), _setCookieValue("") {
 	// Get locations from server config
 	std::string uri = reqObj.getUri();
 
@@ -31,9 +35,6 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 		 it != locations.end(); ++it) {
 		std::string locPath = it->getPath();
 
-		// DEBUG
-		// std::cout << "DEBUG - Checking location: '" << it->getPath() << "'" << std::endl;
-
 		if (uri.find(locPath) == 0) {  // URI starts with location path
 			if (locPath.length() > bestMatch.length()) {
 				bestMatch = locPath;
@@ -42,15 +43,6 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 		}
 	}
 
-	// DEBUG
-	// std::cout << "URI: " << uri << std::endl;
-	// std::cout << "Server root: " << _serverConf->getRootDir() << std::endl;
-	// if (_locationConf) {
-    // 	std::cout << "Location path: " << _locationConf->getPath() << std::endl;
-    // 	std::cout << "Location root: " << _locationConf->getRootDir() << std::endl;
-	// }
-	//std::cout << "Final path being used: " << pathInfo.getFullPath() << std::endl;
-	//std::cout <<  reqObj << "\n";
 	processResponse(reqObj);
 	generateHttpresponse(reqObj);
 }
@@ -70,7 +62,14 @@ void Response::generateHttpresponse(HttpRequest &reqObj) {
 	//header << "Cache-Control: " << headerMap["Cache-Control"] << "\r\n";
 
 	// needed for cookies to work
-	header << "Set-Cookie: " << headerMap["Set-Cookie"] << "\r\n";
+	// only if setCookieValue has been changed
+	if (_setCookieValue != "") {
+		header << "Set-Cookie: " << headerMap["Set-Cookie"] << "\r\n";
+	}
+	// to set location (esp for redirects)
+	if (_redirectDest != "") {
+		header << "Location: " << headerMap["Location"] << "\r\n";
+	}
 	// std::cout << "SetCookie found: " << headerMap["Set-Cookie"] << '\n';
 
 	//header << "Last-Modified: " << headerMap["Last-Modified"] << "\r\n";
@@ -81,9 +80,7 @@ void Response::generateHttpresponse(HttpRequest &reqObj) {
 	setHttpResponse(responseString);
 }
 
-
-
-std::string Response::getServerName(){
+std::string Response::getServerName() {
 	std::vector<std::string> server = _serverConf->getServerConfNames();
 
 	// Check if the vector has any elements
@@ -109,12 +106,6 @@ void Response::setBodyErrorPage(int httpCode) {
 void Response::generateErrorResponse(HttpRequest &reqObj) {
 	// Retrieve the error pages map
 	const std::map<int, std::string>& errorPages = _serverConf->getErrorPages();
-
-	// ONLY NEEDED DURING DEBUGGING: COMMENTING OUT
-	// // Loop over the error pages and print them
-	// for (std::map<int, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it) {
-	// 	std::cout << "Error Code: " << it->first << ", Error Page: " << it->second << std::endl;
-	// }
 
 	// check request obj for the code
 	int responseCode = reqObj.getResponseCode();
@@ -202,19 +193,36 @@ void		Response::processResponse(HttpRequest &ReqObj){
 			return;
 		}
 
+		// redirect request would override all request heirarchy
+		// for example we could perform a GET, POST or DELETE in an old folder and that request would need to be redirected and passed on
+		// get map of location redirects
+		std::map<std::string, std::string > locationRedirect;
+		if (_locationConf)
+			locationRedirect = _locationConf->getAllowedRedirects();
+		// get map of server redirects
+		std::map<std::string, std::string > serverRedirects = _serverConf->getAllowedRedirects();
+
+		// handlers
+		if (!locationRedirect.empty() || !serverRedirects.empty()) {
+			std::cout << "REDIRECT" << '\n';
+			// ternary operator evaluate which one to pass to handle redirect
+			std::map<std::string, std::string > redirect = locationRedirect.empty() ? serverRedirects : locationRedirect;
+			HandleRedirectRequest(ReqObj, redirect);
+		}
+
 		// GET REQUEST HANDLER
-		if (ReqObj.getMethod() == "GET") {
-			std::cout << "GET REQUEST" << std::endl;
+		else if (ReqObj.getMethod() == "GET") {
+			std::cout << "GET REQUEST" << '\n';
 			HandleGetRequest(ReqObj,pathInfo);
 		}
 		// POST REQUEST HANDLER
 		else if (ReqObj.getMethod() == "POST") {
-			std::cout << "POST REQUEST" << std::endl;
+			std::cout << "POST REQUEST" << '\n';
 			HandlePostRequest(ReqObj, pathInfo);
 		}
 		// HANDLE DELETE request
 		else if (ReqObj.getMethod() == "DELETE") {
-			std::cout << "DELETE REQUEST" << std::endl;
+			std::cout << "DELETE REQUEST" << '\n';
 			HandleDeleteRequest(ReqObj, pathInfo);
 		}
 
@@ -223,8 +231,6 @@ void		Response::processResponse(HttpRequest &ReqObj){
 	catch(int error)
 	{
 		ReqObj.setResponseCode(error);
-		// for debugging
-		// std::cout << "CODE " << ReqObj.getResponseCode() << ":\n";
 		generateErrorResponse(ReqObj);
 	}
 

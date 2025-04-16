@@ -93,7 +93,7 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
         return;
     }
 
-	if(pathInfo.isFile()){
+	if(pathInfo.isFile()) {
 		if(serveFileIfExists(fullPath, ReqObj) == true)
 			return;
 		else{

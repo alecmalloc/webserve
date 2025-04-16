@@ -89,73 +89,7 @@ PathInfo& PathInfo::operator=(const PathInfo& other) {
 PathInfo::~PathInfo() {
 
 }
-/*changed function beacuse i need path info even if path is invalid for indexing xoxo linus
-int PathInfo::validatePath() {
 
-    // check for invalid path traversal ie -> "../../"
-    if (_fullPath.find("..") != std::string::npos)
-        return 403;
-
-    struct stat statbuf;
-    if (stat(_fullPath.c_str(), &statbuf) != 0) {
-        return 404; // path doesn't exist or error accessing it
-    }
-    // set file properties
-    _isDirectory = S_ISDIR(statbuf.st_mode);
-    _isFile = S_ISREG(statbuf.st_mode);
-
-    // check dir with open dir too
-    if (_isDirectory) {
-        DIR* dir = opendir(_fullPath.c_str());
-        if (dir == NULL) {
-            return 404;
-        }
-        closedir(dir);
-    }
-
-    // check permissions
-    if (_isDirectory) {
-        // directory needs read and execute permissions
-        if (!(statbuf.st_mode & S_IRUSR) || !(statbuf.st_mode & S_IXUSR))
-            return 403;
-    } else if (_isFile) {
-        // regular file needs read permission
-        if (!(statbuf.st_mode & S_IRUSR))
-            return 403;
-    }
-
-    return 200;
-}
-
-
-
-int PathInfo::parsePath() {
-
-    // find the last directory separator
-    size_t lastSlash = _fullPath.find_last_of("/\\");
-    if (lastSlash != std::string::npos) {
-        _dirName = _fullPath.substr(0, lastSlash);
-        _fileName = _fullPath.substr(lastSlash + 1);
-    } else {
-        _fileName = _fullPath;
-    }
-
-    // find the last dot to get the file extension
-    size_t lastDot = _fileName.find_last_of('.');
-    if (lastDot != std::string::npos) {
-        _extension = _fileName.substr(lastDot + 1);
-        _fileName = _fileName.substr(0, lastDot);
-    }
-
-    // additional validation for directory and filename
-    if (_dirName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\._-") != std::string::npos)
-        return 400;
-    if (_fileName.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-") != std::string::npos)
-        return 400;
-
-    return 200;
-}
-*/
 int PathInfo::validatePath() {
     // First parse the path components - do this before validation
     parsePath();
