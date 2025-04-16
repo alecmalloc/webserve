@@ -362,10 +362,6 @@ void HttpRequest::handleRequest(const std::string& rawRequest) {
 void HttpRequest::validateRequestPath(void) {
     const std::vector<LocationConf>& locationConfs = _server.getLocationConfs();
     const std::string uri = getUri();
-    
-    // Add null checks and debugging
-    //std::cout << "Processing URI: " << uri << std::endl;
-    //std::cout << "Server root: " << _server.getRootDir() << std::endl;
 
     // Protect against empty/null values
     if (_server.getRootDir().empty()) {
@@ -440,93 +436,3 @@ std::string HttpRequest::getConnectionType() const {
     
     return connectionType;
 }
-
-
-/*
-void HttpRequest::validateRequestPath(void) {
-    const std::vector<LocationConf>& locationConfs = _server.getLocationConfs();
-    std::string bestMatch = "";
-    const LocationConf* matchedLoc = NULL;
-    const std::string uri = getUri();
-
-    // Set PathInfo before location matching
-    std::string full_path = _server.getRootDir() + uri;
-    _pathInfo = PathInfo(full_path);
-    _pathInfo.parsePath(); // Parse the path components regardless of validation
-
-    // Loop over location confs
-    for (std::vector<LocationConf>::const_iterator it = locationConfs.begin();
-        it != locationConfs.end(); ++it) {
-            const LocationConf& loc = *it;
-            std::string locPath = loc.getPath();
-            if (uri.substr(0, locPath.length()) == locPath) {
-                if (locPath.length() > bestMatch.length()) {
-                    bestMatch = locPath;
-                    matchedLoc = &loc;
-                }
-            }
-    }
-
-    // If no location match, set 404 but keep path info
-    if (!matchedLoc) {
-        _response_code = 404;
-        return;
-    }
-
-    // Only validate the path exists if we found a matching location
-    if ((_response_code = _pathInfo.validatePath()) != 200)
-        return;
-}
-
-
-
-void HttpRequest::validateRequestPath(void) {
-    // grab location confs
-
-    // things we need in for loop
-    const std::vector<LocationConf>& locationConfs = _server.getLocationConfs();
-    std::string bestMatch = "";
-    const LocationConf* matchedLoc = NULL;
-    const std::string uri = getUri();
-
-    //std::cout << "Debug: URI to match: " << uri << std::endl;
-    //std::cout << "Debug: Number of location configs: " << locationConfs.size() << std::endl;
-
-    // loop over location confs
-    for (std::vector<LocationConf>::const_iterator it = locationConfs.begin();
-        it != locationConfs.end(); ++it) {
-            const LocationConf& loc = *it;
-            std::string locPath = loc.getPath();
-            // Check if URI starts with location path
-            if (uri.substr(0, locPath.length()) == locPath) {
-                // keep longest match (most specific). Ex: /posts/ or posts/articles
-                if (locPath.length() > bestMatch.length()) {
-                    bestMatch = locPath;
-                    matchedLoc = &loc;
-                }
-            }
-    }
-    // if we couldnt match a location from the locationConfs in the server
-    if (!matchedLoc) {
-        _response_code = 404;
-        return;
-    }
-
-    // oarse full path from reuqest uri
-    std::string full_path = _server.getRootDir() + uri;
-    size_t question_mark = full_path.find("?");
-    if (question_mark != std::string::npos)
-        full_path = full_path.substr(0, question_mark);
-
-    // std::cout << "Debug fullPath:" << full_path  << '\n';
-    // load full path into PathInfo obj
-    _pathInfo = PathInfo(full_path);
-
-    // validates path and set reponse code to return val
-    if ((_response_code = _pathInfo.validatePath()) != 200)
-        return;
-    // parse path and set reponse code to return val
-    if ((_response_code = _pathInfo.parsePath()) != 200)
-        return;
-}
-*/

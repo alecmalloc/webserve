@@ -35,7 +35,7 @@ class Config {
 	void	setServerConf( ServerConf server );
 
 	//member fucnitons
-        void	parse( std::string& filename );
+    void	parse( std::string& filename );
 	void	parseServerConfBlock( ServerConf& server );
 	void	parseLocationConfBlock( ServerConf&, std::stringstream& );
 };

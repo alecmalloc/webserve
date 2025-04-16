@@ -62,9 +62,14 @@ class Response {
 		bool serveRootIndexfile(HttpRequest& ReqObj, std::string fullPath);
 		bool serveLocationIndex(HttpRequest& ReqObj);
 
+
+		
+		// Handlers
+		void HandleRedirectRequest(HttpRequest& ReqObj);
 		void HandleDeleteRequest(HttpRequest& ReqObj, PathInfo& pathInfo);
 		void HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo);
 		void genarateUploadSucces(HttpRequest& ReqObj);
+
 
         // Getters
 		const std::map<int, std::string>& getErrorPages() const;

@@ -42,15 +42,6 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 		}
 	}
 
-	// DEBUG
-	// std::cout << "URI: " << uri << std::endl;
-	// std::cout << "Server root: " << _serverConf->getRootDir() << std::endl;
-	// if (_locationConf) {
-    // 	std::cout << "Location path: " << _locationConf->getPath() << std::endl;
-    // 	std::cout << "Location root: " << _locationConf->getRootDir() << std::endl;
-	// }
-	//std::cout << "Final path being used: " << pathInfo.getFullPath() << std::endl;
-	//std::cout <<  reqObj << "\n";
 	processResponse(reqObj);
 	generateHttpresponse(reqObj);
 }
@@ -205,21 +196,25 @@ void		Response::processResponse(HttpRequest &ReqObj){
 		// redirect request would override all request heirarchy
 		// for example we could perform a GET, POST or DELETE in an old folder and that request would need to be redirected and passed on
 		// REDIRECT REQUEST HANDLER
-		if ()
+		
+		if (checkRequestIsRedirect()) {
+			std::cout << "REDIRECT" << '\n';
+			HandleRedirectRequest(ReqObj);
+		}
 
 		// GET REQUEST HANDLER
 		if (ReqObj.getMethod() == "GET") {
-			std::cout << "GET REQUEST" << std::endl;
+			std::cout << "GET REQUEST" << '\n';
 			HandleGetRequest(ReqObj,pathInfo);
 		}
 		// POST REQUEST HANDLER
 		else if (ReqObj.getMethod() == "POST") {
-			std::cout << "POST REQUEST" << std::endl;
+			std::cout << "POST REQUEST" << '\n';
 			HandlePostRequest(ReqObj, pathInfo);
 		}
 		// HANDLE DELETE request
 		else if (ReqObj.getMethod() == "DELETE") {
-			std::cout << "DELETE REQUEST" << std::endl;
+			std::cout << "DELETE REQUEST" << '\n';
 			HandleDeleteRequest(ReqObj, pathInfo);
 		}
 
