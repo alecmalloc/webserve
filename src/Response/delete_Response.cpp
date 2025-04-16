@@ -1,6 +1,5 @@
 #include "webserv.hpp"
 
-
 void Response::HandleDeleteRequest(HttpRequest& ReqObj, PathInfo& pathInfo){
     // Check if DELETE method is allowed
 	(void)ReqObj;

@@ -79,7 +79,6 @@ std::string generateSessionID(std::size_t length = 32) {
     return sessionID;
 }
 
-
 // add cookie to headers (headers are generated with the ones we have so changing headers in request effectively changes them in response too)
 // not renaming but it also creates session
 void Response::createSession( void ) {
