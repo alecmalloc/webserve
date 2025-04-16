@@ -20,6 +20,7 @@ class HttpRequest {
 		//cgi response string 
 		std::string											_cgiResponseString;
         std::string                                          _hostname;
+        int                                                  _port;
 
         // reference to which serverConf i have matched from request
         ServerConf                                          _server;
@@ -46,6 +47,7 @@ class HttpRequest {
         ServerConf						                        getServer() const;
         PathInfo                                                getPathInfo() const;
 		std::string                                             getCgiResponseString() const;
+        int                                                     getPort() const;
 
         //setters
         void	setMethod( std::string );
@@ -59,6 +61,7 @@ class HttpRequest {
         void	setServer( ServerConf );
         void    setPathInfo( PathInfo );
 		void    setCgiResponseString(const std::string& cgiResponseString);
+        void    setPort(const int port);
 
         // main handler
         void    handleRequest(const std::string& rawRequest);

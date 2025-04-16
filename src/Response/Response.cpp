@@ -21,7 +21,7 @@ std::string Response::getRedirectDest() {
 	return _redirectDest;
 }
 
-Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
+Response::Response(HttpRequest& reqObj, ServerConf* serverConf)
 	: _serverConf(serverConf), _locationConf(NULL), _redirectDest(""), _setCookieValue("") {
 	// Get locations from server config
 	std::string uri = reqObj.getUri();
@@ -77,7 +77,6 @@ void Response::generateHttpresponse(HttpRequest &reqObj) {
 	//header << "Location: " << headerMap["Location"] << "\r\n";
 	header << "\r\n"; // End of headers
 	std::string responseString = header.str() + getBody();
-	std::cout << "REPOSTRING: " << responseString << '\n';
 	setHttpResponse(responseString);
 }
 

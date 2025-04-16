@@ -274,15 +274,14 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 			// check server names
 			const std::vector<std::string>& serverNames = serverTMPConf[i].getServerConfNames();
 			if (std::find(serverNames.begin(), serverNames.end(), host) != serverNames.end()) {
-				selectedServerConf = &serverTMPConf[i];
-				break;
-			}
-
-			// check server ips
-			const std::map<std::string, std::set<int> >& ipPorts = serverTMPConf[i].getIpPort();
-			if (ipPorts.find(host) != ipPorts.end()) {
-				selectedServerConf = &serverTMPConf[i];
-				break;
+				// check if port matches too
+				const std::map<std::string, std::set<int> > ports =  serverTMPConf[i].getIpPort();
+				for (std::map<std::string, std::set<int> >::const_iterator it = ports.begin(); it != ports.end(); ++it) {
+					if (it->second.find(request.getPort()) != it->second.end()) {
+						selectedServerConf = &serverTMPConf[i];
+						break;
+					}
+				}
 			}
 		}
 

@@ -3,6 +3,7 @@
 HttpRequest::HttpRequest(Config& conf):
     _conf(conf),
     _response_code(200),
+    _port(-1),
     _pathInfo()
 {
     _cgiResponseString = "";
@@ -54,6 +55,10 @@ ServerConf HttpRequest::getServer() const {
 
 std::string HttpRequest::getHostname() const {
     return _hostname;
+}
+
+int HttpRequest::getPort() const {
+    return _port;
 }
 
 Config& HttpRequest::getConf() const {
@@ -139,6 +144,10 @@ std::string HttpRequest::getBody() const {
     return _body;
 }
 
+void HttpRequest::setPort(int port) {
+    _port = port;
+}
+
 // overload for printing
 std::ostream& operator<<(std::ostream& os, HttpRequest& request) {
     os << "Version: " << request.getVersion() << "\n";
@@ -168,6 +177,7 @@ void HttpRequest::parseHeaders(const std::string& rawRequest) {
         setResponseCode(400);
         return;
     }
+
     std::istringstream request_line(line);
     std::string method, uri, version;
     request_line >> method >> uri >> version;
@@ -175,6 +185,7 @@ void HttpRequest::parseHeaders(const std::string& rawRequest) {
         setResponseCode(400);
         return;
     }
+
     if (version != "HTTP/1.1") {
         setResponseCode(505);
         return;
@@ -309,6 +320,7 @@ void HttpRequest::parseBody(const std::string& rawRequest) {
 }
 
 // //  match server block from conf
+// this doesnt even work lol, only checks for hostname in IPS??
 void HttpRequest::matchServerBlock(void) {
     std::vector<ServerConf> server_list;
     server_list = _conf.getServerConfs();
@@ -345,8 +357,12 @@ void HttpRequest::handleRequest(const std::string& rawRequest) {
     // extract hostname
     // hostname = remove port from host if present
     size_t colon = _hostname.find(":");
-    if (colon != std::string::npos)
+    if (colon != std::string::npos) {
+        std::stringstream ss(_hostname.substr(colon + 1));
+        ss >> _port;
+        std::cout << "PORT: " << _port << '\n';
         _hostname = _hostname.substr(0, colon);
+    }
 
     // match server block from conf
     matchServerBlock();
