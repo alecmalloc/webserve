@@ -13,7 +13,8 @@ void    Response::HandleRedirectRequest(HttpRequest& ReqObj, std::map<std::strin
     ss >> code;
 
     // set dest address
-    dest = it->second;
+    // we skip first character becuase moritz puts in a / at the beginning
+    dest = it->second.substr(1, it->second.length());
 
     // set req code to the first string (301, 302) of redirect vec
     ReqObj.setResponseCode(code);

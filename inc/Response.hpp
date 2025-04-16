@@ -72,7 +72,6 @@ class Response {
 		void HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo);
 		void genarateUploadSucces(HttpRequest& ReqObj);
 
-
         // Getters
 		const std::map<int, std::string>& getErrorPages() const;
         std::string getHttpResponse() const { return _httpResponse; }

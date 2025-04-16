@@ -5,7 +5,7 @@
 Response::~Response(){}
 
 Response::Response()
-	: _serverConf(NULL), _locationConf(NULL), _setCookieValue("") {
+	: _serverConf(NULL), _locationConf(NULL), _redirectDest("") ,_setCookieValue("") {
 	// Default constructor implementation
 }
 
@@ -22,7 +22,7 @@ std::string Response::getRedirectDest() {
 }
 
 Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
-	: _serverConf(serverConf), _locationConf(NULL), _setCookieValue(""){
+	: _serverConf(serverConf), _locationConf(NULL), _redirectDest(""), _setCookieValue("") {
 	// Get locations from server config
 	std::string uri = reqObj.getUri();
 
@@ -62,7 +62,14 @@ void Response::generateHttpresponse(HttpRequest &reqObj) {
 	//header << "Cache-Control: " << headerMap["Cache-Control"] << "\r\n";
 
 	// needed for cookies to work
-	header << "Set-Cookie: " << headerMap["Set-Cookie"] << "\r\n";
+	// only if setCookieValue has been changed
+	if (_setCookieValue != "") {
+		header << "Set-Cookie: " << headerMap["Set-Cookie"] << "\r\n";
+	}
+	// to set location (esp for redirects)
+	if (_redirectDest != "") {
+		header << "Location: " << headerMap["Location"] << "\r\n";
+	}
 	// std::cout << "SetCookie found: " << headerMap["Set-Cookie"] << '\n';
 
 	//header << "Last-Modified: " << headerMap["Last-Modified"] << "\r\n";
@@ -70,12 +77,11 @@ void Response::generateHttpresponse(HttpRequest &reqObj) {
 	//header << "Location: " << headerMap["Location"] << "\r\n";
 	header << "\r\n"; // End of headers
 	std::string responseString = header.str() + getBody();
+	std::cout << "REPOSTRING: " << responseString << '\n';
 	setHttpResponse(responseString);
 }
 
-
-
-std::string Response::getServerName(){
+std::string Response::getServerName() {
 	std::vector<std::string> server = _serverConf->getServerConfNames();
 
 	// Check if the vector has any elements
@@ -195,7 +201,7 @@ void		Response::processResponse(HttpRequest &ReqObj){
 		if (_locationConf)
 			locationRedirect = _locationConf->getAllowedRedirects();
 		// get map of server redirects
-		std::map<std::string, std::string > serverRedirects = ReqObj.getServer().getAllowedRedirects();
+		std::map<std::string, std::string > serverRedirects = _serverConf->getAllowedRedirects();
 
 		// handlers
 		if (!locationRedirect.empty() || !serverRedirects.empty()) {
