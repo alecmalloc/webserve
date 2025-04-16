@@ -191,10 +191,13 @@ void		Response::processResponse(HttpRequest &ReqObj){
 		// redirect request would override all request heirarchy
 		// for example we could perform a GET, POST or DELETE in an old folder and that request would need to be redirected and passed on
 		// get map of location redirects
-		std::map<std::string, std::string > locationRedirect = _locationConf->getAllowedRedirects();
+		std::map<std::string, std::string > locationRedirect;
+		if (_locationConf)
+			locationRedirect = _locationConf->getAllowedRedirects();
 		// get map of server redirects
 		std::map<std::string, std::string > serverRedirects = ReqObj.getServer().getAllowedRedirects();
 
+		// handlers
 		if (!locationRedirect.empty() || !serverRedirects.empty()) {
 			std::cout << "REDIRECT" << '\n';
 			// ternary operator evaluate which one to pass to handle redirect
@@ -203,7 +206,7 @@ void		Response::processResponse(HttpRequest &ReqObj){
 		}
 
 		// GET REQUEST HANDLER
-		if (ReqObj.getMethod() == "GET") {
+		else if (ReqObj.getMethod() == "GET") {
 			std::cout << "GET REQUEST" << '\n';
 			HandleGetRequest(ReqObj,pathInfo);
 		}

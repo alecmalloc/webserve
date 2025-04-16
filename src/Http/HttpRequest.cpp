@@ -318,12 +318,11 @@ void HttpRequest::matchServerBlock(void) {
         std::vector<std::string> server_names = it->getServerConfNames();
         std::map<std::string, std::set<int> > ipPorts = it->getIpPort();
 
-        if (std::find(server_names.begin(), server_names.end(), _hostname) != server_names.end()) {
+        // check for both port match and hostname match! restrictive!
+        if (ipPorts.find(_hostname) != ipPorts.end() && std::find(server_names.begin(), server_names.end(), _hostname) != server_names.end()) {
             _server = (*it);
         }
-        if (ipPorts.find(_hostname) != ipPorts.end()) {
-            _server = (*it);
-        }
+
     }
 }
 
