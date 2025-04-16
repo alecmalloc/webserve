@@ -22,6 +22,8 @@
 #define ERROR			"error_page"
 #define SERVER			"server_name"
 #define CLIENT			"client_max_body_size"
+#define CHUNK_ENC		"use_chunked_encoding"
+#define CHUNK_SIZE		"chunk_size"
 
 
 //defines for epoll
