@@ -164,7 +164,7 @@ void	Server::_initServer( void ){
 				_sockets[ newSocket ] = std::make_pair( it2->first, *it3 );
 
 				std::cout << BLUE << "INFO:	Socket:	listening on:	" \
-					<< END << it2->first << ":" << *it3 << std::endl;
+					<< END << it2->first << ":" << *it3 << '\n';
 
 				//add newSocket to Epoll Instance
 				addSocketEpoll( _epollFd, newSocket );

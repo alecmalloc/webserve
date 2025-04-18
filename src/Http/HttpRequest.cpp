@@ -308,9 +308,7 @@ void HttpRequest::parseBody(const std::string& rawRequest) {
     if (bodyStart + contentLength <= rawRequest.length()) {
         std::string bodyContent = rawRequest.substr(bodyStart, contentLength);
         setBody(bodyContent);
-
-        // Debug output
-        // std::cout << "Read POST body, length: " << bodyContent.length() << std::endl;
+        
     } else {
         std::cerr << "Warning: Incomplete body received. Expected " 
                     << contentLength << " bytes, got " 
@@ -381,7 +379,6 @@ void HttpRequest::validateRequestPath(void) {
 
     // Protect against empty/null values
     if (_server.getRootDir().empty()) {
-        // std::cout << "Warning: Server root is empty" << std::endl;
         _response_code = 500;
         return;
     }
@@ -410,7 +407,7 @@ void HttpRequest::validateRequestPath(void) {
                     locationPath += it->getIndex()[0];
                     _pathInfo = PathInfo(locationPath);
                 } else {
-                    std::cout << "Warning: Location has no index files" << std::endl;
+                    std::cout << "Warning: Location has no index files" << '\n';
                     _response_code = 404;
                     return;
                 }

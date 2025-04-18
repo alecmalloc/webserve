@@ -184,7 +184,7 @@ void		Response::processResponse(HttpRequest &ReqObj){
 		// CGI REQUEST CHECK HANDLER
 		// note this is the only part of the check that returns
 		if(isCgiRequest(ReqObj.getUri())){ //should be ok but some errro with cgi handler cant find files
-			std::cout << "CGI REQUEST" << std::endl;
+			std::cout << "CGI REQUEST" << '\n';
 			int result = handleCgi(ReqObj);
 			//std::cout << "CGI result" << result << '\n';
 			if(result == 0) {
