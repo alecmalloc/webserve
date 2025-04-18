@@ -14,7 +14,6 @@ int Response::checkContentLength(HttpRequest& ReqObj){
 
 	std::map<std::string, std::vector<std::string> >::const_iterator it = headers.find("Content-Length");
 	if (it == headers.end() || it->second.empty()) {
-		//std::cerr << "Missing Content-Length header" << std::endl;
 		throw 411;
 		return (411); // Length Required
 	}
@@ -25,7 +24,6 @@ int Response::checkContentLength(HttpRequest& ReqObj){
 		 iss >> contentLength;
 
 		 if (iss.fail()) {
-			 //std::cerr << "Failed to parse Content-Length header" << std::endl;
 			throw 400;
 			return 400; // Bad Request
 		 }
@@ -57,7 +55,6 @@ void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
 
 	// We dont always need content length in a post request. esp if chunked we use transfer-encoding instead
 	std::string postData = ReqObj.getBody();
-	//std::cout << "Received POST data: " << postData << std::endl;
 
 	std::string contentType = ReqObj.getHeaders()["Content-Type"][0];
 	// std::cout << "Content-Type" << contentType << "\n";
@@ -70,7 +67,6 @@ void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
 		// Extract boundary
 		size_t boundaryPos = contentType.find("boundary=");
 		if (boundaryPos == std::string::npos) {
-			// std::cerr << "No boundary found in Content-Type" << std::endl;
 			throw 400; // Bad Request
 		}
 		std::string boundary = contentType.substr(boundaryPos + 9); // "boundary=" is 9 chars
@@ -86,7 +82,6 @@ void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
 	std::string filePath = uploadPathhandler(_locationConf);
 	std::ofstream outFile(filePath.c_str(), std::ios::out | std::ios::binary);
 	if (!outFile.is_open()) {
-	// std::cerr << "Failed to open file: " << filePath << std::endl;
 	throw 500; // Internal Server Error
 	}
 
@@ -95,7 +90,6 @@ void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
 	outFile.close();
 
 	if (outFile.fail()) {
-	// std::cerr << "Failed to write to file: " << filePath << std::endl;
 		throw 500; // Internal Server Error
 	}
 	if (!outFile.fail()) {
@@ -122,7 +116,6 @@ std::string Response::uploadPathhandler(LocationConf* locationConf) {
 		std::string subPath = dirPath.substr(0, pos);
 		if (!subPath.empty() && access(subPath.c_str(), F_OK) == -1) {
 			if (mkdir(subPath.c_str(), 0777) == -1) {
-				// std::cerr << "Failed to create directory: " << subPath << std::endl;
 				throw 500; // Internal Server Error
 			}
 		}
@@ -130,7 +123,6 @@ std::string Response::uploadPathhandler(LocationConf* locationConf) {
 
 	// Verify directory exists and has write permissions
 	if (access(uploadDir.c_str(), W_OK) == -1) {
-		// std::cerr << "No write permission for directory: " << uploadDir << std::endl;
 		throw 403; // Forbidden
 	}
 
@@ -144,7 +136,6 @@ std::string Response::uploadPathhandler(LocationConf* locationConf) {
 		position++; // Move to next character
 	}
 
-	// std::cout << "Saving to path: " << filePath << std::endl;
 	return filePath;
 }
 
@@ -158,9 +149,6 @@ std::string Response::uploadPathhandler(LocationConf* locationConf) {
 void Response::handleMultipartUpload(HttpRequest& ReqObj, PathInfo& pathinfo, const std::string& boundary) {
 	(void)pathinfo;
 	const std::string& postData = ReqObj.getBody();
-	//std::cout << "Body received, length: " << postData.length() << std::endl;
-    // Debug: Print the first 50 bytes to verify content
-   // std::cout << "Body starts with: " << postData.substr(0, 50) << std::endl;
 
     // Chrome may or may not include leading "--" in the actual data
     std::string boundaryMarker = "--" + boundary;
@@ -171,7 +159,6 @@ void Response::handleMultipartUpload(HttpRequest& ReqObj, PathInfo& pathinfo, co
     if (partStart == std::string::npos) {
         partStart = postData.find(altBoundaryMarker);
         if (partStart == std::string::npos) {
-            //std::cerr << "Invalid multipart format - boundary not found" << std::endl;
             throw 400;
         }
     }
@@ -179,7 +166,6 @@ void Response::handleMultipartUpload(HttpRequest& ReqObj, PathInfo& pathinfo, co
     // Skip to the end of the boundary line
     partStart = postData.find("\r\n", partStart);
     if (partStart == std::string::npos) {
-        //std::cerr << "Invalid multipart format - no CRLF after boundary" << std::endl;
         throw 400;
     }
     partStart += 2; // Skip \r\n
@@ -187,31 +173,26 @@ void Response::handleMultipartUpload(HttpRequest& ReqObj, PathInfo& pathinfo, co
     // Find the Content-Disposition header
     size_t dispPos = postData.find("Content-Disposition:", partStart);
     if (dispPos == std::string::npos) {
-        // std::cerr << "No Content-Disposition header found" << std::endl;
         throw 400;
     }
 
     // Extract filename
     size_t filenamePos = postData.find("filename=\"", dispPos);
     if (filenamePos == std::string::npos) {
-        // std::cerr << "No filename found in Content-Disposition" << std::endl;
         throw 400;
     }
     filenamePos += 10; // Skip 'filename="'
 
     size_t filenameEnd = postData.find("\"", filenamePos);
     if (filenameEnd == std::string::npos) {
-        // std::cerr << "Invalid filename format" << std::endl;
         throw 400;
     }
 
     std::string filename = postData.substr(filenamePos, filenameEnd - filenamePos);
-    // std::cout << "Extracted filename: " << filename << std::endl;
 
     // Find the blank line that marks the start of file content
     size_t contentStart = postData.find("\r\n\r\n", filenameEnd);
     if (contentStart == std::string::npos) {
-        // std::cerr << "Invalid multipart format - no content start" << std::endl;
         throw 400;
     }
     contentStart += 4; // Skip \r\n\r\n
@@ -219,14 +200,11 @@ void Response::handleMultipartUpload(HttpRequest& ReqObj, PathInfo& pathinfo, co
     // Find the end boundary
     size_t contentEnd = postData.find("\r\n--" + boundary, contentStart);
     if (contentEnd == std::string::npos) {
-        // std::cerr << "Invalid multipart format - no content end" << std::endl;
         throw 400;
     }
 
     // Extract file content
     std::string fileContent = postData.substr(contentStart, contentEnd - contentStart);
-   	// std::cout << "File content length: " << fileContent.length() << " bytes" << std::endl;
-    // std::cout << "File content: '" << fileContent << "'" << std::endl;
 
     // Create the upload directory (use your existing function)
     std::string uploadDir = uploadPathhandler(_locationConf);
@@ -237,12 +215,10 @@ void Response::handleMultipartUpload(HttpRequest& ReqObj, PathInfo& pathinfo, co
 
     // Use the original filename (sanitize it if needed)
     std::string filePath = dirPath + filename;
-    // std::cout << "Saving file to: " << filePath << std::endl;
 
     // Write only the file content to the file
     std::ofstream outFile(filePath.c_str(), std::ios::out | std::ios::binary);
     if (!outFile.is_open()) {
-        // std::cerr << "Failed to open file: " << filePath << std::endl;
         throw 500; // Internal Server Error
     }
 
@@ -250,7 +226,6 @@ void Response::handleMultipartUpload(HttpRequest& ReqObj, PathInfo& pathinfo, co
     outFile.close();
 
     if (outFile.fail()) {
-        // std::cerr << "Failed to write to file: " << filePath << std::endl;
         throw 500; // Internal Server Error
     }
 

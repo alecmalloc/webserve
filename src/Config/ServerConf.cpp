@@ -40,7 +40,7 @@ ServerConf&		ServerConf::operator =( const ServerConf& og ) {
 
 std::ostream&	operator <<( std::ostream& os, const ServerConf& server) {
 
-	os << "ServerConf Details:\n" << std::endl;
+	os << "ServerConf Details:" << '\n';
 	std::vector< std::string >	tmp;
 
 	// Print IP and Port
@@ -96,7 +96,7 @@ std::ostream&	operator <<( std::ostream& os, const ServerConf& server) {
 				it != tmp.end(); ++it) {
 			os << *it << " ";
 		}
-		os << std::endl;
+		os << '\n';
 	}
 
 	// Print LocationConfs

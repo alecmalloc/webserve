@@ -9,7 +9,7 @@ static void	handleSignal( int signal ){
 	if( signal == SIGINT || signal == SIGQUIT ){
 		running = false;
 		std::cout << BLUE << "\nINFO:	Server:	Shutting down	..."  << END \
-				<< std::endl;
+				<< '\n';
 	}
 }
 
@@ -107,9 +107,6 @@ static Client*	findClient( Server& server, struct epoll_event event ){
 
 	//create new client with new fd and add to exxisting clients
 	clients.push_back( newClient );
-
-	// std::cout << BLUE << "INFO:	Client: connected:	" << END << clientFd
-	// 		<< std::endl;
 
 	//return new client
 	return( &clients.back() );
@@ -238,7 +235,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 	if( event.events & EPOLLHUP || client->getClosed() ){
 		closeClient( server, client );
 		std::cout << BLUE << "INFO:	Client: disconnected:	" << \
-			END << client->getEventFd() << std::endl;
+			END << client->getEventFd() << '\n';
 		return;
 	}
 
@@ -249,7 +246,6 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 	// check for complete request instead of checking for EUP
 	if ( client->getComplete() ){
-		// std::cout << client->getContent() << std::endl;
 
 		// create temp config file for request construction
 		Config confTMP = server.getConf();
@@ -323,7 +319,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 	//check for hanging conection
 	if( event.events & EPOLLHUP || client->getClosed() ){
 		std::cout << BLUE << "INFO:	Client: disconnected:	" << \
-			END << client->getEventFd() << std::endl;
+			END << client->getEventFd() << '\n';
 		closeClient( server, client );
 		return;
 	}

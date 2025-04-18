@@ -46,7 +46,7 @@ std::ostream&	operator <<( std::ostream& os, const LocationConf& loc ) {
 
     // Print path
     if ( !loc.getPath().empty() ){
-    	os << "Path: " << loc.getPath() << std::endl;
+    	os << "Path: " << loc.getPath() << '\n';
     }
 
     // Print allowed methods
@@ -57,27 +57,27 @@ std::ostream&	operator <<( std::ostream& os, const LocationConf& loc ) {
     	     it != tmp.end(); ++it) {
     	    os << *it << " ";
     	}
-    	os << std::endl;
+    	os << '\n';
     }
 
     // Print allowed redirects
     if ( !loc.getAllowedRedirects().empty() ){
-    	os << "Allowed Redirects:" << std::endl;
+    	os << "Allowed Redirects:" << '\n';
     	std::map< std::string, std::string >	tmp2 = loc.getAllowedRedirects();
     	for (std::map<std::string, std::string>::const_iterator it = tmp2.begin();
     	     it != tmp2.end(); ++it) {
-    	    os << "  Code " << it->first << ": " << it->second << std::endl;
+    	    os << "  Code " << it->first << ": " << it->second << '\n';
     	}
     }
 
     // Print root directory
     if ( !loc.getRootDir().empty() ){
-    	os << "Root Directory: " << loc.getRootDir() << std::endl;
+    	os << "Root Directory: " << loc.getRootDir() << '\n';
     }
 
     // Print auto index setting
     if ( loc.getAutoIndex() == true ){
-    	os << "Auto Index: " << "On" << std::endl;
+    	os << "Auto Index: " << "On" << '\n';
     }
 
     // Print index files
@@ -88,7 +88,7 @@ std::ostream&	operator <<( std::ostream& os, const LocationConf& loc ) {
     	     it != tmp.end(); ++it) {
     	    os << *it << " ";
     	}
-    	os << std::endl;
+    	os << '\n';
     }
 
     // Print CGI paths
@@ -99,7 +99,7 @@ std::ostream&	operator <<( std::ostream& os, const LocationConf& loc ) {
    	      it != tmp.end(); ++it) {
    	     os << *it << " ";
    	 }
-   	 os << std::endl;
+   	 os << '\n';
     }
 
     // Print CGI extensions
@@ -110,12 +110,12 @@ std::ostream&	operator <<( std::ostream& os, const LocationConf& loc ) {
     	     it != tmp.end(); ++it) {
     	    os << *it << " ";
     	}
-    	os << std::endl;
+    	os << '\n';
     }
 
     // Print upload directory
     if ( !loc.getUploadDir().empty() ){
-    	os << "Upload Directory: " << loc.getUploadDir() << std::endl;
+    	os << "Upload Directory: " << loc.getUploadDir() << '\n';
     }
 
     return os;

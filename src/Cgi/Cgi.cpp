@@ -53,7 +53,6 @@ static int getVectors(ServerConf server, std::vector<std::string>& ext,
     
     for (std::vector<LocationConf>::const_iterator it = locations.begin(); 
          it != locations.end(); ++it) {
-        //std::cerr << "Location Path: " << it->getPath() << ", Root Dir: " << it->getRootDir() << std::endl;
         
         std::string Compare_dir = it->getPath();
         
@@ -127,10 +126,8 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 		pathIt++;
 	}
 	if( interpreter.empty() ){
-        //std::cerr << "DEBUG: No interpreter found for file extension " << end << std::endl;
 		return( 500);
 	}
-	 //std::cerr << "DEBUG: Interpreter for " << uri << " is " << interpreter << std::endl;
 	return( 200 );
 }
 
@@ -328,17 +325,13 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 		
 		while (bytesWritten < totalBytes) {
 			ssize_t result = write(inputPipe[1], data + bytesWritten, totalBytes - bytesWritten);
-			//std::cerr << "DEBUG: Write result: " << result << " bytes" << std::endl;
     
 			if (result <= 0) {
-				//std::cerr << "DEBUG: Write error: " << strerror(errno) << std::endl;
 				// Handle error
 				break;
 			}
 			bytesWritten += result;
 		}
-
-		//std::cerr << "DEBUG: Total bytes written: " << bytesWritten << "/" << totalBytes << std::endl;
 		
 		// Add a small delay to ensure data is transferred before closing pipe
 		usleep(5000);  // 1ms delay
@@ -378,7 +371,7 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 
 		//if return == TIMEOUT
 		else if( pollRet == 0 || ( startTime - time( NULL ) ) > TIMEOUT_TIME ){
-			std::cout << BLUE << "INFO: Cgi: Timeout" << END << std::endl;
+			std::cout << BLUE << "INFO: Cgi: Timeout" << END << '\n';
 			close( outputPipe[0] );
 			kill( pid, SIGKILL );
 			waitpid( pid, &status, 0 );

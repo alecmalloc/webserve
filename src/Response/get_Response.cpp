@@ -5,11 +5,9 @@ std::string Response::constructFullPath(const std::string uri){
 	if (_locationConf && uri.find(_locationConf->getPath()) == 0) {
 		// URI already starts with location path add uri
 		fullPath +=  uri;
-		//std::cout << "Path constructed from URI only: " << fullPath << std::endl;
 	} else if (_locationConf) {
 		// Location doesn't match URI prefix, need to combine them
 		fullPath += _locationConf->getPath() + uri;
-		//std::cout << "Path constructed from location + URI: " << fullPath << std::endl;
 	} else {
 		// No location matched
 		fullPath += uri;
@@ -125,7 +123,6 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
 		}
 	}
 
-    //std::cerr << "Path is neither a file nor a directory" << std::endl;
     ReqObj.setResponseCode(404);
     throw 404; // Not Found
 }
