@@ -136,6 +136,10 @@ void    HttpRequest::setPathInfo( PathInfo tmp ) {
     _pathInfo = tmp;
 }
 
+void	HttpRequest::setPathInfoPath( std::string path ){
+	_pathInfo.setFullPath( path );
+}
+
 std::map<std::string, std::vector<std::string> > HttpRequest::getHeaders() const {
     return _headers;
 }
