@@ -78,6 +78,13 @@ static int	createSocket( const char* ip, int port ){
 		return( -1 );
 	}
 
+	options = setsockopt( newSocket, SOL_SOCKET, SO_REUSEPORT, &options, sizeof( options ) );
+
+	if( options == -1 ){
+		close( newSocket );
+		return( -1 );
+	}
+
 	//bind addr to socket
 	options = bind( newSocket,( struct sockaddr* ) &addr, sizeof( addr ) );
 	 
@@ -157,7 +164,7 @@ void	Server::_initServer( void ){
 				_sockets[ newSocket ] = std::make_pair( it2->first, *it3 );
 
 				std::cout << BLUE << "INFO:	Socket:	listening on:	" \
-					<< END << it2->first << ":" << *it3 << std::endl;
+					<< END << it2->first << ":" << *it3 << '\n';
 
 				//add newSocket to Epoll Instance
 				addSocketEpoll( _epollFd, newSocket );

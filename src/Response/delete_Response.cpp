@@ -1,6 +1,5 @@
 #include "webserv.hpp"
 
-
 void Response::HandleDeleteRequest(HttpRequest& ReqObj, PathInfo& pathInfo){
     // Check if DELETE method is allowed
 	(void)ReqObj;
@@ -27,7 +26,6 @@ void Response::HandleDeleteRequest(HttpRequest& ReqObj, PathInfo& pathInfo){
 
         // Attempt to delete the file
         if (std::remove(fullPath.c_str()) == 0) {
-            std::cout << "File deleted successfully: " << fullPath << std::endl;
             setBody("<html><body><h1>File Deleted Successfully</h1></body></html>");
         } else {
             std::cerr << "Failed to delete file: " << fullPath << std::endl;

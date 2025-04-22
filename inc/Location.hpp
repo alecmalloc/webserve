@@ -21,22 +21,25 @@ class LocationConf {
 		const std::vector< std::string >	getAllowedMethods( void ) const;
 		const std::map< std::string, std::string >	getAllowedRedirects( void ) const;
 		const std::string			getRootDir( void ) const;
-		bool				getAutoIndex( void ) const;
+		int					getAutoIndex( void ) const;
 		const std::vector< std::string >	getIndex( void ) const;
 		const std::vector< std::string >	getCgiPath( void ) const;
 		const std::vector< std::string >	getCgiExt( void ) const;
 		const std::string			getUploadDir( void ) const;
+		size_t					getBodySize( void ) const;
+		bool					getBodySizeInitilized( void ) const;
 
 		//setter functions
 		void	setPath( std::string );
 		void	setAllowedMethod( std::string );
 		void	setAllowedRedirects( std::string, std::string );
 		void	setRootDir( std::string );
-		void	setAutoIndex( bool );
+		void	setAutoIndex( int );
 		void	setIndex( std::string );
 		void	setCgiPath( std::string );
 		void	setCgiExt( std::string );
 		void	setUploadDir( std::string );
+		void	setBodySize( size_t );
 
 		//member functions
 		void	checkAccess( std::string );
@@ -55,7 +58,7 @@ class LocationConf {
 		std::string			_rootDir;
 
 		//directory listing
-		bool				_autoIndex;
+		int				_autoIndex;
 
 		//index
 		std::vector< std::string >	_index;
@@ -66,6 +69,10 @@ class LocationConf {
 
 		//Upload
 		std::string			_uploadDir;
+
+		//body size
+		bool				_bodySizeInitilized;
+		size_t				_bodySize;
 };
 	std::ostream& operator <<(std::ostream& os, const LocationConf& loc);
 #endif

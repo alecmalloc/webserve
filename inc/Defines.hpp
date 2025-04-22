@@ -22,12 +22,15 @@
 #define ERROR			"error_page"
 #define SERVER			"server_name"
 #define CLIENT			"client_max_body_size"
+#define CHUNK_ENC		"use_chunked_encoding"
+#define CHUNK_SIZE		"chunk_size"
 
 
 //defines for epoll
 #define	MAX_EVENTS 	10000
 #define BUFFERSIZE	10000
-#define TIMEOUT_TIME	10000
+#define TIMEOUT_TIME	2000
+#define MAX_BYTES	5000000
 
 //color codes for output
 # define RED		"\x1B[31m"

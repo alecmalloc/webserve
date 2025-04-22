@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <string>
+#include <climits>
 
 static std::string	cutEnding( std::string tmp ){
 	//if string ends on ; cut it
@@ -14,6 +15,8 @@ static std::string	cutEnding( std::string tmp ){
 }
 
 static std::string	makePath( std::string tmp, int root ){
+	if( tmp.empty() )
+		throw( std::runtime_error( "Invalid root" ) );
 	if( tmp.at( 0 ) != '/' && !root )
 		tmp = "/" + tmp;
 	if( tmp.at( tmp.size() - 1 ) == '/' )
@@ -38,7 +41,7 @@ static bool	checkIp( std::string tmp ){
 			tmp = tmp.substr( pos + 1, tmp.size() );
 		i = pos;
 		pos = tmp.find( '.' );
-	}	
+	}
 	return( true );
 }
 
@@ -70,7 +73,7 @@ void	parseListen( ServerConf& server, std::stringstream& ss ){
 			throw( std::runtime_error( "Wrong Port" + \
 				tmp.substr( tmp.find( ':' ), tmp.size()  ) ) );
 		ip = tmp.substr( 0, tmp.find( ':' ) );
-		port = checkPort( tmp.substr( tmp.find( ':' ) + 1, tmp.size() ) ); 
+		port = checkPort( tmp.substr( tmp.find( ':' ) + 1, tmp.size() ) );
 	}
 	else if( tmp.find( '.' ) != tmp.npos ){
 		if( !checkIp( tmp ) )
@@ -80,7 +83,7 @@ void	parseListen( ServerConf& server, std::stringstream& ss ){
 	else{
 		if( checkPort( tmp ) == -1 )
 			throw( std::runtime_error( "Wrong Port" + tmp ) );
-		port = checkPort( tmp.substr( tmp.find( ':' ) + 1, tmp.size() ) ); 
+		port = checkPort( tmp.substr( tmp.find( ':' ) + 1, tmp.size() ) );
 	}
 	server.setIpPort( cutEnding( ip ), port );
 }
@@ -111,20 +114,49 @@ void	parseErrorPage( ServerConf& server, std::stringstream& ss ){
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
+static size_t ParseSizeWithUnits(std::string str){
+	size_t multiplier = 1;
+	char unit = str[str.size() -2]; // skip '0\ and ;
+
+
+	if (unit == 'K' || unit == 'k') {
+        multiplier = 1024; // Kilobytes
+    } else if (unit == 'M' || unit == 'm') {
+        multiplier = 1024 * 1024; // Megabytes
+    } else if (unit == 'G' || unit == 'g') {
+        multiplier = 1024 * 1024 * 1024; // Gigabytes
+    } else if (!isdigit(unit)) {
+		throw( std::runtime_error( "Wrong Max Body Size" ) );
+        return 0;
+    }
+
+	// Convert the numeric part of the string to a size_t
+    size_t sizeValue = 0;
+    std::istringstream(str.substr(0, str.length() - (isdigit(unit) ? 0 : 1))) >> sizeValue;
+
+	if (sizeValue == 0 && str[0] != '0') {
+        throw( std::runtime_error( "Wrong Max Body Size" ) );
+        return 0;
+    }
+	
+	size_t result = sizeValue * multiplier;
+	return result;
+}
+
 void	parseBodySize( ServerConf& server, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp ){
-		std::stringstream	sstmp( tmp );
-		int			size;
-
-		sstmp >> size; 
-		if( size < 0)
-			throw( std::runtime_error( "Wrong Max Body Size" ) );
+		size_t			size;
+		if( tmp.at( tmp.size() - 1 ) != ';' )
+			throw( std::runtime_error( "Line not ended on ; " + tmp ) );
+		if(tmp[0] == '-'){
+			throw( std::runtime_error( "negativ values not allowed " + tmp ) );
+		}
+		size = ParseSizeWithUnits(tmp);
 		server.setBodySize( size );
 	}
-	if( tmp.at( tmp.size() - 1 ) != ';' )
-		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
+
 }
 
 void parseChunkedEncoding(ServerConf& server, std::stringstream& ss) {
@@ -152,13 +184,59 @@ void parseChunkSize(ServerConf& server, std::stringstream& ss) {
         throw(std::runtime_error("Line not ended on ; " + tmp));
 }
 
+void	parseAutoIndex( ServerConf& server, std::stringstream& ss ){
+	std::string	tmp;
+
+	while( ss >> tmp ){
+		if( cutEnding( tmp ) == "on" )
+			server.setAutoIndex( true );
+		else if( cutEnding( tmp ) == "off" )
+			server.setAutoIndex( false );
+		else
+			throw( std::runtime_error( "Wrong Auto Index " + tmp ) );
+	}
+	if( tmp.at( tmp.size() - 1 ) != ';' )
+		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
+}
+
+static bool	validRedirect( std::string tmp ) {
+	//check if redirect is alloewd
+	std::string	allowedRedirects[] = ALLOWED_REDIRECTS;
+	for( int i = 0; \
+		i != sizeof( allowedRedirects ) / sizeof( allowedRedirects[0] ) + 1; \
+		i++ ){
+		if ( i == sizeof( allowedRedirects ) / sizeof( allowedRedirects[0] ) )
+			return( false );
+		else if ( allowedRedirects[i] == tmp )
+			return( true );
+	}
+	return( false );
+}
+
+void	parseAllowedRedirects( ServerConf& server, std::stringstream& ss ){
+	std::string	tmp;
+
+	while( ss >> tmp ){
+		std::string	error;
+		std::stringstream	sstmp( tmp );
+		sstmp >> error;
+		if( !validRedirect( error ) )
+			throw( std::runtime_error( "Redirect Code " + error \
+				+ " not allowed" ) );
+		ss >> tmp;
+		server.setAllowedRedirects( error, makePath( cutEnding( tmp ), 0 ) );
+	}
+	if( tmp.at( tmp.size() - 1 ) != ';' )
+		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
+}
+
 template< typename T >
 void	parseRootDir( T& temp, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp )
 		temp.setRootDir( makePath( cutEnding( tmp ), 1 ) );
-	
+
 	if( tmp.at( tmp.size() - 1 ) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
@@ -176,11 +254,13 @@ void	parseIndex( T& temp, std::stringstream& ss ){
 
 void	Config::parseServerConfBlock( ServerConf& server ){
 	const std::string	optionsArray[] =  \
-	{ LISTEN, SERVER, ERROR, CLIENT, ROOT, INDEX, "use_chunked_encoding", "chunk_size"};
+	{ LISTEN, SERVER, ERROR, CLIENT, ROOT, AINDEX, INDEX, REDIRECT, \
+		"use_chunked_encoding", "chunk_size" };
 
 	void ( *functionArray[] )( ServerConf&, std::stringstream& ) = \
 	{ parseListen, parseServerConfName, parseErrorPage, parseBodySize, \
-		parseRootDir, parseIndex, parseChunkedEncoding, parseChunkSize};
+		parseRootDir, parseAutoIndex, parseIndex, parseAllowedRedirects, \
+			parseChunkedEncoding, parseChunkSize};
 
 	std::string		tmp;
 
@@ -191,7 +271,7 @@ void	Config::parseServerConfBlock( ServerConf& server ){
 		std::stringstream	ss( tmp );
 		std::string		key;
 		ss >> key;
-		for( int i = 0; i < 8; i++ ){
+		for( int i = 0; i < 10; i++ ){
 			if( !key.empty() && key.at( 0 ) == '#' ){
 				break;
 			}
@@ -203,7 +283,7 @@ void	Config::parseServerConfBlock( ServerConf& server ){
 				parseLocationConfBlock( server, ss );
 				break;
 			}
-			else if ( i == 7 && !key.empty() ){
+			else if ( i == 9 && !key.empty() ){
 				throw( std::runtime_error( "Not an valid configuration "\
 							+ tmp ) );
 
@@ -212,5 +292,7 @@ void	Config::parseServerConfBlock( ServerConf& server ){
 		getline( _configFile, tmp );
 	}
 	server.checkAccess();
-		
+	if( server.getRootDir().empty() || server.getIpPort().empty() )
+		throw( std::runtime_error( "RootDir or Listen Directive not set" ) );
+
 }

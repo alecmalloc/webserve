@@ -5,7 +5,7 @@
 Response::~Response(){}
 
 Response::Response()
-	: _serverConf(NULL), _locationConf(NULL), _setCookieValue("") {
+	: _serverConf(NULL), _locationConf(NULL), _redirectDest("") ,_setCookieValue("") {
 	// Default constructor implementation
 }
 
@@ -17,8 +17,12 @@ std::string Response::getReasonPhrase() const {
 	return _reasonPhrase;
 }
 
-Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
-	: _serverConf(serverConf), _locationConf(NULL), _setCookieValue(""){
+std::string Response::getRedirectDest() {
+	return _redirectDest;
+}
+
+Response::Response(HttpRequest& reqObj, ServerConf* serverConf)
+	: _serverConf(serverConf), _locationConf(NULL), _redirectDest(""), _setCookieValue("") {
 	// Get locations from server config
 	std::string uri = reqObj.getUri();
 
@@ -26,14 +30,11 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 
 	// Find best matching location (longest prefix match)
 	std::string bestMatch = "";
-	
+
 	for (std::vector<LocationConf>::const_iterator it = locations.begin();
 		 it != locations.end(); ++it) {
 		std::string locPath = it->getPath();
-		 
-		// DEBUG
-		// std::cout << "DEBUG - Checking location: '" << it->getPath() << "'" << std::endl;
-		
+
 		if (uri.find(locPath) == 0) {  // URI starts with location path
 			if (locPath.length() > bestMatch.length()) {
 				bestMatch = locPath;
@@ -42,25 +43,13 @@ Response::Response(HttpRequest& reqObj,ServerConf* serverConf)
 		}
 	}
 
-	// DEBUG
-	// std::cout << "URI: " << uri << std::endl;
-	// std::cout << "Server root: " << _serverConf->getRootDir() << std::endl;
-	// if (_locationConf) {
-    // 	std::cout << "Location path: " << _locationConf->getPath() << std::endl;
-    // 	std::cout << "Location root: " << _locationConf->getRootDir() << std::endl;
-	// }
-	//std::cout << "Final path being used: " << pathInfo.getFullPath() << std::endl;
-	
 	processResponse(reqObj);
 	generateHttpresponse(reqObj);
 }
 
 
 
-void Response::generateHttpresponse(HttpRequest &reqObj){
-	if (getStatusCode() == 0) {
-        setStatusCode(reqObj.getResponseCode());
-    }
+void Response::generateHttpresponse(HttpRequest &reqObj) {
 	generateHeader(reqObj);
 	std::map<std::string, std::string> headerMap = getHeaderMap();
 	std::stringstream header ;
@@ -73,8 +62,15 @@ void Response::generateHttpresponse(HttpRequest &reqObj){
 	//header << "Cache-Control: " << headerMap["Cache-Control"] << "\r\n";
 
 	// needed for cookies to work
-	header << "Set-Cookie: " << headerMap["Set-Cookie"] << "\r\n";
-	std::cout << "SetCookie found: " << headerMap["Set-Cookie"] << '\n';
+	// only if setCookieValue has been changed
+	if (_setCookieValue != "") {
+		header << "Set-Cookie: " << headerMap["Set-Cookie"] << "\r\n";
+	}
+	// to set location (esp for redirects)
+	if (_redirectDest != "") {
+		header << "Location: " << headerMap["Location"] << "\r\n";
+	}
+	// std::cout << "SetCookie found: " << headerMap["Set-Cookie"] << '\n';
 
 	//header << "Last-Modified: " << headerMap["Last-Modified"] << "\r\n";
 	//header << "ETag: " << headerMap["ETag"] << "\r\n";
@@ -84,11 +80,9 @@ void Response::generateHttpresponse(HttpRequest &reqObj){
 	setHttpResponse(responseString);
 }
 
-
-
-std::string Response::getServerName(){
+std::string Response::getServerName() {
 	std::vector<std::string> server = _serverConf->getServerConfNames();
-	
+
 	// Check if the vector has any elements
 	if (!server.empty()) {
 		// Return the first server name from the vector
@@ -101,8 +95,8 @@ std::string Response::getServerName(){
 // set the Response to a certain code (template)
 void Response::setBodyErrorPage(int httpCode) {
 	setBody("<html><body><h1>"
-	+ Response::intToString(httpCode) 
-	+ " " 
+	+ Response::intToString(httpCode)
+	+ " "
 	+ genarateReasonPhrase(httpCode)
 	+ "Error "
 	+ intToString(httpCode)
@@ -113,16 +107,10 @@ void Response::generateErrorResponse(HttpRequest &reqObj) {
 	// Retrieve the error pages map
 	const std::map<int, std::string>& errorPages = _serverConf->getErrorPages();
 
-	// ONLY NEEDED DURING DEBUGGING: COMMENTING OUT
-	// // Loop over the error pages and print them
-	// for (std::map<int, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it) {
-	// 	std::cout << "Error Code: " << it->first << ", Error Page: " << it->second << std::endl;
-	// }
-	
 	// check request obj for the code
 	int responseCode = reqObj.getResponseCode();
 	std::map<int, std::string>::const_iterator customPageIt = errorPages.find(responseCode);
-	
+
 	// generate correct headers for our error page
 	generateHeader(reqObj);
 
@@ -139,7 +127,7 @@ void Response::generateErrorResponse(HttpRequest &reqObj) {
 			contents << file.rdbuf();
 			file.close();
 			setBody(contents.str());
-		//updates the path to the one for the error pages 
+		//updates the path to the one for the error pages
 		PathInfo errorPath(errorPagePath);
 		errorPath.parsePath();
 		reqObj.setPathInfo(errorPath);
@@ -160,8 +148,8 @@ void Response::generateErrorResponse(HttpRequest &reqObj) {
 
 bool Response::isCgiRequest(const std::string& uri) {
     // Check if URI matches CGI patterns
-    if (_locationConf && 
-        !_locationConf->getCgiPath().empty() && 
+    if (_locationConf &&
+        !_locationConf->getCgiPath().empty() &&
         !_locationConf->getCgiExt().empty())  {
 
         // Strip query parameters by finding the first '?'
@@ -188,49 +176,53 @@ bool Response::isCgiRequest(const std::string& uri) {
 
 void		Response::processResponse(HttpRequest &ReqObj){
 
-	// DEBUG
-	std::cout << std::endl << "RESPONSE PROCESSING:" << '\n';
-	std::cout << "Current URI: " << ReqObj.getUri() << '\n';
-
-	// DEBUG
-	// print out the location that has been matched
-	// if (_locationConf) {
-	// 	std::cout << "Matched Location: " << _locationConf->getPath() << std::endl;
-	// } else {
-	// 	std::cout << "No location configuration matched" << std::endl;
-	// }
-
-	// this try catch tries to handle the request and if it encounters any issues it catches and returns that as the error page
 	try {
 		PathInfo pathInfo = ReqObj.getPathInfo();
-	
+		pathInfo.validatePath();
 		// Validate and parse the path
-		// int code = pathInfo.validatePath();
 
 		// CGI REQUEST CHECK HANDLER
 		// note this is the only part of the check that returns
 		if(isCgiRequest(ReqObj.getUri())){ //should be ok but some errro with cgi handler cant find files
+			std::cout << "CGI REQUEST" << '\n';
 			int result = handleCgi(ReqObj);
-			std::cout << "CGI result" << result << '\n';
+			//std::cout << "CGI result" << result << '\n';
 			if(result == 0) {
 				setBody(ReqObj.getCgiResponseString());
 			}
 			return;
 		}
 
+		// redirect request would override all request heirarchy
+		// for example we could perform a GET, POST or DELETE in an old folder and that request would need to be redirected and passed on
+		// get map of location redirects
+		std::map<std::string, std::string > locationRedirect;
+		if (_locationConf)
+			locationRedirect = _locationConf->getAllowedRedirects();
+		// get map of server redirects
+		std::map<std::string, std::string > serverRedirects = _serverConf->getAllowedRedirects();
+
+		// handlers
+		if (!locationRedirect.empty() || !serverRedirects.empty()) {
+			std::cout << "REDIRECT" << '\n';
+			// ternary operator evaluate which one to pass to handle redirect
+			std::map<std::string, std::string > redirect = locationRedirect.empty() ? serverRedirects : locationRedirect;
+			HandleRedirectRequest(ReqObj, redirect);
+		}
+
 		// GET REQUEST HANDLER
-		if (ReqObj.getMethod() == "GET") {
-			std::cout << "GET REQUEST" << std::endl;
+		else if (ReqObj.getMethod() == "GET") {
+			std::cout << "GET REQUEST" << '\n';
 			HandleGetRequest(ReqObj,pathInfo);
 		}
 		// POST REQUEST HANDLER
 		else if (ReqObj.getMethod() == "POST") {
-			std::cout << "POST REQUEST" << std::endl;
+			std::cout << "POST REQUEST" << '\n';
 			HandlePostRequest(ReqObj, pathInfo);
 		}
 		// HANDLE DELETE request
 		else if (ReqObj.getMethod() == "DELETE") {
-			std::cout << "DELETE REQUEST" << std::endl;
+			std::cout << "DELETE REQUEST" << '\n';
 			HandleDeleteRequest(ReqObj, pathInfo);
 		}
 
@@ -239,8 +231,6 @@ void		Response::processResponse(HttpRequest &ReqObj){
 	catch(int error)
 	{
 		ReqObj.setResponseCode(error);
-		// for debugging
-		// std::cout << "CODE " << ReqObj.getResponseCode() << ":\n";
 		generateErrorResponse(ReqObj);
 	}
 

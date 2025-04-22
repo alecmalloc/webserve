@@ -5,7 +5,7 @@
 
 //constructors
 
-ServerConf::ServerConf( void ) : _bodySize( 0 ) {;}
+ServerConf::ServerConf( void ) : _bodySize( 0 ), _autoIndex( false ) {;}
 
 ServerConf::ServerConf( const ServerConf& og ){
 	_ipPort = og._ipPort;
@@ -15,6 +15,8 @@ ServerConf::ServerConf( const ServerConf& og ){
 	_bodySize = og._bodySize;
 	_rootDir = og._rootDir;
 	_index = og._index;
+	_autoIndex = og._autoIndex;
+	_allowedRedirects = og._allowedRedirects;
 }
 
 ServerConf::~ServerConf( void ) {;}
@@ -30,13 +32,15 @@ ServerConf&		ServerConf::operator =( const ServerConf& og ) {
 		_bodySize = og._bodySize;
 		_rootDir = og._rootDir;
 		_index = og._index;
+		_autoIndex = og._autoIndex;
+		_allowedRedirects = og._allowedRedirects;
 	}
 	return( *this );
 }
 
 std::ostream&	operator <<( std::ostream& os, const ServerConf& server) {
 
-	os << "ServerConf Details:\n" << std::endl;
+	os << "ServerConf Details:" << '\n';
 	std::vector< std::string >	tmp;
 
 	// Print IP and Port
@@ -92,7 +96,7 @@ std::ostream&	operator <<( std::ostream& os, const ServerConf& server) {
 				it != tmp.end(); ++it) {
 			os << *it << " ";
 		}
-		os << std::endl;
+		os << '\n';
 	}
 
 	// Print LocationConfs
@@ -137,6 +141,10 @@ const std::map< int, std::string >	ServerConf::getErrorPages( void ) const {
 	return( _errorPages );
 }
 
+bool                             ServerConf::getAutoIndex( void ) const{
+	return( _autoIndex );	
+ }
+
 size_t				ServerConf::getBodySize( void ) const {
 	return( _bodySize );
 }
@@ -147,6 +155,10 @@ const std::string	ServerConf::getRootDir( void ) const {
 
 const std::vector< std::string >	ServerConf::getIndex( void ) const{
 	return( _index );
+}
+
+const std::map< std::string, std::string >     ServerConf::getAllowedRedirects( void ) const{
+	return( _allowedRedirects );
 }
 
 //setter functions
@@ -182,6 +194,14 @@ void	ServerConf::setRootDir( std::string tmp ){
 	_rootDir = tmp;
 }
 
+void	ServerConf:: setAutoIndex( bool status ){
+	_autoIndex = status;
+}
+
 void	ServerConf::setIndex( std::string tmp ){
 	_index.push_back( tmp );
+}
+
+void	ServerConf:: setAllowedRedirects( std::string redirect, std::string path ){
+	_allowedRedirects[ redirect ] = path;
 }

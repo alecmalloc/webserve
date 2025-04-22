@@ -1,7 +1,7 @@
 #include "Location.hpp"
 
 //constructors 
-LocationConf::LocationConf( void ) : _autoIndex( false ) {;}
+LocationConf::LocationConf( void ) : _autoIndex( 0 ), _bodySizeInitilized( false ), _bodySize( 0 ) {;}
 
 LocationConf::~LocationConf( void ) {;}
 
@@ -17,6 +17,8 @@ LocationConf::LocationConf( const LocationConf& og ){
 	_cgiPath = og._cgiPath;
 	_cgiExt = og._cgiExt;
 	_uploadDir = og._uploadDir;
+	_bodySize = og._bodySize;
+	_bodySizeInitilized = og._bodySizeInitilized;
 }
 
 //operator overloads
@@ -33,6 +35,8 @@ LocationConf&	LocationConf::operator =( const LocationConf& og ){
 		_cgiPath = og._cgiPath;
 		_cgiExt = og._cgiExt;
 		_uploadDir = og._uploadDir;
+		_bodySize = og._bodySize;
+		_bodySizeInitilized = og._bodySizeInitilized;
 	}
 	return( *this );
 }
@@ -42,7 +46,7 @@ std::ostream&	operator <<( std::ostream& os, const LocationConf& loc ) {
 
     // Print path
     if ( !loc.getPath().empty() ){
-    	os << "Path: " << loc.getPath() << std::endl;
+    	os << "Path: " << loc.getPath() << '\n';
     }
 
     // Print allowed methods
@@ -53,27 +57,27 @@ std::ostream&	operator <<( std::ostream& os, const LocationConf& loc ) {
     	     it != tmp.end(); ++it) {
     	    os << *it << " ";
     	}
-    	os << std::endl;
+    	os << '\n';
     }
 
     // Print allowed redirects
     if ( !loc.getAllowedRedirects().empty() ){
-    	os << "Allowed Redirects:" << std::endl;
+    	os << "Allowed Redirects:" << '\n';
     	std::map< std::string, std::string >	tmp2 = loc.getAllowedRedirects();
     	for (std::map<std::string, std::string>::const_iterator it = tmp2.begin();
     	     it != tmp2.end(); ++it) {
-    	    os << "  Code " << it->first << ": " << it->second << std::endl;
+    	    os << "  Code " << it->first << ": " << it->second << '\n';
     	}
     }
 
     // Print root directory
     if ( !loc.getRootDir().empty() ){
-    	os << "Root Directory: " << loc.getRootDir() << std::endl;
+    	os << "Root Directory: " << loc.getRootDir() << '\n';
     }
 
     // Print auto index setting
     if ( loc.getAutoIndex() == true ){
-    	os << "Auto Index: " << "On" << std::endl;
+    	os << "Auto Index: " << "On" << '\n';
     }
 
     // Print index files
@@ -84,7 +88,7 @@ std::ostream&	operator <<( std::ostream& os, const LocationConf& loc ) {
     	     it != tmp.end(); ++it) {
     	    os << *it << " ";
     	}
-    	os << std::endl;
+    	os << '\n';
     }
 
     // Print CGI paths
@@ -95,7 +99,7 @@ std::ostream&	operator <<( std::ostream& os, const LocationConf& loc ) {
    	      it != tmp.end(); ++it) {
    	     os << *it << " ";
    	 }
-   	 os << std::endl;
+   	 os << '\n';
     }
 
     // Print CGI extensions
@@ -106,12 +110,12 @@ std::ostream&	operator <<( std::ostream& os, const LocationConf& loc ) {
     	     it != tmp.end(); ++it) {
     	    os << *it << " ";
     	}
-    	os << std::endl;
+    	os << '\n';
     }
 
     // Print upload directory
     if ( !loc.getUploadDir().empty() ){
-    	os << "Upload Directory: " << loc.getUploadDir() << std::endl;
+    	os << "Upload Directory: " << loc.getUploadDir() << '\n';
     }
 
     return os;
@@ -134,7 +138,7 @@ std::ostream&	operator <<( std::ostream& os, const LocationConf& loc ) {
  	return( _rootDir );
  }
 
-bool                             LocationConf::getAutoIndex( void ) const{
+int                             LocationConf::getAutoIndex( void ) const{
 	return( _autoIndex );	
  }
 
@@ -154,6 +158,15 @@ bool                             LocationConf::getAutoIndex( void ) const{
 	 return( _uploadDir );
  }
 
+size_t	LocationConf::getBodySize( void ) const{
+	return( _bodySize );
+}
+
+bool	LocationConf::getBodySizeInitilized( void ) const{
+	return( _bodySizeInitilized );
+}
+
+
 //setter funcitons
 void	LocationConf:: setPath( std::string path ){
 	_path =  path;
@@ -171,7 +184,7 @@ void	LocationConf:: setRootDir( std::string rootDir ){
 	_rootDir = rootDir;
 }
 
-void	LocationConf:: setAutoIndex( bool status ){
+void	LocationConf:: setAutoIndex( int status ){
 	_autoIndex = status;
 }
 
@@ -189,4 +202,9 @@ void	LocationConf:: setCgiExt( std::string key ){
 
 void	LocationConf:: setUploadDir( std::string uploadDir ){
 	_uploadDir = uploadDir;
+}
+
+void	LocationConf::setBodySize( size_t val ){
+	_bodySize = val;
+	_bodySizeInitilized = true;
 }

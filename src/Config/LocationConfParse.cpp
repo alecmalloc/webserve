@@ -96,9 +96,9 @@ void	parseAutoIndex( LocationConf& location, std::stringstream& ss ){
 
 	while( ss >> tmp ){
 		if( cutEnding( tmp ) == "on" )
-			location.setAutoIndex( true );
+			location.setAutoIndex( 1 );
 		else if( cutEnding( tmp ) == "off" )
-			location.setAutoIndex( false );
+			location.setAutoIndex( -1 );
 		else 
 			throw( std::runtime_error( "Wrong Auto Index " + tmp ) );
 	}
@@ -141,18 +141,62 @@ void	parseUploadDir( LocationConf& location, std::stringstream& ss ){
 	std::string	tmp;
 
 	while( ss >> tmp )
-		location.setUploadDir( makePath( cutEnding( tmp ), 0 ) );
+		location.setUploadDir( location.getPath() + makePath( cutEnding( tmp ), 0 ) );
 	if( tmp.at( tmp.size() - 1) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
 
+static size_t ParseSizeWithUnits(std::string str){
+	size_t multiplier = 1;
+	char unit = str[str.size() -2]; // skip '0\ and ;
+
+
+	if (unit == 'K' || unit == 'k') {
+        multiplier = 1024; // Kilobytes
+    } else if (unit == 'M' || unit == 'm') {
+        multiplier = 1024 * 1024; // Megabytes
+    } else if (unit == 'G' || unit == 'g') {
+        multiplier = 1024 * 1024 * 1024; // Gigabytes
+    } else if (!isdigit(unit)) {
+		throw( std::runtime_error( "Wrong Max Body Size" ) );
+        return 0;
+    }
+
+	// Convert the numeric part of the string to a size_t
+    size_t sizeValue = 0;
+    std::istringstream(str.substr(0, str.length() - (isdigit(unit) ? 0 : 1))) >> sizeValue;
+
+	if (sizeValue == 0 && str[0] != '0') {
+        throw( std::runtime_error( "Wrong Max Body Size" ) );
+        return 0;
+    }
+	
+	size_t result = sizeValue * multiplier;
+	return result;
+}
+
+static void	parseBodySize( LocationConf& location, std::stringstream& ss ){
+	std::string	tmp;
+
+	while( ss >> tmp ){
+		size_t			size;
+		if( tmp.at( tmp.size() - 1 ) != ';' )
+			throw( std::runtime_error( "Line not ended on ; " + tmp ) );
+		if(tmp[0] == '-'){
+			throw( std::runtime_error( "negativ values not allowed " + tmp ) );
+		}
+		size = ParseSizeWithUnits(tmp);
+		location.setBodySize( size );
+	}
+}
+
 void	Config::parseLocationConfBlock( ServerConf& server, std::stringstream& ss ){
 	const std::string	optionsArray[] =  \
-	{ METHODE, REDIRECT, ROOT, AINDEX, INDEX, CGIPATH, CGIEXT, UPDIR };
+	{ METHODE, REDIRECT, ROOT, AINDEX, INDEX, CGIPATH, CGIEXT, UPDIR, CLIENT };
 
 	void ( *functionArray[] )( LocationConf&, std::stringstream& ) = \
 	{ parseAllowedMethods, parseAllowedRedirects, parseRootDir, \
-		parseAutoIndex, parseIndex, parseCgiPath, parseCgiExt, parseUploadDir };
+		parseAutoIndex, parseIndex, parseCgiPath, parseCgiExt, parseUploadDir, parseBodySize };
 
 	LocationConf	location;
 	std::string	tmp;
@@ -165,12 +209,12 @@ void	Config::parseLocationConfBlock( ServerConf& server, std::stringstream& ss )
 		std::stringstream	ss( tmp );
 		std::string		key;
 		ss >> key;
-		for( int i = 0; i < 8; i++ ){
+		for( int i = 0; i < 9; i++ ){
 			if( optionsArray[ i ] == key ){
 				functionArray[ i ]( location, ss );
 				break;
 			}
-			else if ( i == 7 && !key.empty() )
+			else if ( i == 8 && !key.empty() )
 				throw( std::runtime_error( "Not an valid configuration " 
 							+ tmp ) );
 		}

@@ -27,8 +27,10 @@ class Response {
 		std::string									_reasonPhrase;
 		const ServerConf*							_serverConf;
 		LocationConf* 								_locationConf;
+		// for redirects
+		std::string									_redirectDest;
 
-		// to make cookies work 
+		// to make cookies work
 		// cookie value we want to have
 		std::string									_setCookieValue;
 
@@ -56,8 +58,19 @@ class Response {
 		int checkContentLength(HttpRequest& ReqObj);
 
 		void HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo);
+		//helpers for get req
+		std::string constructFullPath(const std::string uri);
+		bool serveFileIfExists(const std::string& fullPath, HttpRequest& ReqObj);
+		bool serveRootIndexfile(HttpRequest& ReqObj, std::string fullPath);
+		bool serveLocationIndex(HttpRequest& ReqObj);
+
+
+		
+		// Handlers
+		void HandleRedirectRequest(HttpRequest& ReqObj, std::map<std::string, std::string > redirect);
 		void HandleDeleteRequest(HttpRequest& ReqObj, PathInfo& pathInfo);
 		void HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo);
+		void genarateUploadSucces(HttpRequest& ReqObj);
 
         // Getters
 		const std::map<int, std::string>& getErrorPages() const;
@@ -73,6 +86,7 @@ class Response {
 		std::string getServerName();
 		std::string getCurrentDateTime();
 		std::string getContentType(HttpRequest &reqObj, const std::string& extension);
+		std::string getRedirectDest();
 
         // Setters
         void setHttpResponse(const std::string& httpResponse) { _httpResponse = httpResponse; }
@@ -84,12 +98,14 @@ class Response {
         void setFilename(const std::string& filename) { _filename = filename; }
         void setStatusCode(int statusCode) { m_statusCode = statusCode; }
 		void setReasonPhrase(const std::string &reasonPhrase);
+		void setRedirectDest(const std::string& redirectDest) { _redirectDest = redirectDest; };
 
 		// for cookie setter
 		void setSetCookieValue(std::string value);
 
-		void takeCookie( void );
-		void giveCookie( void );
+		void createSession( void );
+		void deleteSession( std::string sessionID );
+		std::string findSession( std::vector<std::string> cookies );
 
 		// alec functions
 		// added these while refactoring

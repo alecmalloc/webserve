@@ -9,7 +9,7 @@ static void	handleSignal( int signal ){
 	if( signal == SIGINT || signal == SIGQUIT ){
 		running = false;
 		std::cout << BLUE << "\nINFO:	Server:	Shutting down	..."  << END \
-				<< std::endl;
+				<< '\n';
 	}
 }
 
@@ -108,9 +108,6 @@ static Client*	findClient( Server& server, struct epoll_event event ){
 	//create new client with new fd and add to exxisting clients
 	clients.push_back( newClient );
 
-	std::cout << BLUE << "INFO:	Client: connected:	" << END << clientFd \
-			<< std::endl;
-
 	//return new client
 	return( &clients.back() );
 }
@@ -128,7 +125,7 @@ static void	closeClient( Server& server, Client* client ){
 
 
 static ssize_t	getDefinedBodySize( std::string request ){
-	
+
 	// find content length value
 	size_t contentLenPos = request.find("Content-Length:");
 
@@ -140,15 +137,15 @@ static ssize_t	getDefinedBodySize( std::string request ){
 	while (contentLenPos < request.size() && isspace(request[contentLenPos])) {
 		contentLenPos++;
 	}
-	
+
 	// find the end of the line
 	size_t lineEnd = request.find("\r\n", contentLenPos);
 	if (lineEnd == std::string::npos)
 		return -1;
-	
+
 	// extract the content length value string
 	std::string contentLenStr = request.substr(contentLenPos, lineEnd - contentLenPos);
-	
+
 	// Convert to integer
 	size_t contentLength = 0;
 	std::istringstream ss(contentLenStr);
@@ -163,7 +160,7 @@ static ssize_t	getRecivedBodySize( std::string request ){
 	size_t headerEnd = request.find("\r\n\r\n");
 	if (headerEnd == std::string::npos)
 		return( -1 );
-	
+
 	size_t bodyStart = headerEnd + 4;
 	size_t bodyReceived = request.length() - bodyStart;
 
@@ -195,13 +192,13 @@ static void	readFromClient( Client* client ) {
 
 	//store in client
 	client->setContent( std::string( buffer, bytesRead ) );
-	
+
 	ssize_t	definedBodySize = getDefinedBodySize( client->getContent() );
 	ssize_t	requestedBodysize = getRecivedBodySize( client->getContent() );
 
 	//check if done reading and httprequest is valid
 	if( definedBodySize > 0 ){
-	
+
 		bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
 
 		while( requestedBodysize < definedBodySize && running && bytesRead > 0 ){
@@ -216,8 +213,10 @@ static void	readFromClient( Client* client ) {
 
 			bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
 		}
-		if( requestedBodysize >= definedBodySize )
+		if( requestedBodysize >= definedBodySize ){
+			std::cout << "\r";
 			client->setComplete( true );
+		}
 	}
 	else
 		client->setComplete( true );
@@ -226,11 +225,9 @@ static void	readFromClient( Client* client ) {
 
 static void	checkEvents( Server& server, Client* client,  struct epoll_event& event ){
 	// check for error
-	if( event.events & EPOLLERR ){
+	if( event.events & EPOLLERR ) {
 		//close client
 		closeClient( server, client );
-		std::cerr << RED << "ERROR:	Client: fd:	" << END << \
-			client->getEventFd() << strerror( errno ) << std::endl;
 		return;
 	}
 
@@ -238,7 +235,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 	if( event.events & EPOLLHUP || client->getClosed() ){
 		closeClient( server, client );
 		std::cout << BLUE << "INFO:	Client: disconnected:	" << \
-			END << client->getEventFd() << std::endl;
+			END << client->getEventFd() << '\n';
 		return;
 	}
 
@@ -249,18 +246,16 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 	// check for complete request instead of checking for EUP
 	if ( client->getComplete() ){
-		// std::cout << client->getContent() << std::endl;
 
 		// create temp config file for request construction
 		Config confTMP = server.getConf();
 
 		// hand over content to request obj
-		std::cout << "Reading request from client" << '\n';
+		std::cout << "========================REQUEST=IN============================" << '\n';
 		HttpRequest request(confTMP);
 		const std::string request_str = client->getContent();
 		request.handleRequest(request_str);
-		std::cout << request << '\n';
-		
+
 		// Get server configs
 		std::vector<ServerConf> serverTMPConf = confTMP.getServerConfs();
 
@@ -275,15 +270,14 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 			// check server names
 			const std::vector<std::string>& serverNames = serverTMPConf[i].getServerConfNames();
 			if (std::find(serverNames.begin(), serverNames.end(), host) != serverNames.end()) {
-				selectedServerConf = &serverTMPConf[i];
-				break;
-			}
-
-			// check server ips
-			const std::map<std::string, std::set<int> >& ipPorts = serverTMPConf[i].getIpPort();
-			if (ipPorts.find(host) != ipPorts.end()) {
-				selectedServerConf = &serverTMPConf[i];
-				break;
+				// check if port matches too
+				const std::map<std::string, std::set<int> > ports =  serverTMPConf[i].getIpPort();
+				for (std::map<std::string, std::set<int> >::const_iterator it = ports.begin(); it != ports.end(); ++it) {
+					if (it->second.find(request.getPort()) != it->second.end()) {
+						selectedServerConf = &serverTMPConf[i];
+						break;
+					}
+				}
 			}
 		}
 
@@ -304,6 +298,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 		// write response to socket
 		write(client->getSocketFd(), response.getHttpResponse().c_str(), response.getHttpResponse().size());
+		std::cout << "========================RESPONSE=OUT==========================" << '\n';
 
 		client->clearContent();
 		client->setComplete( false );
@@ -324,11 +319,11 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 	//check for hanging conection
 	if( event.events & EPOLLHUP || client->getClosed() ){
 		std::cout << BLUE << "INFO:	Client: disconnected:	" << \
-			END << client->getEventFd() << std::endl;
+			END << client->getEventFd() << '\n';
 		closeClient( server, client );
 		return;
 	}
-			
+
 }
 
 static void	mainLoop( Server& server ){
