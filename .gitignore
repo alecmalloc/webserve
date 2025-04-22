@@ -15,7 +15,7 @@ webserv
 *.swp
 *~
 .cache/
-compie_commands.json
+compile_commands.json
 
 # OS specific
 .DS_Store

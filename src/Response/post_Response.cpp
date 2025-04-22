@@ -32,7 +32,7 @@ int Response::checkContentLength(HttpRequest& ReqObj){
 		//ReqObj.setResponseCode(413); // Entity Too Large
 		return 413;
 	}
-	return(200);
+	return(202);
 }
 
 void Response::handleMultipartUpload(HttpRequest& ReqObj, PathInfo& pathinfo, const std::string& boundary) {
@@ -205,11 +205,12 @@ void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
 		setStatusCode(201);
 
 		// Set success response body
-		setBody("<html><body>"
-				"<h1>Upload Successful</h1>"
-				"<p>Your file has been uploaded successfully.</p>"
-				"<a href='/'>Return to home</a>"
-				"</body></html>");
+		//setBody("<html><body>"
+		//		"<h1>Upload Successful</h1>"
+		//		"<p>Your file has been uploaded successfully.</p>"
+		//		"<a href='/'>Return to home</a>"
+		//		"</body></html>");
+		setBody( "" );
 	}
 }
 
