@@ -436,56 +436,5 @@
 				document.getElementById('large_content').value = 'A'.repeat(size);
 			}
 		</script>
-
-		<!-- Advanced Tests -->
-		<div class="test-section">
-			<h2>Advanced Tests</h2>
-			<div class="description">Test more complex server behaviors</div>
-
-			<!-- Redirections -->
-			<h3>HTTP Redirections</h3>
-			<div class="button-row">
-				<a href="/redirect/" class="btn">Standard Redirect</a>
-				<a href="/redirect/301" class="btn">301 Permanent Redirect</a>
-				<a href="/redirect/302" class="btn">302 Temporary Redirect</a>
-			</div>
-
-			<!-- Error Pages -->
-			<h3>Error Pages</h3>
-			<div class="button-row">
-				<a href="/nonexistent" class="btn btn-danger">404 Not Found</a>
-				<a href="/forbidden" class="btn btn-danger">403 Forbidden</a>
-				<a href="/cgi-bin/error_script.py" class="btn btn-danger">500 Server Error</a>
-			</div>
-
-			<!-- Request Body Size Limit -->
-			<h3>Max Body Size Test</h3>
-			<form action="/max_body_test" method="POST">
-				<div class="form-group">
-					<label for="body_size">Message Size (bytes)</label>
-					<input type="number" id="body_size" value="1000" min="100" max="10000">
-				</div>
-				<div class="form-group">
-					<label for="large_content">Content</label>
-					<textarea id="large_content" name="content" rows="4" placeholder="Generated content will appear here"></textarea>
-				</div>
-				<button type="button" class="btn btn-warning" onclick="generateLargeData()">Generate Data</button>
-				<button type="submit" class="btn">Submit Large Body</button>
-			</form>
-		</div>
-
-		<!-- Multi-Host & Multi-Port Testing -->
-		<div class="test-section">
-			<h2>Multi-Host & Multi-Port Testing</h2>
-			<div class="description">Test multiple hosts and ports configuration</div>
-
-			<h3>Port Tests</h3>
-			<div class="button-row">
-				<a href="http://localhost:8080/" class="btn">Port 8080</a>
-				<a href="http://localhost:8081/" class="btn">Port 8081</a>
-			</div>
-
-			<h3>Server Name Tests</h3>
-			<div class="description">Add these domains to your /etc/hosts file:</div>
 	</body>
 </html>
