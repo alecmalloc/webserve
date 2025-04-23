@@ -265,25 +265,23 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		// Get the Host header from the request
 		std::string host = request.getHostname();
 
-		// Match server based on host/server_name
-		for (size_t i = 0; i < serverTMPConf.size(); i++) {
-			// check server names
-			const std::vector<std::string>& serverNames = serverTMPConf[i].getServerConfNames();
-			if (std::find(serverNames.begin(), serverNames.end(), host) != serverNames.end()) {
-				// check if port matches too
-				const std::map<std::string, std::set<int> > ports =  serverTMPConf[i].getIpPort();
-				for (std::map<std::string, std::set<int> >::const_iterator it = ports.begin(); it != ports.end(); ++it) {
-					if (it->second.find(request.getPort()) != it->second.end()) {
-						selectedServerConf = &serverTMPConf[i];
-						break;
-					}
+
+		ServerConf server; 
+		// match server block based on port
+		for (size_t i = 0; i < serverTMPConf.size(); ++i) {
+			// server block we are currently inspecting
+			server = serverTMPConf[i];
+
+			// get ip ports map
+			const std::map<std::string, std::set<int> > ipsPorts =  server.getIpPort();
+			// loop through map
+			for (std::map<std::string, std::set<int> >::const_iterator it = ipsPorts.begin(); it != ipsPorts.end(); ++it) {
+				// check if we can find port in set
+				if (it->second.find(request.getPort()) != it->second.end()) {
+					selectedServerConf = &server;
+					break;
 				}
 			}
-		}
-
-		// Use the first server as default if no match
-		if (!selectedServerConf && !serverTMPConf.empty()) {
-			selectedServerConf = &serverTMPConf[0];
 		}
 
 		// Before creating response, validate
