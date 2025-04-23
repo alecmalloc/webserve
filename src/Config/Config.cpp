@@ -5,7 +5,7 @@
 #include <string>
 
 //constructors
-Config::Config( void ){
+Config::Config( void ) :  _servers() {
 	;
 }
 

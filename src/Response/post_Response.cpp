@@ -34,7 +34,7 @@ int Response::checkContentLength(HttpRequest& ReqObj){
 		throw 413;
 		return 413;
 	}
-	return(200);
+	return(202);
 }
 
 void Response::genarateUploadSucces(HttpRequest& ReqObj){
@@ -93,6 +93,16 @@ void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
 		throw 500; // Internal Server Error
 	}
 	if (!outFile.fail()) {
+		ReqObj.setResponseCode(201);
+		setStatusCode(201);
+
+		// Set success response body
+		//setBody("<html><body>"
+		//		"<h1>Upload Successful</h1>"
+		//		"<p>Your file has been uploaded successfully.</p>"
+		//		"<a href='/'>Return to home</a>"
+		//		"</body></html>");
+		setBody( "" );
 		genarateUploadSucces(ReqObj);
 	}
 }

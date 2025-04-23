@@ -90,6 +90,10 @@ PathInfo::~PathInfo() {
 
 }
 
+void	PathInfo::setFullPath( const std::string& path ){
+	_fullPath = path;
+}
+
 int PathInfo::validatePath() {
     // First parse the path components - do this before validation
     parsePath();
