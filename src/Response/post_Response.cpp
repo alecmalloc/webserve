@@ -99,7 +99,7 @@ void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
 	}
 }
 
-std::string Response::uploadPathhandler(LocationConf* locationConf) {
+std::string Response::uploadPathhandler(const LocationConf* locationConf) {
 	std::string uploadDir = "./uploads/"; // Default upload directory
 
 	if (locationConf && !locationConf->getUploadDir().empty()) {

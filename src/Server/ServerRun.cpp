@@ -265,10 +265,9 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		// Get the Host header from the request
 		std::string host = request.getHostname();
 
-
 		ServerConf server; 
 		// match server block based on port
-		for (size_t i = 0; i < serverTMPConf.size(); ++i) {
+		for (size_t i = 0; i < serverTMPConf.size(); i++) {
 			// server block we are currently inspecting
 			server = serverTMPConf[i];
 

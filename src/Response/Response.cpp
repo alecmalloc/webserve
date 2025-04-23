@@ -34,14 +34,13 @@ Response::Response(HttpRequest& reqObj, ServerConf* serverConf)
 		// Find best matching location (longest prefix match)
 		std::string bestMatch = "";
 
-		for (std::vector<LocationConf>::const_iterator it = locations.begin();
-			it != locations.end(); ++it) {
-			std::string locPath = it->getPath();
+		for ( size_t i = 0; i < locations.size(); i++ ) {
+			std::string locPath = locations[i].getPath();
 
 			if (uri.find(locPath) == 0) {  // URI starts with location path
 				if (locPath.length() > bestMatch.length()) {
 					bestMatch = locPath;
-					_locationConf = const_cast<LocationConf*>(&(*it));
+					_locationConf = &serverConf->getLocationConfs()[i];
 				}
 			}
 		}
