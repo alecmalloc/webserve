@@ -177,8 +177,10 @@ bool Response::isCgiRequest(const std::string& uri) {
 void		Response::processResponse(HttpRequest &ReqObj){
 
 	try {
-		PathInfo pathInfo = ReqObj.getPathInfo();
+		std::string fullPath = _serverConf->getRootDir() + ReqObj.getUri();
+		PathInfo pathInfo(fullPath);
 		pathInfo.validatePath();
+		ReqObj.setPathInfo(pathInfo);
 		// Validate and parse the path
 
 		// CGI REQUEST CHECK HANDLER

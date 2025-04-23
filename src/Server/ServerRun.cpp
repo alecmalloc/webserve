@@ -266,10 +266,11 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		std::string host = request.getHostname();
 
 
+		ServerConf server; 
 		// match server block based on port
 		for (size_t i = 0; i < serverTMPConf.size(); ++i) {
 			// server block we are currently inspecting
-			ServerConf server = serverTMPConf[i];
+			server = serverTMPConf[i];
 
 			// get ip ports map
 			const std::map<std::string, std::set<int> > ipsPorts =  server.getIpPort();
