@@ -15,26 +15,24 @@ int Response::checkContentLength(HttpRequest& ReqObj){
 	std::map<std::string, std::vector<std::string> >::const_iterator it = headers.find("Content-Length");
 	if (it == headers.end() || it->second.empty()) {
 		throw 411;
-		return (411); // Length Required
 	}
 
-		 // Use the first value from the vector
-		 std::istringstream iss(it->second[0]);
-		 size_t contentLength;
-		 iss >> contentLength;
+	// Use the first value from the vector
+	std::istringstream iss(it->second[0]);
+	size_t contentLength;
+	iss >> contentLength;
 
-		 if (iss.fail()) {
-			throw 400;
-			return 400; // Bad Request
-		 }
+	if (iss.fail()) {
+		throw 400;
+	}
 	size_t maxBodySize = _serverConf->getBodySize();
 			//_locationConf->getClientMaxBodySize() :  // If location config exists, use its limit->> dont have that parsed idk if we wna tto include
 			//_serverConf->getClientMaxBodySize();     // Otherwise, use server's default limit
 	if (contentLength > maxBodySize) {
 		throw 413;
-		return 413;
 	}
-	return(202);
+	// default
+	return(200);
 }
 
 void Response::genarateUploadSucces(HttpRequest& ReqObj){
@@ -50,18 +48,12 @@ void Response::genarateUploadSucces(HttpRequest& ReqObj){
 }
 
 void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
-	(void)pathinfo;
-	(void)ReqObj;
-
 	// We dont always need content length in a post request. esp if chunked we use transfer-encoding instead
 	std::string postData = ReqObj.getBody();
 
 	std::string contentType = ReqObj.getHeaders()["Content-Type"][0];
 	// std::cout << "Content-Type" << contentType << "\n";
-	if (checkContentLength(ReqObj) != 200 ){
-		return ;
-	}
-
+	checkContentLength(ReqObj);
 
 	if (contentType.find("multipart/form-data") != std::string::npos) {
 		// Extract boundary
@@ -82,7 +74,7 @@ void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
 	std::string filePath = uploadPathhandler(_locationConf);
 	std::ofstream outFile(filePath.c_str(), std::ios::out | std::ios::binary);
 	if (!outFile.is_open()) {
-	throw 500; // Internal Server Error
+		throw 500; // Internal Server Error
 	}
 
 	// Write the POST data to file
