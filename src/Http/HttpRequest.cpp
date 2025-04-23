@@ -372,61 +372,10 @@ void HttpRequest::handleRequest(const std::string& rawRequest) {
     // match server block from conf
     matchServerBlock();
 
-    validateRequestPath();
+    // validateRequestPath();
     if (_response_code != 200)
         return ;
 }
-
-void HttpRequest::validateRequestPath(void) {
-    const std::vector<LocationConf>& locationConfs = _server.getLocationConfs();
-    const std::string uri = getUri();
-
-    // Protect against empty/null values
-    if (_server.getRootDir().empty()) {
-        _response_code = 500;
-        return;
-    }
-
-    // Create initial PathInfo with safety checks
-    std::string fullPath = _server.getRootDir();
-    if (!uri.empty()) {
-        fullPath += uri;
-    }
-    _pathInfo = PathInfo(fullPath);
-    
-    for (std::vector<LocationConf>::const_iterator it = locationConfs.begin();
-         it != locationConfs.end(); ++it) {
-        // Add null checks before accessing location properties
-        if (it->getPath().empty()) {
-            continue;
-        }
-
-        if (uri.find(it->getPath()) == 0) {
-            if (uri == it->getPath() || uri == it->getPath() + "/") {
-                // Check if index array is not empty before accessing first element
-                if (!it->getIndex().empty()) {
-                    std::string locationPath = it->getRootDir();
-                    locationPath += it->getPath();
-                    locationPath += "/";
-                    locationPath += it->getIndex()[0];
-                    _pathInfo = PathInfo(locationPath);
-                } else {
-                    std::cout << "Warning: Location has no index files" << '\n';
-                    _response_code = 404;
-                    return;
-                }
-            } else {
-                std::string locationPath = it->getRootDir() + uri;
-                _pathInfo = PathInfo(locationPath);
-            }
-            break;
-        }
-    }
-
-    _pathInfo.parsePath();
-    _pathInfo.validatePath();
-}
-
 
 std::string HttpRequest::getConnectionType() const {
     // Default connection type based on HTTP version

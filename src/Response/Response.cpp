@@ -23,22 +23,26 @@ std::string Response::getRedirectDest() {
 
 Response::Response(HttpRequest& reqObj, ServerConf* serverConf)
 	: _serverConf(serverConf), _locationConf(NULL), _redirectDest(""), _setCookieValue("") {
-	// Get locations from server config
-	std::string uri = reqObj.getUri();
+		// Get locations from server config
 
-	const std::vector<LocationConf>& locations = serverConf->getLocationConfs();
+	if (_serverConf) {
+		std::string uri = reqObj.getUri();
 
-	// Find best matching location (longest prefix match)
-	std::string bestMatch = "";
 
-	for (std::vector<LocationConf>::const_iterator it = locations.begin();
-		 it != locations.end(); ++it) {
-		std::string locPath = it->getPath();
+		const std::vector<LocationConf>& locations = serverConf->getLocationConfs();
 
-		if (uri.find(locPath) == 0) {  // URI starts with location path
-			if (locPath.length() > bestMatch.length()) {
-				bestMatch = locPath;
-				_locationConf = const_cast<LocationConf*>(&(*it));
+		// Find best matching location (longest prefix match)
+		std::string bestMatch = "";
+
+		for (std::vector<LocationConf>::const_iterator it = locations.begin();
+			it != locations.end(); ++it) {
+			std::string locPath = it->getPath();
+
+			if (uri.find(locPath) == 0) {  // URI starts with location path
+				if (locPath.length() > bestMatch.length()) {
+					bestMatch = locPath;
+					_locationConf = const_cast<LocationConf*>(&(*it));
+				}
 			}
 		}
 	}
@@ -104,6 +108,11 @@ void Response::setBodyErrorPage(int httpCode) {
 }
 
 void Response::generateErrorResponse(HttpRequest &reqObj) {
+	if (!_serverConf) {
+		setBodyErrorPage(500);
+		return;
+	}
+
 	// Retrieve the error pages map
 	const std::map<int, std::string>& errorPages = _serverConf->getErrorPages();
 
@@ -177,8 +186,12 @@ bool Response::isCgiRequest(const std::string& uri) {
 void		Response::processResponse(HttpRequest &ReqObj){
 
 	try {
-		PathInfo pathInfo = ReqObj.getPathInfo();
+		if (!_serverConf)
+			throw 500;
+		std::string fullPath = _serverConf->getRootDir() + ReqObj.getUri();
+		PathInfo pathInfo(fullPath);
 		pathInfo.validatePath();
+		ReqObj.setPathInfo(pathInfo);
 		// Validate and parse the path
 
 		// CGI REQUEST CHECK HANDLER

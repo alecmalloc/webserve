@@ -101,7 +101,7 @@ void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
 	}
 
 	//std::cout << "serverconf root dir " << _serverConf->getRootDir() << "and uri " << uri << "and full path " << fullPath <<"\n";
-// Check if the URI is the root directory
+	// Check if the URI is the root directory
 	if (uri == "/" || fullPath == _serverConf->getRootDir() || fullPath == "./" || fullPath == "/") {
   		if (serveRootIndexfile(ReqObj, fullPath) == true)
         	return;

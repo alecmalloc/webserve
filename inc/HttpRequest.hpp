@@ -68,7 +68,6 @@ class HttpRequest {
         // main handler
         void    handleRequest(const std::string& rawRequest);
         // void    handleRequest();
-        void    validateRequestPath();
 
 	    // member funcitons
         void    parse(const std::string& rawRequest);
