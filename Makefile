@@ -21,10 +21,10 @@ INC_FLAGS = $(addprefix -I, $(INC_DIRS))
 
 FOLDERS = uploads session
 
-CC = g++
+CC = c++
 CPPFLAGS = $(INC_FLAGS) -Wall -Werror -Wextra -MMD -MP -g3 -std=c++98
 
-LD = g++
+LD = c++
 LDFLAGS = $(LIBS) -g
 LINKS =
 
