@@ -76,7 +76,7 @@ static void	checkFile( Response& resp, std::string& interpreter ){
 	std::vector<std::string>	path;
 
 	//store request
-	HttpRequest&			req = resp.getHttpRequest();
+	const HttpRequest&		req = resp.getHttpRequest();
 
 	//get vectors
 	if( getVectors( resp.getServerConf(), ext, path, req.getUri() ) == -1 )
@@ -127,14 +127,14 @@ static void	checkFile( Response& resp, std::string& interpreter ){
 		throw( 500 );
 }
 
-static void	setEnv( Response& resp char*** env ){
+static void	setEnv( Response& resp, char*** env ){
 
 	//HttpRequest
-	HttpRequest&	req = resp.getHttpRequest();
+	const HttpRequest&	req = resp.getHttpRequest();
 
 	//get SERVER_IP and SERVER_PORT for env
-	std::string	ip = req.getHostname();
-	std::string	port = intToString( req.getPort() );
+	std::string	ip = resp.getServerName();
+	std::string	port = toString( req.getPort() );
 
 	// Extract from Host header if available
 	if( req.getHeaders().count("Host") ) {
@@ -169,14 +169,14 @@ static void	setEnv( Response& resp char*** env ){
 		req.getHeaders().at("Host")[0] : ip + ":" + port;
 	tmpEnv["SERVER_PORT"] = port;
 	tmpEnv["REMOTE_ADDR"] = ip;
-	tmpEnv["HOST"] = resp.getHostName();
+	tmpEnv["HOST"] = resp.getServerName();
 	tmpEnv["REQUEST_URI"] = req.getHeaders().count("Host") ? \
 		req.getHeaders().at("Host")[0] + req.getUri() : ip + ":" + port + req.getUri();
 
 	//transfer headers to be HTTP_...
-	const std::map<std::string, std::vector< std::string>>&	headers = req.getHeaders();
+	const std::map<std::string, std::vector< std::string> >&	headers = req.getHeaders();
 
-	for( std::map<std::string, std::vector< std::string>>::const_iterator it = headers.begin(); \
+	for( std::map<std::string, std::vector< std::string> >::const_iterator it = headers.begin(); \
 		it != headers.end(); it++ ){
 
 		std::string key = "HTTP_" + it->first;
@@ -200,8 +200,10 @@ static void	setEnv( Response& resp char*** env ){
 	(*env)[index] = NULL;
 }
 
-static int	childProcess( HttpRequest& req, int* inputPipe, int* outputPipe, \
+static int	childProcess( Response& resp, int* inputPipe, int* outputPipe, \
 		std::string& interpreter ){
+
+	const HttpRequest&	req = resp.getHttpRequest();
 
 	//dup input to pipe nad output to pipe for connection to parent
 	if( dup2( inputPipe[0], STDIN_FILENO ) == -1 ){
@@ -221,14 +223,14 @@ static int	childProcess( HttpRequest& req, int* inputPipe, int* outputPipe, \
 
 	//create env for execve
 	char	**env;
-	setEnv( req, &env );
+	setEnv( resp, &env );
 
 	//close unused ends
 	close( inputPipe[1] );
 	close( outputPipe[0] );
 
 	// Construct the full file path by combining the root directory with the URI
-	std::string		rootDir = req.getServer().getRootDir();
+	std::string		rootDir = resp.getServerConf().getRootDir();
 	std::string		uri = stripQueryParams(req.getUri());
 	std::string		scriptPath = rootDir + uri;
 
@@ -280,10 +282,12 @@ static std::string	getBody( const std::string& response ){
 	return( response.substr( bodyStart ) );
 }
 
-static void	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid_t pid ){
+static void	parentProcess( Response& resp, int* inputPipe, int* outputPipe, pid_t pid ){
+
+	HttpRequest&	req = resp.getHttpRequest();
 
 	//status for childs
-	int	status;
+	int			status;
 
 	//close unused pipe ends
 	close( inputPipe[0] );
@@ -293,8 +297,8 @@ static void	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pi
 	if( req.getMethod() == "POST" ){
 
 		size_t		bytesWritten = 0;
-		size_t t	botalBytes = body.size();
-		const char*	data = body.c_str();
+		size_t 		totalBytes = req.getBody().size();
+		const char*	data = req.getBody().c_str();
 
 		while( bytesWritten < totalBytes ) {
 			ssize_t result;
@@ -349,7 +353,6 @@ static void	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pi
 			close( outputPipe[0] );
 			kill( pid, SIGKILL );
 			waitpid( pid, &status, 0 );
-			req.setResponseCode( 504 );
 			throw( 504 );
 		}
 
@@ -388,7 +391,7 @@ static void	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pi
 
 //TODO::check cgi and cleanup handleCgi funtion
 
-int	handleCgi( Response& resp ){
+void	handleCgi( Response& resp ){
 
 	//Cgi stuff
 	int		inputPipe[2], outputPipe[2];
@@ -398,13 +401,13 @@ int	handleCgi( Response& resp ){
 	size_t		maxBodySize; 
 	HttpRequest&	req = resp.getHttpRequest();
 
-	if( resp.getLocationConf().getBodyInitilized() )
-		maxBodySize = resp.getLocatiobConf().getBodySize(); 
+	if( resp.getLocationConf().getBodySizeInitilized() )
+		maxBodySize = resp.getLocationConf().getBodySize(); 
 	else
 		maxBodySize = resp.getServerConf().getBodySize();
 
 	//clean body from httpboundaries \r\n
-	if ( req.getMethod() == "POST" ) {
+	if( req.getMethod() == "POST" ){
 
 		// Create a local copy of the body first
 		std::string body = req.getBody();
@@ -421,13 +424,8 @@ int	handleCgi( Response& resp ){
 
 	//check file ending and access to it  and store interpreter for executuing
 	std::string	interpreter;
-	int		checkFileRes = checkFile( req, interpreter );
-
-	if( checkFileRes != 200){
-		std::cerr << RED << "ERROR: Cgi: not found " << req.getUri() << END << std::endl;
-		throw( checkFileRes );
-	}
-
+	checkFile( resp, interpreter );
+	
 	//open pipes for sending data
 	if( pipe( inputPipe ) < 0 ){
 		std::cerr << RED << "ERROR: Cgi: Pipe" << END << std::endl;
@@ -454,9 +452,9 @@ int	handleCgi( Response& resp ){
 
 	//handle child
 	if( pid == 0 )
-		childProcess( req, inputPipe, outputPipe, interpreter );
+		childProcess( resp, inputPipe, outputPipe, interpreter );
 
 	//handle parent
 	else
-		parentProcess( req, inputPipe, outputPipe, pid );
+		parentProcess( resp, inputPipe, outputPipe, pid );
 }
