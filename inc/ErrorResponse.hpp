@@ -30,7 +30,7 @@ class ErrorResponse {
         std::string getHttpResponse( void );
 
         void generateHttpResponse();
-        std::string generateHeaders(std::string& body)
+        std::string generateHeaders(std::string& body);
 };
 
 
