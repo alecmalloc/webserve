@@ -25,8 +25,10 @@ class Response {
 		long                                		_fileSize;
 		std::string									_filename;
 		std::string									_reasonPhrase;
-		const ServerConf*							_serverConf;
-		const LocationConf* 						_locationConf;
+		
+		ServerConf									_serverConf;
+		LocationConf 								_locationConf;
+		HttpRequest									_request;
 		// for redirects
 		std::string									_redirectDest;
 
@@ -40,7 +42,7 @@ class Response {
         ~Response();
 
 		Response();
-		Response(HttpRequest& reqObj,ServerConf* ServerConf);
+		Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverConfs);
         void    processResponse(HttpRequest &ReqObj);
 		void generateErrorResponse(HttpRequest &reqObj);
 		void generateHeader(HttpRequest &reqObj);
@@ -114,6 +116,10 @@ class Response {
 
 
         void setStatus(int statusCode) {m_statusCode = statusCode;};
+
+		// matching functions
+		void matchServerBlock(const std::vector<ServerConf>& serverConfs);
+		void matchLocationConf(void);
 };
 
 

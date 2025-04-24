@@ -5,7 +5,7 @@
 Response::~Response(){}
 
 Response::Response()
-	: _serverConf(NULL), _locationConf(NULL), _redirectDest("") ,_setCookieValue("") {
+	: _redirectDest(""), _setCookieValue("") {
 	// Default constructor implementation
 }
 
@@ -21,33 +21,55 @@ std::string Response::getRedirectDest() {
 	return _redirectDest;
 }
 
-Response::Response(HttpRequest& reqObj, ServerConf* serverConf)
-	: _serverConf(serverConf), _locationConf(NULL), _redirectDest(""), _setCookieValue("") {
-		// Get locations from server config
+void Response::matchServerBlock(const std::vector<ServerConf>& serverConfs) {
+	// match server block based on port
+	for (size_t i = 0; i < serverConfs.size(); i++) {
+		// server block we are currently inspecting
 
-	if (_serverConf) {
-		std::string uri = reqObj.getUri();
-
-
-		const std::vector<LocationConf>& locations = serverConf->getLocationConfs();
-
-		// Find best matching location (longest prefix match)
-		std::string bestMatch = "";
-
-		for ( size_t i = 0; i < locations.size(); i++ ) {
-			std::string locPath = locations[i].getPath();
-
-			if (uri.find(locPath) == 0) {  // URI starts with location path
-				if (locPath.length() > bestMatch.length()) {
-					bestMatch = locPath;
-					_locationConf = &serverConf->getLocationConfs()[i];
-				}
+		// get ip ports map
+		const std::map<std::string, std::set<int> > ipsPorts =  serverConfs[i].getIpPort();
+		// loop through map
+		for (std::map<std::string, std::set<int> >::const_iterator it = ipsPorts.begin(); it != ipsPorts.end(); ++it) {
+			// check if we can find port in set
+			if (it->second.find(_request.getPort()) != it->second.end()) {
+				_serverConf = serverConfs[i];
 			}
 		}
 	}
+	throw 500;
+}
 
-	processResponse(reqObj);
-	generateHttpresponse(reqObj);
+void Response::matchLocationConf(void) {
+	const std::vector<LocationConf>& locations = _serverConf.getLocationConfs();
+
+	std::string uri = _request.getUri();
+	// Find best matching location (longest prefix match)
+	std::string bestMatch = "";
+
+	for ( size_t i = 0; i < locations.size(); i++ ) {
+		std::string locPath = locations[i].getPath();
+
+		if (uri.find(locPath) == 0) {  // URI starts with location path
+			if (locPath.length() > bestMatch.length()) {
+				bestMatch = locPath;
+				_locationConf = _serverConf.getLocationConfs()[i];
+			}
+		}
+	}
+	throw 500;
+}
+
+Response::Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverConfs)
+	: _redirectDest(""), _setCookieValue(""), _request(reqObj) {
+
+	if (reqObj.getResponseCode() != 200)
+		reqObj.getResponseCode();
+
+	// match and set server block
+	matchServerBlock(serverConfs);
+
+	// match and set location block
+	matchLocationConf();
 }
 
 
