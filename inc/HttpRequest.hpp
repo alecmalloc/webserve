@@ -6,7 +6,7 @@
 class HttpRequest {
     private:
         // main member vars
-        Config&                                              _conf;
+        Config                                               _conf;
         int                                                  _response_code;
         // http request attributes
         std::string                                          _method;
@@ -18,7 +18,7 @@ class HttpRequest {
         std::map<std::string, std::vector<std::string> >      _headers;
         std::string                                          _body;
 		//cgi response string 
-		std::string											_cgiResponseString;
+		std::string											 _cgiResponseString;
         std::string                                          _hostname;
         int                                                  _port;
 
@@ -29,6 +29,7 @@ class HttpRequest {
         PathInfo                                            _pathInfo;
 
     public:
+        HttpRequest();
         HttpRequest(Config& conf);
         HttpRequest(const HttpRequest& other);
         HttpRequest& operator =(const HttpRequest& other);
