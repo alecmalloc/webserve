@@ -1,5 +1,4 @@
 #include "webserv.hpp"
-#include <ctime>
 
 
 int Response::checkContentLength(HttpRequest& ReqObj){
@@ -66,7 +65,7 @@ void Response::HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo){
 	}
 
 	if (postData.empty()) { // succses on empty upload
-		genarateUploadSucces(ReqObj);
+		generateUploadSucces(ReqObj);
 		return ;
 	}
 

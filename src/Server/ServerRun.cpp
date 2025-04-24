@@ -247,7 +247,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 	// check for complete request instead of checking for EUP
 	if ( client->getComplete() ){
 
-		// create temp config file for request construction
+		// create temp config file
 		Config confTMP = server.getConf();
 
 		// hand over content to request obj
@@ -257,44 +257,25 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		request.handleRequest(request_str);
 
 		// Get server configs
-		std::vector<ServerConf> serverTMPConf = confTMP.getServerConfs();
+		std::vector<ServerConf> serverConfs = confTMP.getServerConfs();
 
-		// Initialize server conf pointer
-		ServerConf* selectedServerConf = NULL;
-
-		// Get the Host header from the request
-		std::string host = request.getHostname();
-
-		ServerConf server; 
-		// match server block based on port
-		for (size_t i = 0; i < serverTMPConf.size(); i++) {
-			// server block we are currently inspecting
-			server = serverTMPConf[i];
-
-			// get ip ports map
-			const std::map<std::string, std::set<int> > ipsPorts =  server.getIpPort();
-			// loop through map
-			for (std::map<std::string, std::set<int> >::const_iterator it = ipsPorts.begin(); it != ipsPorts.end(); ++it) {
-				// check if we can find port in set
-				if (it->second.find(request.getPort()) != it->second.end()) {
-					selectedServerConf = &server;
-					break;
-				}
-			}
+		std::string responseStr;
+		// Create response and pass server confs to response constructor
+		try {
+			Response response(request, serverConfs);
+			response.processResponse();
+			response.generateHttpResponse();
+			responseStr = response.getHttpResponse();
 		}
-
-		// Before creating response, validate
-		if (!selectedServerConf) {
-			std::cerr << "CRITICAL ERROR: No server configuration available" << std::endl;
-			// needs to be a 500 internal server error
-			request.setResponseCode(500);
+		catch (const int& statusCode) {
+			// handle error page logic
+			ErrorResponse errorResponse(statusCode, request , serverConfs);
+			errorResponse.generateHttpResponse();
+			responseStr = response.getHttpResponse();
 		}
-
-		// Create response with the selected server
-		Response response(request, selectedServerConf);
 
 		// write response to socket
-		write(client->getSocketFd(), response.getHttpResponse().c_str(), response.getHttpResponse().size());
+		write(client->getSocketFd(), responseStr.c_str(), responseStr.size());
 		std::cout << "========================RESPONSE=OUT==========================" << '\n';
 
 		client->clearContent();

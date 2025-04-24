@@ -84,7 +84,7 @@ std::string generateSessionID(std::size_t length = 32) {
 void Response::createSession( void ) {
     // generate session ID and save file named after session ID
     // save file in root+/sessions/SESSIONID
-    std::string sessionFilePath = _serverConf->getRootDir() + "/session/";
+    std::string sessionFilePath = _serverConf.getRootDir() + "/session/";
     std::string sessionID = generateSessionID();
 
     sessionFilePath += sessionID;
@@ -104,7 +104,7 @@ void Response::createSession( void ) {
 void Response::deleteSession( std::string sessionID ) {
     
     // full path to session file
-    std::string sessionFilePath = _serverConf->getRootDir() + "/session/" + sessionID;
+    std::string sessionFilePath = _serverConf.getRootDir() + "/session/" + sessionID;
 
     // delete the session file
     // if this fails its not the end of the world but we should print smt
@@ -120,7 +120,7 @@ std::string Response::findSession(std::vector<std::string> cookies) {
     std::string defaultState = "none";
 
     // folder in which sessions are stored
-    std::string sessionFilePath = _serverConf->getRootDir() + "/session/";
+    std::string sessionFilePath = _serverConf.getRootDir() + "/session/";
 
     // find the cookie that contains "NUM_cookie="
     for (std::vector<std::string>::iterator it = cookies.begin(); it != cookies.end(); ++it) {

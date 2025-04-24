@@ -25,8 +25,10 @@ class Response {
 		long                                		_fileSize;
 		std::string									_filename;
 		std::string									_reasonPhrase;
-		const ServerConf*							_serverConf;
-		const LocationConf* 						_locationConf;
+		
+		ServerConf									_serverConf;
+		LocationConf 								_locationConf;
+		HttpRequest									_request;
 		// for redirects
 		std::string									_redirectDest;
 
@@ -34,19 +36,21 @@ class Response {
 		// cookie value we want to have
 		std::string									_setCookieValue;
 
-        int m_statusCode; // http status code
+        int											_statusCode; // http status code
+		std::string									_serverName;
+		PathInfo									_pathInfo;
+
     public:
-       // Response(): m_statusCode(200) {};
         ~Response();
 
 		Response();
-		Response(HttpRequest& reqObj,ServerConf* ServerConf);
+		Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverConfs);
         void    processResponse(HttpRequest &ReqObj);
 		void generateErrorResponse(HttpRequest &reqObj);
-		void generateHeader(HttpRequest &reqObj);
-		void	generateStatusLine(HttpRequest &reqObj);
-		std::string genarateReasonPhrase(int HttpCode);
-		void generateHttpresponse(HttpRequest &reqObj);
+		void generateHeader();
+		std::string generateStatusLine();
+		std::string generateReasonPhrase(int HttpCode);
+		void generateHttpResponse();
 		std::string intToString(int number);
 		std::string serveFileContent(const PathInfo& pathInfo);
 		bool isCgiRequest(const std::string& uri);
@@ -81,11 +85,11 @@ class Response {
         std::string getBody() const { return _body; }
         long getFileSize() const { return _fileSize; }
         std::string getFilename() const { return _filename; }
-        int getStatusCode() const { return m_statusCode; }
+        int getStatusCode() const { return _statusCode; }
 		std::string getReasonPhrase() const;
 		std::string getServerName();
 		std::string getCurrentDateTime();
-		std::string getContentType(HttpRequest &reqObj, const std::string& extension);
+		std::string getContentType();
 		std::string getRedirectDest();
 
         // Setters
@@ -96,7 +100,7 @@ class Response {
         void setBody(const std::string& body) { _body = body; }
         void setFileSize(long fileSize) { _fileSize = fileSize; }
         void setFilename(const std::string& filename) { _filename = filename; }
-        void setStatusCode(int statusCode) { m_statusCode = statusCode; }
+        void setStatusCode(int statusCode) { _statusCode = statusCode; }
 		void setReasonPhrase(const std::string &reasonPhrase);
 		void setRedirectDest(const std::string& redirectDest) { _redirectDest = redirectDest; };
 
@@ -113,7 +117,12 @@ class Response {
 		void handleCookiesPage(HttpRequest& request);
 
 
-        void setStatus(int statusCode) {m_statusCode = statusCode;};
+        void setStatus(int statusCode) {_statusCode = statusCode;};
+
+		// matching functions
+		void matchServerBlock(const std::vector<ServerConf>& serverConfs);
+		void matchLocationConf( void );
+		void matchServerName( void )
 };
 
 

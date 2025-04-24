@@ -1,15 +1,12 @@
 #include "webserv.hpp"
-#include <ctime>
 
-
-
-void	Response::generateStatusLine(HttpRequest &reqObj){
-	std::string httpVersion = reqObj.getVersion();
-	std::string statusCode = Response::intToString(reqObj.getResponseCode());
-	std::string reasonPhrase = genarateReasonPhrase(reqObj.getResponseCode());
+std::string    Response::generateStatusLine() {
+	std::string httpVersion = HTTP_VERSION;
+	std::string statusCode =  intToString(getStatusCode());
+	std::string reasonPhrase = generateReasonPhrase(getStatusCode());
 	std::stringstream statusLine;
     statusLine << httpVersion << " " << statusCode << " " << reasonPhrase;
-    setStatusLine(statusLine.str());
+    return statusLine.str();
 }
 
 std::string Response::getCurrentDateTime() {
@@ -19,9 +16,12 @@ std::string Response::getCurrentDateTime() {
     return std::string(buf);
 }
 
-
-std::string Response::getContentType(HttpRequest &reqObj, const std::string& extension) {
-	//std::cout << "extetion:" + extension +":\n";
+std::string Response::getContentType() {
+    // POST AND DELETE always return html
+    if (_request.getMethod() == "POST" || _request.getMethod() == "DELETE")
+        return("text/html");
+    
+    // FOR GET
     static const std::pair<std::string, std::string> contentTypes[] = {
         std::pair<std::string, std::string>("html", "text/html"),
         std::pair<std::string, std::string>("htm", "text/html"),
@@ -37,61 +37,37 @@ std::string Response::getContentType(HttpRequest &reqObj, const std::string& ext
         std::pair<std::string, std::string>("txt", "text/plain")
         // Add more content types as needed
     };
+
     static const size_t contentTypesCount = sizeof(contentTypes) / sizeof(contentTypes[0]);
 
     for (size_t i = 0; i < contentTypesCount; ++i) {
-        if (contentTypes[i].first == extension) {
+        if (contentTypes[i].first == _pathInfo.getExtension()) {
             return contentTypes[i].second;
         }
     }
-	if(reqObj.getResponseCode() != 200)
-		return "text/html; charset=utf-8"; // might not be correct but if error is html response ?
-	return("text/html");//change so default is html
-		//return "application/octet-stream"; // Default content type
+
+    // default cause -> why pdf files for instance werent working
+	return("text/html");
 }
 
-
 //need to adjust to use right values
-void	Response::generateHeader(HttpRequest &reqObj){
-	generateStatusLine(reqObj);
-
+void	Response::generateHeader() {
 	std::map<std::string, std::string> headerMap;
-	headerMap["Status-Line"] = getStatusLine();
-    headerMap["Date"] = getCurrentDateTime();
-	if (_serverConf)
-        headerMap["Server"] = getServerName();
     
-	// Get the file extension from the PathInfo object
-
-    std::string extension = reqObj.getPathInfo().getExtension();
-    headerMap["Content-Type"] = getContentType(reqObj, extension);
-
+	headerMap["Status-Line"] = generateStatusLine();
+    headerMap["Date"] = getCurrentDateTime();
+    headerMap["Server"] = _serverName;
+    headerMap["Content-Type"] = getContentType();
 	headerMap["Content-Length"] =  intToString(getBody().length());
-	headerMap["Connection"] = reqObj.getConnectionType();
-
+	headerMap["Connection"] = _request.getConnectionType();
     // only if setCookieValue has been changed
     if (_setCookieValue != "") {
         headerMap["Set-Cookie"] = _setCookieValue;
     }
-
-	// Optional Fields
-   // headerMap["Cache-Control"] = "no-cache"; // Example value
-    //headerMap["Set-Cookie"] = "sessionId=abc123; Path=/; HttpOnly"; // Example value
-    //headerMap["Last-Modified"] = getCurrentDateTime(); // Example value
-    //headerMap["ETag"] = "\"123456789\""; // Example value
-    //headerMap["Location"] = "/new-resource"; // Example value
-
     // for redirects
-    if (reqObj.getResponseCode() == 301 || reqObj.getResponseCode() == 302) {
+    if (_statusCode == 301 || _statusCode == 302) {
         headerMap["Location"] = getRedirectDest();
     }
-
-	if(reqObj.getResponseCode() == 201){//for Post methode specify headers
-		headerMap["Location"] = reqObj.getUri(); // Stay on same page
-		headerMap["Content-Type"] = "text/html; charset=utf-8"; // Specify charset
-		headerMap["Cache-Control"] = "no-store, no-cache, must-revalidate";
-		headerMap["Pragma"] = "no-cache";
-	}
 
 	setHeaderMap(headerMap);
 }
@@ -158,7 +134,7 @@ std::string Response::intToString(int number) {
     return ss.str();
 }
 
-std::string Response::genarateReasonPhrase(int httpCode){
+std::string Response::generateReasonPhrase(int httpCode){
 
 	std::string reasonPhrase;
 

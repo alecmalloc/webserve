@@ -1,5 +1,9 @@
 #include "webserv.hpp"
 
+HttpRequest::HttpRequest()
+{
+}
+
 HttpRequest::HttpRequest(Config& conf):
     _conf(conf),
     _response_code(200),
