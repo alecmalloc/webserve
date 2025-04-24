@@ -1,12 +1,10 @@
 #include "webserv.hpp"
 #include <ctime>
 
-
-
-void	Response::generateStatusLine(HttpRequest &reqObj){
-	std::string httpVersion = reqObj.getVersion();
-	std::string statusCode = Response::intToString(reqObj.getResponseCode());
-	std::string reasonPhrase = genarateReasonPhrase(reqObj.getResponseCode());
+void	Response::generateStatusLine() {
+	std::string httpVersion = HTTP_VERSION;
+	std::string statusCode =  intToString(getStatusCode());
+	std::string reasonPhrase = genarateReasonPhrase(getStatusCode());
 	std::stringstream statusLine;
     statusLine << httpVersion << " " << statusCode << " " << reasonPhrase;
     setStatusLine(statusLine.str());
@@ -20,8 +18,7 @@ std::string Response::getCurrentDateTime() {
 }
 
 
-std::string Response::getContentType(HttpRequest &reqObj, const std::string& extension) {
-	//std::cout << "extetion:" + extension +":\n";
+std::string Response::getContentType() {
     static const std::pair<std::string, std::string> contentTypes[] = {
         std::pair<std::string, std::string>("html", "text/html"),
         std::pair<std::string, std::string>("htm", "text/html"),
@@ -37,34 +34,29 @@ std::string Response::getContentType(HttpRequest &reqObj, const std::string& ext
         std::pair<std::string, std::string>("txt", "text/plain")
         // Add more content types as needed
     };
+
     static const size_t contentTypesCount = sizeof(contentTypes) / sizeof(contentTypes[0]);
 
     for (size_t i = 0; i < contentTypesCount; ++i) {
-        if (contentTypes[i].first == extension) {
+        if (contentTypes[i].first == _pathInfo.getExtension()) {
             return contentTypes[i].second;
         }
     }
-	if(reqObj.getResponseCode() != 200)
-		return "text/html; charset=utf-8"; // might not be correct but if error is html response ?
-	return("text/html");//change so default is html
-		//return "application/octet-stream"; // Default content type
+
+	return("text/html");
 }
 
 
 //need to adjust to use right values
 void	Response::generateHeader(HttpRequest &reqObj){
-	generateStatusLine(reqObj);
+	generateStatusLine();
 
 	std::map<std::string, std::string> headerMap;
 	headerMap["Status-Line"] = getStatusLine();
     headerMap["Date"] = getCurrentDateTime();
-	if (_serverConf)
-        headerMap["Server"] = getServerName();
+    headerMap["Server"] = _serverName;
     
-	// Get the file extension from the PathInfo object
-
-    std::string extension = reqObj.getPathInfo().getExtension();
-    headerMap["Content-Type"] = getContentType(reqObj, extension);
+    headerMap["Content-Type"] = getContentType();
 
 	headerMap["Content-Length"] =  intToString(getBody().length());
 	headerMap["Connection"] = reqObj.getConnectionType();
@@ -73,13 +65,6 @@ void	Response::generateHeader(HttpRequest &reqObj){
     if (_setCookieValue != "") {
         headerMap["Set-Cookie"] = _setCookieValue;
     }
-
-	// Optional Fields
-   // headerMap["Cache-Control"] = "no-cache"; // Example value
-    //headerMap["Set-Cookie"] = "sessionId=abc123; Path=/; HttpOnly"; // Example value
-    //headerMap["Last-Modified"] = getCurrentDateTime(); // Example value
-    //headerMap["ETag"] = "\"123456789\""; // Example value
-    //headerMap["Location"] = "/new-resource"; // Example value
 
     // for redirects
     if (reqObj.getResponseCode() == 301 || reqObj.getResponseCode() == 302) {

@@ -59,20 +59,35 @@ void Response::matchLocationConf(void) {
 	throw 500;
 }
 
+void Response::matchServerName( void ) {
+
+	std::string hostname = _request.getHostname();
+
+	std::vector<std::string> serverNames = _serverConf.getServerConfNames();
+	// if we can find req hostname match with string in serverNames
+ 	std::vector<std::string>::iterator it =  std::find(serverNames.begin(), serverNames.end(), hostname);
+
+	_serverName = ( it != serverNames.end() ) ?  hostname : "Webserv";
+}
+
 Response::Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverConfs)
 	: _redirectDest(""), _setCookieValue(""), _request(reqObj) {
 
-	if (reqObj.getResponseCode() != 200)
-		reqObj.getResponseCode();
+	// check if request flagged as non 200 val
+	if (! (reqObj.getResponseCode() >= 200 && reqObj.getResponseCode() <= 299) )
+		throw reqObj.getResponseCode();
+	// set status code to state from req obj
+	setStatusCode(reqObj.getResponseCode());
 
 	// match and set server block
 	matchServerBlock(serverConfs);
 
+	// match server name if exists
+	matchServerName();
+
 	// match and set location block
 	matchLocationConf();
 }
-
-
 
 void Response::generateHttpresponse(HttpRequest &reqObj) {
 	generateHeader(reqObj);
@@ -105,18 +120,6 @@ void Response::generateHttpresponse(HttpRequest &reqObj) {
 	setHttpResponse(responseString);
 }
 
-std::string Response::getServerName() {
-	std::vector<std::string> server = _serverConf->getServerConfNames();
-
-	// Check if the vector has any elements
-	if (!server.empty()) {
-		// Return the first server name from the vector
-		return server[0];
-	}
-	//else default value and return
-	return("Webserv/1.0");
-}
-
 // set the Response to a certain code (template)
 void Response::setBodyErrorPage(int httpCode) {
 	setBody("<html><body><h1>"
@@ -129,10 +132,6 @@ void Response::setBodyErrorPage(int httpCode) {
 }
 
 void Response::generateErrorResponse(HttpRequest &reqObj) {
-	if (!_serverConf) {
-		setBodyErrorPage(500);
-		return;
-	}
 
 	// Retrieve the error pages map
 	const std::map<int, std::string>& errorPages = _serverConf->getErrorPages();

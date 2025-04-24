@@ -36,9 +36,11 @@ class Response {
 		// cookie value we want to have
 		std::string									_setCookieValue;
 
-        int m_statusCode; // http status code
+        int											_statusCode; // http status code
+		std::string									_serverName;
+		PathInfo									_pathInfo;
+
     public:
-       // Response(): m_statusCode(200) {};
         ~Response();
 
 		Response();
@@ -46,7 +48,7 @@ class Response {
         void    processResponse(HttpRequest &ReqObj);
 		void generateErrorResponse(HttpRequest &reqObj);
 		void generateHeader(HttpRequest &reqObj);
-		void	generateStatusLine(HttpRequest &reqObj);
+		void	generateStatusLine();
 		std::string genarateReasonPhrase(int HttpCode);
 		void generateHttpresponse(HttpRequest &reqObj);
 		std::string intToString(int number);
@@ -83,11 +85,11 @@ class Response {
         std::string getBody() const { return _body; }
         long getFileSize() const { return _fileSize; }
         std::string getFilename() const { return _filename; }
-        int getStatusCode() const { return m_statusCode; }
+        int getStatusCode() const { return _statusCode; }
 		std::string getReasonPhrase() const;
 		std::string getServerName();
 		std::string getCurrentDateTime();
-		std::string getContentType(HttpRequest &reqObj, const std::string& extension);
+		std::string getContentType();
 		std::string getRedirectDest();
 
         // Setters
@@ -98,7 +100,7 @@ class Response {
         void setBody(const std::string& body) { _body = body; }
         void setFileSize(long fileSize) { _fileSize = fileSize; }
         void setFilename(const std::string& filename) { _filename = filename; }
-        void setStatusCode(int statusCode) { m_statusCode = statusCode; }
+        void setStatusCode(int statusCode) { _statusCode = statusCode; }
 		void setReasonPhrase(const std::string &reasonPhrase);
 		void setRedirectDest(const std::string& redirectDest) { _redirectDest = redirectDest; };
 
@@ -115,11 +117,12 @@ class Response {
 		void handleCookiesPage(HttpRequest& request);
 
 
-        void setStatus(int statusCode) {m_statusCode = statusCode;};
+        void setStatus(int statusCode) {_statusCode = statusCode;};
 
 		// matching functions
 		void matchServerBlock(const std::vector<ServerConf>& serverConfs);
-		void matchLocationConf(void);
+		void matchLocationConf( void );
+		void matchServerName( void )
 };
 
 
