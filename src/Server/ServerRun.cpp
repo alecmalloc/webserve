@@ -262,8 +262,8 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		// Create response and pass server confs to response constructor
 		try {
 			Response response(request, serverConfs);
-			response.processResponse(request);
-			response.generateHttpresponse(request);
+			response.processResponse();
+			response.generateHttpresponse();
 		}
 		catch (const std::exception& e) {
 			// handle error page logic

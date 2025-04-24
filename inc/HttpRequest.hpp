@@ -63,8 +63,8 @@ class HttpRequest {
         void    setPathInfo( PathInfo );
 		void    setCgiResponseString(const std::string& cgiResponseString);
         void    setPort(const int port);
-	//set path in PathInfo after already initilized
-	void	setPathInfoPath( std::string path );
+        //set path in PathInfo after already initilized
+        void	setPathInfoPath( std::string path );
 
         // main handler
         void    handleRequest(const std::string& rawRequest);

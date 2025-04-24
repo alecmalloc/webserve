@@ -74,7 +74,7 @@ Response::Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverCon
 	: _redirectDest(""), _setCookieValue(""), _request(reqObj) {
 
 	// check if request flagged as non 200 val
-	if (! (reqObj.getResponseCode() >= 200 && reqObj.getResponseCode() <= 299) )
+	if (! (reqObj.getResponseCode() >= 200 && reqObj.getResponseCode() <= 302) )
 		throw reqObj.getResponseCode();
 	// set status code to state from req obj
 	setStatusCode(reqObj.getResponseCode());
@@ -89,32 +89,26 @@ Response::Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverCon
 	matchLocationConf();
 }
 
-void Response::generateHttpresponse(HttpRequest &reqObj) {
-	generateHeader(reqObj);
+void Response::generateHttpresponse() {
+	
 	std::map<std::string, std::string> headerMap = getHeaderMap();
-	std::stringstream header ;
-	header << headerMap["Status-Line"] << "\r\n";
-	header << "Date: " << headerMap["Date"] << "\r\n";
-	header << "Server: " << headerMap["Server"] << "\r\n";
-	header << "Content-Type: " << headerMap["Content-Type"] << "\r\n";
-	header << "Content-Length: " << headerMap["Content-Length"] << "\r\n";
-	header << "Connection: " << headerMap["Connection"] << "\r\n";
-	//header << "Cache-Control: " << headerMap["Cache-Control"] << "\r\n";
+	
+	std::stringstream header;
+	header << generateStatusLine() << "\r\n";
+	header << "Date: " << getCurrentDateTime() << "\r\n";
+	header << "Server: " << _serverName << "\r\n";
+	header << "Content-Type: " << getContentType() << "\r\n";
+	header << "Content-Length: " << intToString(getBody().length()) << "\r\n";
+	header << "Connection: " << _request.getConnectionType() << "\r\n";
 
-	// needed for cookies to work
-	// only if setCookieValue has been changed
-	if (_setCookieValue != "") {
-		header << "Set-Cookie: " << headerMap["Set-Cookie"] << "\r\n";
+	if (!(_setCookieValue.empty())) {
+		header << "Set-Cookie: " << _setCookieValue << "\r\n";
 	}
 	// to set location (esp for redirects)
-	if (_redirectDest != "") {
-		header << "Location: " << headerMap["Location"] << "\r\n";
+	if ( (!(_redirectDest.empty())) && (_statusCode == 301 || _statusCode == 302)) {
+		header << "Location: " << getRedirectDest() << "\r\n";
 	}
-	// std::cout << "SetCookie found: " << headerMap["Set-Cookie"] << '\n';
 
-	//header << "Last-Modified: " << headerMap["Last-Modified"] << "\r\n";
-	//header << "ETag: " << headerMap["ETag"] << "\r\n";
-	//header << "Location: " << headerMap["Location"] << "\r\n";
 	header << "\r\n"; // End of headers
 	std::string responseString = header.str() + getBody();
 	setHttpResponse(responseString);

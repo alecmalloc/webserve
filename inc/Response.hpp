@@ -47,10 +47,10 @@ class Response {
 		Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverConfs);
         void    processResponse(HttpRequest &ReqObj);
 		void generateErrorResponse(HttpRequest &reqObj);
-		void generateHeader(HttpRequest &reqObj);
-		void	generateStatusLine();
+		void generateHeader();
+		std::string generateStatusLine();
 		std::string genarateReasonPhrase(int HttpCode);
-		void generateHttpresponse(HttpRequest &reqObj);
+		void generateHttpresponse();
 		std::string intToString(int number);
 		std::string serveFileContent(const PathInfo& pathInfo);
 		bool isCgiRequest(const std::string& uri);
