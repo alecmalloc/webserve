@@ -89,10 +89,7 @@ Response::Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverCon
 	matchLocationConf();
 }
 
-void Response::generateHttpresponse() {
-	
-	std::map<std::string, std::string> headerMap = getHeaderMap();
-	
+void Response::generateHttpResponse() {
 	std::stringstream header;
 	header << generateStatusLine() << "\r\n";
 	header << "Date: " << getCurrentDateTime() << "\r\n";
@@ -119,7 +116,7 @@ void Response::setBodyErrorPage(int httpCode) {
 	setBody("<html><body><h1>"
 	+ Response::intToString(httpCode)
 	+ " "
-	+ genarateReasonPhrase(httpCode)
+	+ generateReasonPhrase(httpCode)
 	+ "Error "
 	+ intToString(httpCode)
 	+ "</h1></body></html>\n");

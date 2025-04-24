@@ -49,8 +49,8 @@ class Response {
 		void generateErrorResponse(HttpRequest &reqObj);
 		void generateHeader();
 		std::string generateStatusLine();
-		std::string genarateReasonPhrase(int HttpCode);
-		void generateHttpresponse();
+		std::string generateReasonPhrase(int HttpCode);
+		void generateHttpResponse();
 		std::string intToString(int number);
 		std::string serveFileContent(const PathInfo& pathInfo);
 		bool isCgiRequest(const std::string& uri);

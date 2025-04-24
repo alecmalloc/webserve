@@ -1,10 +1,9 @@
 #include "webserv.hpp"
-#include <ctime>
 
 std::string    Response::generateStatusLine() {
 	std::string httpVersion = HTTP_VERSION;
 	std::string statusCode =  intToString(getStatusCode());
-	std::string reasonPhrase = genarateReasonPhrase(getStatusCode());
+	std::string reasonPhrase = generateReasonPhrase(getStatusCode());
 	std::stringstream statusLine;
     statusLine << httpVersion << " " << statusCode << " " << reasonPhrase;
     return statusLine.str();
@@ -16,7 +15,6 @@ std::string Response::getCurrentDateTime() {
     std::strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S GMT", std::gmtime(&now));
     return std::string(buf);
 }
-
 
 std::string Response::getContentType() {
     // POST AND DELETE always return html
@@ -51,7 +49,6 @@ std::string Response::getContentType() {
     // default cause -> why pdf files for instance werent working
 	return("text/html");
 }
-
 
 //need to adjust to use right values
 void	Response::generateHeader() {
@@ -137,7 +134,7 @@ std::string Response::intToString(int number) {
     return ss.str();
 }
 
-std::string Response::genarateReasonPhrase(int httpCode){
+std::string Response::generateReasonPhrase(int httpCode){
 
 	std::string reasonPhrase;
 

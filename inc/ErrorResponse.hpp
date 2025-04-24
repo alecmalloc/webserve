@@ -6,20 +6,30 @@
 
 class ErrorResponse {
     private:
+        int                         _statusCode;
         std::vector<ServerConf>     _serverConfs;
+        ServerConf                  _serverConf;
+        HttpRequest                 _request;
+        bool                        _isServerConf;
+        std::string                 _httpResponse;
+        std::string                 _headers;
+        std::string                 _serverName;
     public:
         ErrorResponse();
-        ErrorResponse(const std::vector<ServerConf>& serverConfs);
+        ErrorResponse(const int& statusCode, const HttpRequest& request , const std::vector<ServerConf>& serverConfs);
         ErrorResponse(const ErrorResponse& other);
         ~ErrorResponse();
         
         const ErrorResponse& operator =(const ErrorResponse& other);
 
-        void    setServerConf(std::vector<ServerConf>& serverConfs) { _serverConfs = serverConfs ;};
+        // matching
+        void matchServerBlock();
+        void matchErrorPage();
+        void matchServerName();
 
-        std::vector<ServerConf>    getServerConf( void ) { return _serverConfs ;};
+        void generateHttpResponse();
+        void generateHeaders()
 };
-
 
 
 
