@@ -271,7 +271,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 			// handle error page logic
 			ErrorResponse errorResponse(statusCode, request , serverConfs);
 			errorResponse.generateHttpResponse();
-			responseStr = response.getHttpResponse();
+			responseStr = errorResponse.getHttpResponse();
 		}
 
 		// write response to socket

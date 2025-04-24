@@ -8,11 +8,18 @@ _isServerConf(false)
 
 ErrorResponse::ErrorResponse(const int& statusCode, const HttpRequest& request , const std::vector<ServerConf>& serverConfs): 
 _statusCode(statusCode),
-_serverConfs(serverConfs), 
+_serverConfs(serverConfs),
 _request(request),
 _isServerConf(false)
 {
     matchServerBlock();
+
+    // only check for error page if we find a server conf
+    // only check server name if we find server conf
+    if (_isServerConf) {
+        matchErrorPage();
+        matchServerName();
+    }
 }
 
 ErrorResponse::ErrorResponse(const ErrorResponse& other) {
@@ -23,6 +30,7 @@ ErrorResponse::ErrorResponse(const ErrorResponse& other) {
     _httpResponse = other._httpResponse;
     _headers = other._headers;
     _serverName = other._serverName;
+    _errorPage = other._errorPage;
 }
 
 ErrorResponse::~ErrorResponse() {}
@@ -36,8 +44,13 @@ const ErrorResponse& ErrorResponse::operator =(const ErrorResponse& other) {
         _httpResponse = other._httpResponse;
         _headers = other._headers;
         _serverName = other._serverName;
+        _errorPage = other._errorPage;
     }
     return *this;
+}
+
+std::string ErrorResponse::getHttpResponse( void ) {
+    return _httpResponse;
 }
 
 void ErrorResponse::matchServerName( void ) {
@@ -80,9 +93,11 @@ void ErrorResponse::matchErrorPage() {
     std::map<int, std::string>::const_iterator it = errorPages.find(_statusCode);
 
     // case found error page
+    // maybe double slash issue? i think cpp handles this tho ie: .//errorpage.html
     if (it != errorPages.end()) {
-        _serverConf.getRootDir() + 
+        _errorPage = _serverConf.getRootDir() + it->second;
     }
+    // otherwise errorPage stays empty and its a str so we can check that
 }
 
 static std::string intToString(int number) {
@@ -91,10 +106,13 @@ static std::string intToString(int number) {
     return ss.str();
 }
 
-static std::string generateGenericErrorPage() {
+static std::string generateGenericErrorPage(int statusCode) {
     std::string html;
 
-
+    html += "<html><body><h1>";
+    html += "Error: ";
+    html += intToString(statusCode);
+    html += "</h1></body></html>";
 
     return html;
 }
@@ -197,31 +215,48 @@ static std::string generateStatusLine(int statusCode) {
     return statusLine;
 }
 
-void ErrorResponse::generateHeaders() {
-    std::string headersStr;
+std::string ErrorResponse::generateHeaders(std::string& body) {
+    std::string headerStr;
 
-    headersStr += generateStatusLine(_statusCode) + "\r\n";
-    headersStr += "Date: " + getCurrentDateTime() + "\r\n";
-    headersStr += "Server: " + _serverName + "\r\n";
-    headersStr += "Content-Type: text/html\r\n";
-    headersStr += "Content-Length: " + intToString(getBody().length()) + "\r\n";
-    headersStr += "Connection: " + _request.getConnectionType() + "\r\n";
+    headerStr += generateStatusLine(_statusCode) + "\r\n";
+    headerStr += "Date: " + getCurrentDateTime() + "\r\n";
+    headerStr += "Server: " + _serverName + "\r\n";
+    headerStr += "Content-Type: text/html\r\n";
+    headerStr += "Content-Length: " + intToString(body.length()) + "\r\n";
+    headerStr += "Connection: " + _request.getConnectionType() + "\r\n";
     headerStr += "\r\n"; // End of headers
 
-    _headers = headerStr;
-    // setHttpResponse(responseString);
+    return headerStr;
 }
 
 void ErrorResponse::generateHttpResponse() {
     std::string head;
     std::string body;
 
-    // check errorPage.empty()
-    // handle customerrorpage
-    // else handle generic page
+    // BODY
+    // handle having an error page
+    if ( !(_errorPage.empty()) ) {
 
+        std::ifstream file(_errorPage.c_str());
+
+        if (file) {
+			std::ostringstream contents;
+			contents << file.rdbuf();
+			file.close();
+			body = contents.str();
+        }
+        else
+            _statusCode = 500;
+    }
+
+    // handle file not being able to open (see else above) or no custom error pages 
+    if (body.empty())
+        body = generateGenericErrorPage(_statusCode);
+
+    // HEAD
     // do this at end because i need to know body length
-    head += generateHeaders();
+    // pass body to calc length
+    head = generateHeaders(body);
 
     _httpResponse = head + body;
 }

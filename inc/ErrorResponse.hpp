@@ -14,6 +14,7 @@ class ErrorResponse {
         std::string                 _httpResponse;
         std::string                 _headers;
         std::string                 _serverName;
+        std::string                 _errorPage;
     public:
         ErrorResponse();
         ErrorResponse(const int& statusCode, const HttpRequest& request , const std::vector<ServerConf>& serverConfs);
@@ -27,8 +28,12 @@ class ErrorResponse {
         void matchErrorPage();
         void matchServerName();
 
+
+        // lone get for checkEvents LOLOOL
+        std::string getHttpResponse( void );
+
         void generateHttpResponse();
-        void generateHeaders()
+        std::string generateHeaders(std::string& body)
 };
 
 
