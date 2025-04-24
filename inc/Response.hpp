@@ -41,11 +41,12 @@ class Response {
 		std::string				_redirectDest;
 
 		// cookie value we want to have
-		std::string									_setCookieValue;
+		std::string				_setCookieValue;
 
-        int											_statusCode; // http status code
-		std::string									_serverName;
 
+		int					_statusCode;
+		std::string				_serverName;
+		PathInfo				_pathInfo;
     public:
 
 		//constructors
@@ -99,7 +100,7 @@ class Response {
 		std::string			getContentType(HttpRequest &reqObj, \
 						const std::string& extension);
 		std::string			getRedirectDest();
-		HttpRequest			getHttpRequest( void );
+		HttpRequest&			getHttpRequest( void );
 		ServerConf			getServerConf( void );
 		LocationConf			getLocationConf( void );
 

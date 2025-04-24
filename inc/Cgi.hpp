@@ -3,6 +3,6 @@
 
 #include "HttpRequest.hpp"
 
-int	handleCgi( Response& );
+void	handleCgi( Response& );
 
 #endif
