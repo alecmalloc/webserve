@@ -1,9 +1,6 @@
 #ifndef ERROR_RESPONSE_HPP
 #define ERROR_RESPONSE_HPP
 
-
-
-
 class ErrorResponse {
     private:
         int                         _statusCode;

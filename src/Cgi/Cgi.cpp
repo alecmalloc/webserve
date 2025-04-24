@@ -14,7 +14,7 @@ static std::string	toString( size_t i ){
 	return( ss.str() );
 }
 
-std::string	stripQueryParams(const std::string& uri) {
+static std::string	stripQueryParams(const std::string& uri) {
 
 	size_t	pos = uri.find('?');
 
@@ -24,7 +24,7 @@ std::string	stripQueryParams(const std::string& uri) {
 	return uri;
 }
 
-std::string extractQueryString(const std::string& uri) {
+static std::string	extractQueryString(const std::string& uri) {
 	size_t pos = uri.find('?');
 	if (pos != std::string::npos) {
 		return uri.substr(pos + 1);
@@ -37,6 +37,7 @@ static int	getVectors(ServerConf server, std::vector<std::string>& ext, \
 
 	// Strip query parameters first
 	std::string			cleanUri = stripQueryParams( uri );
+
 	// Extract just the path part (remove any query string)
 	std::string::size_type	question = cleanUri.find('?');
 
@@ -49,24 +50,23 @@ static int	getVectors(ServerConf server, std::vector<std::string>& ext, \
 
 	if( lastSlash != std::string::npos )
 		uriPath = uriPath.substr( 0, lastSlash + 1 );
-}
 
-// Improve location matching
-const std::vector<LocationConf>& locations = server.getLocationConfs();
+	// Improve location matching
+	const std::vector<LocationConf>& locations = server.getLocationConfs();
 
-for( std::vector<LocationConf>::const_iterator it = locations.begin(); \
-		it != locations.end(); ++it ){
+	for( std::vector<LocationConf>::const_iterator it = locations.begin(); \
+			it != locations.end(); ++it ){
 
-	std::string Compare_dir = it->getPath();
+		std::string Compare_dir = it->getPath();
 
-	// Match based on path prefix, not exact match
-	if( uriPath.find( Compare_dir ) == 0 ){
-		ext = it->getCgiExt();
-		path = it->getCgiPath();
-		return( 0 );
+		// Match based on path prefix, not exact match
+		if( uriPath.find( Compare_dir ) == 0 ){
+			ext = it->getCgiExt();
+			path = it->getCgiPath();
+			return( 0 );
+		}
 	}
-}
-return( -1 );
+	return( -1 );
 }
 
 static void	checkFile( Response& resp, std::string& interpreter ){
@@ -123,9 +123,8 @@ static void	checkFile( Response& resp, std::string& interpreter ){
 		pathIt++;
 	}
 
-	if( interpreter.empty() ){
+	if( interpreter.empty() )
 		throw( 500 );
-	}
 }
 
 static void	setEnv( Response& resp char*** env ){
@@ -139,21 +138,21 @@ static void	setEnv( Response& resp char*** env ){
 
 	// Extract from Host header if available
 	if( req.getHeaders().count("Host") ) {
-		std::string host = req.getHeaders().at("Host")[0];
+		std::string host = req.getHeaders().at( "Host" )[0];
 		size_t colonPos = host.find(':');
-		if (colonPos != std::string::npos) {
+		if( colonPos != std::string::npos ){
 			ip = host.substr(0, colonPos);
 			port = host.substr(colonPos+1);
-		} else {
-			ip = host;
 		}
+		else 
+			ip = host;
 	}
 
 	//set env via strings 
 	// Extract query string separately
-	std::string queryString = extractQueryString(req.getUri());
+	std::string queryString = extractQueryString( req.getUri() );
 
-	std::map< std::string, std::string > tmpEnv;
+	std::map< std::string, std::string>	tmpEnv;
 
 	tmpEnv["REQUEST_METHOD"] = req.getMethod().empty() ? "GET" : req.getMethod();
 	tmpEnv["QUERY_STRING"] = queryString;
@@ -176,6 +175,7 @@ static void	setEnv( Response& resp char*** env ){
 
 	//transfer headers to be HTTP_...
 	const std::map<std::string, std::vector< std::string>>&	headers = req.getHeaders();
+
 	for( std::map<std::string, std::vector< std::string>>::const_iterator it = headers.begin(); \
 		it != headers.end(); it++ ){
 
@@ -190,11 +190,13 @@ static void	setEnv( Response& resp char*** env ){
 	int index = 0;
 	for( std::map< std::string, std::string >::iterator it = tmpEnv.begin(); \
 			it != tmpEnv.end(); it++ ){
+
 		std::string	entry = it->first + "=" + it->second;
 		(*env)[index] = new char[entry.length() + 1];
 		(*env)[index] = std::strcpy( (*env)[index], entry.c_str() );
 		index++;
 	}
+
 	(*env)[index] = NULL;
 }
 
@@ -203,12 +205,14 @@ static int	childProcess( HttpRequest& req, int* inputPipe, int* outputPipe, \
 
 	//dup input to pipe nad output to pipe for connection to parent
 	if( dup2( inputPipe[0], STDIN_FILENO ) == -1 ){
+
 		std::cerr << RED << "ERROR: Dup failed" << END << std::endl;
 		closePipe( inputPipe );
 		closePipe( outputPipe );
 		throw( 500 );
 	}
 	if( dup2( outputPipe[1], STDOUT_FILENO ) == -1 ){
+
 		std::cerr << RED << "ERROR: Dup failed" << END << std::endl;
 		closePipe( inputPipe );
 		closePipe( outputPipe );
@@ -230,8 +234,7 @@ static int	childProcess( HttpRequest& req, int* inputPipe, int* outputPipe, \
 
 	// Pass the clean path to execve
 	const std::string inter = interpreter;
-	char* args[] = { const_cast<char*>(inter.c_str()), const_cast<char*>(scriptPath.c_str()), \
-		NULL };
+	char* args[] = { const_cast<char*>( inter.c_str() ), const_cast<char*>( scriptPath.c_str() ), NULL };
 
 	//execute
 	execve( inter.c_str(), args, env );
@@ -248,33 +251,33 @@ static int	childProcess( HttpRequest& req, int* inputPipe, int* outputPipe, \
 }
 
 // Function to get the body of the response by skipping headers
-std::string getBody(const std::string& response) {
+static std::string	getBody( const std::string& response ){
+
 	// If response is empty, return empty string
-	if (response.empty()) {
+	if( response.empty() )
 		return "";
-	}
 
 	// Search for the standard HTTP header/body separator from the end
-	size_t bodyStart = 0;
+	size_t	bodyStart = 0;
 
 	// Look for the last header separator
-	size_t headerSep = response.rfind("\r\n\r\n");
-	if (headerSep != std::string::npos) {
-		// Found standard HTTP header separator
-		bodyStart = headerSep + 4; // Skip past \r\n\r\n
-	} else {
+	size_t	headerSep = response.rfind( "\r\n\r\n" );
+
+	//if found standard HTTP header separator
+	if( headerSep != std::string::npos )
+		bodyStart = headerSep + 4;
+	else{
+
 		// Try Unix-style separator
 		headerSep = response.rfind("\n\n");
-		if (headerSep != std::string::npos) {
-			bodyStart = headerSep + 2; // Skip past \n\n
-		} else {
-			// If no separator found, assume the whole response is the body
+		if( headerSep != std::string::npos )
+			bodyStart = headerSep + 2;
+		else
 			return response;
-		}
 	}
 
 	// Return everything after the separator
-	return response.substr(bodyStart);
+	return( response.substr( bodyStart ) );
 }
 
 static void	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid_t pid ){
@@ -287,7 +290,7 @@ static void	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pi
 	close( outputPipe[1] );
 
 	//send body to process if needed
-	if (req.getMethod() == "POST") {
+	if( req.getMethod() == "POST" ){
 
 		size_t		bytesWritten = 0;
 		size_t t	botalBytes = body.size();
@@ -295,10 +298,10 @@ static void	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pi
 
 		while( bytesWritten < totalBytes ) {
 			ssize_t result;
-			result = write(inputPipe[1], data + bytesWritten, totalBytes - bytesWritten);
+			result = write( inputPipe[1], data + bytesWritten, totalBytes - bytesWritten );
 
 			// Handle error
-			if (result <= 0)
+			if( result <= 0 )
 				throw( 500 );
 
 			bytesWritten += result;
@@ -315,16 +318,17 @@ static void	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pi
 	//wait for child for TIMEOUT_TIME amount and kill if not working
 	struct pollfd	pfd;
 	int		pollRet;
-	pfd.fd 		= outputPipe[0];
-	pfd.events 	= POLLIN;	
+	pfd.fd = outputPipe[0];
+	pfd.events = POLLIN;	
 
 
 	//read from open pipe into buffer and store in response string
 	char		buffer[ BUFFERSIZE ];
-	std::memset( buffer, '\0', BUFFERSIZE );
 	std::string	response;
-	time_t		startTime = time( NULL );
 	size_t		bytesRead;
+
+	time_t	startTime = time( NULL );
+	std::memset( buffer, '\0', BUFFERSIZE );
 
 	while( true ){
 
@@ -363,15 +367,14 @@ static void	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pi
 				std::memset( buffer, '\0', BUFFERSIZE );
 				startTime = time( NULL );
 			}
-
 			else if( bytesRead == 0 )
 				break;
 		}
 	}
 
-	response = getBody(response);
+	response = getBody( response );
 
-	req.setCgiResponseString(response);
+	req.setCgiResponseString( response );
 
 	//close final pipe
 	close( outputPipe[0] );
@@ -382,6 +385,8 @@ static void	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pi
 	if( WIFEXITED( status ) && WEXITSTATUS( status ) != 0 )
 		throw( 500 );
 }
+
+//TODO::check cgi and cleanup handleCgi funtion
 
 int	handleCgi( Response& resp ){
 
@@ -400,6 +405,7 @@ int	handleCgi( Response& resp ){
 
 	//clean body from httpboundaries \r\n
 	if ( req.getMethod() == "POST" ) {
+
 		// Create a local copy of the body first
 		std::string body = req.getBody();
 

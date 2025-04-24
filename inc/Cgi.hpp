@@ -3,7 +3,6 @@
 
 #include "HttpRequest.hpp"
 
-int	handleCgi( HttpRequest& );
-int	cgimain( Config );
+int	handleCgi( Response& );
 
 #endif
