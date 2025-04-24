@@ -71,7 +71,7 @@ void Response::matchServerName( void ) {
 }
 
 Response::Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverConfs)
-	: _redirectDest(""), _setCookieValue(""), _request(reqObj) {
+	:_request(reqObj), _redirectDest(""), _setCookieValue("") {
 
 	// check if request flagged as non 200 val
 	if (! (reqObj.getResponseCode() >= 200 && reqObj.getResponseCode() <= 302) )
@@ -124,54 +124,10 @@ void Response::setBodyErrorPage(int httpCode) {
 	+ "</h1></body></html>\n");
 }
 
-void Response::generateErrorResponse(HttpRequest &reqObj) {
-
-	// Retrieve the error pages map
-	const std::map<int, std::string>& errorPages = _serverConf->getErrorPages();
-
-	// check request obj for the code
-	int responseCode = reqObj.getResponseCode();
-	std::map<int, std::string>::const_iterator customPageIt = errorPages.find(responseCode);
-
-	// generate correct headers for our error page
-	generateHeader(reqObj);
-
-	// check if we have a custom error page for our httpCode
-	if (customPageIt != errorPages.end()) {
-
-		// Custom error page found, load and set it as the response body
-		std::string errorPagePath = "." + customPageIt->second; // Use relative path
-		std::ifstream file(errorPagePath.c_str());
-
-		// if we can open the error page file
-		if (file) {
-			std::ostringstream contents;
-			contents << file.rdbuf();
-			file.close();
-			setBody(contents.str());
-		//updates the path to the one for the error pages
-		PathInfo errorPath(errorPagePath);
-		errorPath.parsePath();
-		reqObj.setPathInfo(errorPath);
-		// return internal server error 500 we are not able to open the file
-		} else {
-			setBodyErrorPage(500);
-		}
-
-		return;
-	}
-
-	// in case that no custom error page exists
-	// also set error code to 500 for internal server error
-	// client errors 400 - 420
-	// server errors 500 - 511
-	setBodyErrorPage(responseCode);
-}
-
 bool Response::isCgiRequest( void ) {
 
     // Check if URI matches CGI patterns
-    if ( !_locationConf->getCgiPath().empty() && !_locationConf->getCgiExt().empty() )
+    if ( !_locationConf.getCgiPath().empty() && !_locationConf.getCgiExt().empty() )
     {
         // Strip query parameters by finding the first '?'
         std::string path = _request.getUri();
@@ -186,7 +142,7 @@ bool Response::isCgiRequest( void ) {
             std::string ext = path.substr(dot);
 
             // Get allowed CGI extensions
-            const std::vector<std::string>& cgiExts = _locationConf->getCgiExt();
+            const std::vector<std::string>& cgiExts = _locationConf.getCgiExt();
 
             // Check if extension is allowed
             return (std::find(cgiExts.begin(), cgiExts.end(), ext) != cgiExts.end());
@@ -201,8 +157,7 @@ bool	Response::isredirectRequest( void ){
 	for example we could perform a GET, POST or DELETE in an old folder 
 	and that request would need to be redirected and passed on */
 
-	
-	if( !_locationConf.getAllowedredirects().empty() || !_serverConf.getAllowedRedirects().empty() )
+	if( !_locationConf.getAllowedRedirects().empty() || !_serverConf.getAllowedRedirects().empty() )
 		return( true );
 
 	return( false );
@@ -210,36 +165,35 @@ bool	Response::isredirectRequest( void ){
 
 void		Response::processResponse( void ){
 
-		//redirect request
-		if( isRedirectRequest() ){
-			std::cout << "REDIRECT" << '\n';
-			HandleRedirectRequest();
-		}
+	//redirect request
+	if( isredirectRequest() ){
+		std::cout << "REDIRECT" << '\n';
+		HandleRedirectRequest(_request);
+	}
 
-		//cgi request
-		else if( isCgiRequest() ){
-			std::cout << "CGI REQUEST" << '\n';
-			handleCgi();
-		}
+	//cgi request
+	else if( isCgiRequest() ){
+		std::cout << "CGI REQUEST" << '\n';
+		handleCgi(*this);
+	}
 
-		//get request
-		else if( _request.getMethod() == "GET" ) {
-			std::cout << "GET REQUEST" << '\n';
-			HandleGetRequest();
-		}
-		//post request
-		else if( _request.getMethod() == "POST" ) {
-			std::cout << "POST REQUEST" << '\n';
-			HandlePostRequest();
-		}
-		//delete request
-		else if( _request.getMethod() == "DELETE" ) {
-			std::cout << "DELETE REQUEST" << '\n';
-			HandleDeleteRequest();
-		}
-
+	//get request
+	else if( _request.getMethod() == "GET" ) {
+		std::cout << "GET REQUEST" << '\n';
+		HandleGetRequest();
+	}
+	//post request
+	else if( _request.getMethod() == "POST" ) {
+		std::cout << "POST REQUEST" << '\n';
+		HandlePostRequest();
+	}
+	//delete request
+	else if( _request.getMethod() == "DELETE" ) {
+		std::cout << "DELETE REQUEST" << '\n';
+		HandleDeleteRequest();
 	}
 }
+
 
 void Response::setSetCookieValue(std::string value) {
 	_setCookieValue = value;

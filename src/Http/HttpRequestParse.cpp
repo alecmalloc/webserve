@@ -158,28 +158,6 @@ void HttpRequest::parseBody(const std::string& rawRequest) {
 
 }
 
-// //  match server block from conf
-// this doesnt even work lol, only checks for hostname in IPS??
-void HttpRequest::matchServerBlock(void) {
-	std::vector<ServerConf> serverTmpConf = _conf.getServerConfs();
-
-	// Match server based on hostname and port
-	for (size_t i = 0; i < serverTmpConf.size(); i++) {
-		// Check server names
-		const std::vector<std::string>& serverNames = serverTmpConf[i].getServerConfNames();
-		if (std::find(serverNames.begin(), serverNames.end(), _hostname) != serverNames.end()) {
-			// Check if port matches too
-			const std::map<std::string, std::set<int> > ports = serverTmpConf[i].getIpPort();
-			for (std::map<std::string, std::set<int> >::const_iterator it = ports.begin(); it != ports.end(); ++it) {
-				if (it->second.find(_port) != it->second.end()) {
-					_server = serverTmpConf[i];
-					return;
-				}
-			}
-		}
-	}
-}
-
 void HttpRequest::parse(const std::string& rawRequest) {
 
 	parseHeaders(rawRequest);
@@ -205,9 +183,6 @@ void HttpRequest::handleRequest(const std::string& rawRequest) {
 		std::cout << "PORT: " << _port << '\n';
 		_hostname = _hostname.substr(0, colon);
 	}
-
-	// match server block from conf
-	matchServerBlock();
 
 	// validateRequestPath();
 	if (_response_code != 200)

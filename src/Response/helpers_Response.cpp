@@ -1,6 +1,6 @@
 #include "webserv.hpp"
 
-std::string    Response::generateStatusLine() {
+std::string    Response::generateStatusLine( void ) {
 	std::string httpVersion = HTTP_VERSION;
 	std::string statusCode =  intToString(getStatusCode());
 	std::string reasonPhrase = generateReasonPhrase(getStatusCode());

@@ -46,7 +46,6 @@ class Response {
 
 		int					_statusCode;
 		std::string				_serverName;
-		PathInfo				_pathInfo;
     public:
 
 		//constructors
@@ -54,35 +53,37 @@ class Response {
 		Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverConfs);
 		~Response();
 
-		void    processResponse(HttpRequest &ReqObj);
-		void		generateErrorResponse(HttpRequest &reqObj);
-		void		generateHeader(HttpRequest &reqObj);
-		void		generateStatusLine(HttpRequest &reqObj);
-		std::string	genarateReasonPhrase(int HttpCode);
-		void		generateHttpresponse(HttpRequest &reqObj);
-		std::string	intToString(int number);
-		std::string	serveFileContent(const PathInfo& pathInfo);
-		bool		isCgiRequest(const std::string& uri);
-		void		handlePostData(const HttpRequest& ReqObj);
+		void    processResponse();
+		void		generateHeader();
+		std::string		generateStatusLine();
+		std::string generateReasonPhrase(int httpCode);
+		void		generateHttpResponse();
+		std::string	serveFileContent();
+
+		//cgi
+		bool 		isCgiRequest( void );
+		void		handleCgi( Response& resp );
+		bool		isredirectRequest( void );
+		
+		void		handlePostData();
 		std::string	generateDirectoryListing(const std::string& path);
-		std::string	uploadPathhandler(const LocationConf* locationConf);
-		void 		handleMultipartUpload(HttpRequest& ReqObj, PathInfo& pathinfo, \
-				const std::string& boundary);
-		int		checkContentLength(HttpRequest& ReqObj);
-		void		HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo);
-		std::string	constructFullPath(const std::string uri);
-		bool		serveFileIfExists(const std::string& fullPath, HttpRequest& ReqObj);
-		bool		serveRootIndexfile(HttpRequest& ReqObj, std::string fullPath);
-		bool		serveLocationIndex(HttpRequest& ReqObj);
+		std::string	uploadPathhandler( void );
+		void		handleMultipartUpload( std::string contentType );
+		void		checkContentLength( void );
+		void		HandleGetRequest();
+		std::string	constructFullPath();
+		void		serveFileIfExists( const std::string& fullPath );
+		void		serveRootIndexfile( void );
+		void		serveLocationIndex();
+		std::string intToString(int number);
 
 
 
 		// Handlers
-		void		HandleRedirectRequest(HttpRequest& ReqObj, \
-				std::map<std::string, std::string > redirect);
-		void		HandleDeleteRequest(HttpRequest& ReqObj, PathInfo& pathInfo);
-		void		HandlePostRequest(HttpRequest& ReqObj,PathInfo& pathinfo);
-		void		genarateUploadSucces(HttpRequest& ReqObj);
+		void		HandleRedirectRequest( HttpRequest& ReqObj );
+		void		HandleDeleteRequest();
+		void		HandlePostRequest();
+		void		genarateUploadSucces();
 
 		// Getters
 		const std::map<int, std::string>&	getErrorPages() const;
@@ -97,8 +98,7 @@ class Response {
 		std::string			getReasonPhrase() const;
 		std::string			getServerName();
 		std::string			getCurrentDateTime();
-		std::string			getContentType(HttpRequest &reqObj, \
-						const std::string& extension);
+		std::string 		getContentType();
 		std::string			getRedirectDest();
 		HttpRequest&			getHttpRequest( void );
 		ServerConf			getServerConf( void );
@@ -129,9 +129,7 @@ class Response {
 		void setBodyErrorPage(int httpCode);
 		void handleCookiesPage(HttpRequest& request);
 
-
-
-    void setStatus(int statusCode) {_statusCode = statusCode;};
+		void setStatus(int statusCode) {_statusCode = statusCode;};
 
 		// matching functions
 		void matchServerBlock(const std::vector<ServerConf>& serverConfs);

@@ -20,7 +20,7 @@ void	Response::HandleDeleteRequest( void ){
 
 		// Check if we have permission to delete the file
 		if( access( fullPath.c_str(), W_OK ) != 0 ){
-			std::cerr << "Permission denied to delete file: " << fullPath << std:endl;
+			std::cerr << "Permission denied to delete file: " << fullPath << std::endl;
 			throw( 403 );
 		}
 

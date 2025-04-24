@@ -5,11 +5,11 @@
 void	Response::checkContentLength( void ){
 
 	//get max body size if defined for location otherwise from server
-	size_t maxBodySize = _locationConf.getBodyInitilized() ? \
-			     _locationConf.getBodySize() : _serverConf->getBodySize();
+	size_t maxBodySize = _locationConf.getBodySizeInitilized() ? \
+			     _locationConf.getBodySize() : _serverConf.getBodySize();
 
 	//cehck if its chunked encoding
-	std::map<std::string, std::vector<std::string>>	headers = _request.getHeaders();
+	std::map<std::string, std::vector<std::string> >	headers = _request.getHeaders();
 	std::map<std::string, std::vector<std::string> >::const_iterator transferEncodingIt = \
 		headers.find("Transfer-Encoding");
 
@@ -122,7 +122,7 @@ void	Response::handleMultipartUpload( std::string contentType ){
 	std::string fileContent = postData.substr(contentStart, contentEnd - contentStart);
 
 	// Create the upload directory (use your existing function)
-	std::string uploadDir = uploadPathhandler(_locationConf);
+	std::string uploadDir = uploadPathhandler();
 
 	// But instead of using the generated filename, use the original filename
 	// Extract the directory path from the uploadPathhandler result
@@ -171,7 +171,7 @@ std::string	Response::uploadPathhandler( void ){
 
 		std::string	subPath = dirPath.substr( 0, pos );
 		if( !subPath.empty() && access( subPath.c_str(), F_OK ) == -1 ){
-			if( mkdir( subPath.c_str(), 0777 ) == -1 ){>>>>>>> main
+			if( mkdir( subPath.c_str(), 0777 ) == -1 ){
 				throw( 500 ); // Internal Server Error
 			}
 		}
@@ -226,6 +226,6 @@ void	Response::HandlePostRequest( void ){
 		if( outFile.fail() )
 			throw( 500 );
 
-		genarateUploadSucces(_request);
+		genarateUploadSucces();
 	}
 }

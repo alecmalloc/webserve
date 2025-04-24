@@ -203,6 +203,7 @@ static std::string generateReasonPhrase(int statusCode) {
             reasonPhrase = "Error";
             break;
     }
+	return(reasonPhrase);
 }
 
 static std::string generateStatusLine(int statusCode) {
