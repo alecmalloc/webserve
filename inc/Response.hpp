@@ -43,6 +43,7 @@ class Response {
 		// cookie value we want to have
 		std::string				_setCookieValue;
 
+
 		int					_statusCode;
 		std::string				_serverName;
 		PathInfo				_pathInfo;
@@ -92,7 +93,7 @@ class Response {
 		std::string			getBody() const { return _body; }
 		long				getFileSize() const { return _fileSize; }
 		std::string			getFilename() const { return _filename; }
-		int				getStatusCode() const { return m_statusCode; }
+		int					getStatusCode() const { return _statusCode; }
 		std::string			getReasonPhrase() const;
 		std::string			getServerName();
 		std::string			getCurrentDateTime();
@@ -111,7 +112,7 @@ class Response {
 		void setBody(const std::string& body) { _body = body; }
 		void setFileSize(long fileSize) { _fileSize = fileSize; }
 		void setFilename(const std::string& filename) { _filename = filename; }
-		void setStatusCode(int statusCode) { m_statusCode = statusCode; }
+		void setStatusCode(int statusCode) { statusCode = statusCode; }
 
 		void setReasonPhrase(const std::string &reasonPhrase);
 		void setRedirectDest(const std::string& redirectDest) { _redirectDest = redirectDest; };
@@ -135,7 +136,7 @@ class Response {
 		// matching functions
 		void matchServerBlock(const std::vector<ServerConf>& serverConfs);
 		void matchLocationConf( void );
-		void matchServerName( void )
+		void matchServerName( void );
 };
 
 
