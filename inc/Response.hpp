@@ -41,17 +41,20 @@ class Response {
 		std::string				_redirectDest;
 
 		// cookie value we want to have
-		std::string				_setCookieValue;
+		std::string									_setCookieValue;
 
-		// http status code
-		int					m_statusCode; 
-	public:
+        int											_statusCode; // http status code
+		std::string									_serverName;
+		PathInfo									_pathInfo;
+
+    public:
+
 		//constructors
 		Response();
 		Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverConfs);
 		~Response();
 
-		void		processResponse(HttpRequest &ReqObj);
+		void    processResponse(HttpRequest &ReqObj);
 		void		generateErrorResponse(HttpRequest &reqObj);
 		void		generateHeader(HttpRequest &reqObj);
 		void		generateStatusLine(HttpRequest &reqObj);
@@ -110,6 +113,7 @@ class Response {
 		void setFileSize(long fileSize) { _fileSize = fileSize; }
 		void setFilename(const std::string& filename) { _filename = filename; }
 		void setStatusCode(int statusCode) { m_statusCode = statusCode; }
+
 		void setReasonPhrase(const std::string &reasonPhrase);
 		void setRedirectDest(const std::string& redirectDest) { _redirectDest = redirectDest; };
 
@@ -126,11 +130,13 @@ class Response {
 		void handleCookiesPage(HttpRequest& request);
 
 
-		void setStatus(int statusCode) {m_statusCode = statusCode;};
+
+    void setStatus(int statusCode) {_statusCode = statusCode;};
 
 		// matching functions
 		void matchServerBlock(const std::vector<ServerConf>& serverConfs);
-		void matchLocationConf(void);
+		void matchLocationConf( void );
+		void matchServerName( void )
 };
 
 

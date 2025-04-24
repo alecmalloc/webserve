@@ -32,6 +32,7 @@
 #include <map>
 #include <algorithm>
 #include <stdexcept>
+#include <ctime>
 
 //webserv header
 #include "Location.hpp"
@@ -47,6 +48,7 @@
 #include "Server.hpp"
 #include "Cgi.hpp"
 #include "FileOps.hpp"
+#include "ErrorResponse.hpp"
 
 
 void	runServer( Config& conf );

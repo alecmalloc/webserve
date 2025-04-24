@@ -1,5 +1,4 @@
 #include "webserv.hpp"
-#include <ctime>
 
 
 //check contentlength againt defined content length 
@@ -88,6 +87,7 @@ void	Response::handleMultipartUpload( std::string contentType ){
 		throw 400;
 	}
 
+
 	// Extract filename
 	size_t filenamePos = postData.find("filename=\"", dispPos);
 	if (filenamePos == std::string::npos) {
@@ -98,6 +98,9 @@ void	Response::handleMultipartUpload( std::string contentType ){
 	size_t filenameEnd = postData.find("\"", filenamePos);
 	if (filenameEnd == std::string::npos) {
 		throw 400;
+
+
+
 	}
 
 	std::string filename = postData.substr(filenamePos, filenameEnd - filenamePos);
@@ -168,7 +171,7 @@ std::string	Response::uploadPathhandler( void ){
 
 		std::string	subPath = dirPath.substr( 0, pos );
 		if( !subPath.empty() && access( subPath.c_str(), F_OK ) == -1 ){
-			if( mkdir( subPath.c_str(), 0777 ) == -1 ){
+			if( mkdir( subPath.c_str(), 0777 ) == -1 ){>>>>>>> main
 				throw( 500 ); // Internal Server Error
 			}
 		}

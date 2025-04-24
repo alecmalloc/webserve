@@ -59,14 +59,31 @@ void Response::matchLocationConf(void) {
 	throw 500;
 }
 
+void Response::matchServerName( void ) {
+
+	std::string hostname = _request.getHostname();
+
+	std::vector<std::string> serverNames = _serverConf.getServerConfNames();
+	// if we can find req hostname match with string in serverNames
+ 	std::vector<std::string>::iterator it =  std::find(serverNames.begin(), serverNames.end(), hostname);
+
+	_serverName = ( it != serverNames.end() ) ?  hostname : "Webserv";
+}
+
 Response::Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverConfs)
 	: _redirectDest(""), _setCookieValue(""), _request(reqObj) {
 
-	if (reqObj.getResponseCode() != 200)
-		reqObj.getResponseCode();
+	// check if request flagged as non 200 val
+	if (! (reqObj.getResponseCode() >= 200 && reqObj.getResponseCode() <= 302) )
+		throw reqObj.getResponseCode();
+	// set status code to state from req obj
+	setStatusCode(reqObj.getResponseCode());
 
 	// match and set server block
 	matchServerBlock(serverConfs);
+
+	// match server name if exists
+	matchServerName();
 
 	// match and set location block
 	matchLocationConf();
@@ -74,49 +91,26 @@ Response::Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverCon
 	_pathInfo = PathInfo( _serverConf.getRootDir() + _request.getUri() );
 }
 
+void Response::generateHttpResponse() {
+	std::stringstream header;
+	header << generateStatusLine() << "\r\n";
+	header << "Date: " << getCurrentDateTime() << "\r\n";
+	header << "Server: " << _serverName << "\r\n";
+	header << "Content-Type: " << getContentType() << "\r\n";
+	header << "Content-Length: " << intToString(getBody().length()) << "\r\n";
+	header << "Connection: " << _request.getConnectionType() << "\r\n";
 
-
-void Response::generateHttpresponse(HttpRequest &reqObj) {
-	generateHeader(reqObj);
-	std::map<std::string, std::string> headerMap = getHeaderMap();
-	std::stringstream header ;
-	header << headerMap["Status-Line"] << "\r\n";
-	header << "Date: " << headerMap["Date"] << "\r\n";
-	header << "Server: " << headerMap["Server"] << "\r\n";
-	header << "Content-Type: " << headerMap["Content-Type"] << "\r\n";
-	header << "Content-Length: " << headerMap["Content-Length"] << "\r\n";
-	header << "Connection: " << headerMap["Connection"] << "\r\n";
-	//header << "Cache-Control: " << headerMap["Cache-Control"] << "\r\n";
-
-	// needed for cookies to work
-	// only if setCookieValue has been changed
-	if (_setCookieValue != "") {
-		header << "Set-Cookie: " << headerMap["Set-Cookie"] << "\r\n";
+	if (!(_setCookieValue.empty())) {
+		header << "Set-Cookie: " << _setCookieValue << "\r\n";
 	}
 	// to set location (esp for redirects)
-	if (_redirectDest != "") {
-		header << "Location: " << headerMap["Location"] << "\r\n";
+	if ( (!(_redirectDest.empty())) && (_statusCode == 301 || _statusCode == 302)) {
+		header << "Location: " << getRedirectDest() << "\r\n";
 	}
-	// std::cout << "SetCookie found: " << headerMap["Set-Cookie"] << '\n';
 
-	//header << "Last-Modified: " << headerMap["Last-Modified"] << "\r\n";
-	//header << "ETag: " << headerMap["ETag"] << "\r\n";
-	//header << "Location: " << headerMap["Location"] << "\r\n";
 	header << "\r\n"; // End of headers
 	std::string responseString = header.str() + getBody();
 	setHttpResponse(responseString);
-}
-
-std::string Response::getServerName() {
-	std::vector<std::string> server = _serverConf->getServerConfNames();
-
-	// Check if the vector has any elements
-	if (!server.empty()) {
-		// Return the first server name from the vector
-		return server[0];
-	}
-	//else default value and return
-	return("Webserv/1.0");
 }
 
 // set the Response to a certain code (template)
@@ -124,17 +118,13 @@ void Response::setBodyErrorPage(int httpCode) {
 	setBody("<html><body><h1>"
 	+ Response::intToString(httpCode)
 	+ " "
-	+ genarateReasonPhrase(httpCode)
+	+ generateReasonPhrase(httpCode)
 	+ "Error "
 	+ intToString(httpCode)
 	+ "</h1></body></html>\n");
 }
 
 void Response::generateErrorResponse(HttpRequest &reqObj) {
-	if (!_serverConf) {
-		setBodyErrorPage(500);
-		return;
-	}
 
 	// Retrieve the error pages map
 	const std::map<int, std::string>& errorPages = _serverConf->getErrorPages();

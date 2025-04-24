@@ -259,18 +259,23 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		// Get server configs
 		std::vector<ServerConf> serverConfs = confTMP.getServerConfs();
 
+		std::string responseStr;
 		// Create response and pass server confs to response constructor
 		try {
 			Response response(request, serverConfs);
-			response.processResponse(request);
-			response.generateHttpresponse(request);
+			response.processResponse();
+			response.generateHttpResponse();
+			responseStr = response.getHttpResponse();
 		}
-		catch (const std::exception& e) {
+		catch (const int& statusCode) {
 			// handle error page logic
+			ErrorResponse errorResponse(statusCode, request , serverConfs);
+			errorResponse.generateHttpResponse();
+			responseStr = response.getHttpResponse();
 		}
 
 		// write response to socket
-		write(client->getSocketFd(), response.getHttpResponse().c_str(), response.getHttpResponse().size());
+		write(client->getSocketFd(), responseStr.c_str(), responseStr.size());
 		std::cout << "========================RESPONSE=OUT==========================" << '\n';
 
 		client->clearContent();

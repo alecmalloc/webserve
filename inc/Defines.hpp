@@ -26,6 +26,9 @@
 #define CHUNK_ENC		"use_chunked_encoding"
 #define CHUNK_SIZE		"chunk_size"
 
+// defines for response
+#define HTTP_VERSION    "HTTP/1.1"
+
 
 //defines for epoll
 #define	MAX_EVENTS 	10000
