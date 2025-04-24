@@ -70,7 +70,7 @@ PathInfo::PathInfo(const PathInfo& other):
     _isFile(other._isFile),
     _hasExtension(other._hasExtension)
 {
-    ;
+	validatePath();
 }
 
 PathInfo& PathInfo::operator=(const PathInfo& other) {
@@ -100,7 +100,7 @@ int PathInfo::validatePath() {
 
     // Check for path traversal attempts using ".." in path
     if (_fullPath.find("..") != std::string::npos)
-        return 403; // Forbidden - security risk
+        throw 403; // Forbidden - security risk
 
     // Create stat structure to store file information
     struct stat statbuf;
@@ -122,18 +122,18 @@ int PathInfo::validatePath() {
         DIR* dir = opendir(_fullPath.c_str());
         if (dir == NULL) {
             _isDirectory = false;
-            return 404;
+            throw 404;
         }
         closedir(dir);
 
         // Check directory permissions
         if (!(statbuf.st_mode & S_IRUSR) || !(statbuf.st_mode & S_IXUSR)) {
-            return 403;
+            throw 403;
         }
     } else if (_isFile) {
         // Check file permissions
         if (!(statbuf.st_mode & S_IRUSR)) {
-            return 403;
+            throw 403;
         }
     }
 

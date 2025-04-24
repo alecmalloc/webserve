@@ -70,6 +70,8 @@ Response::Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverCon
 
 	// match and set location block
 	matchLocationConf();
+
+	_pathInfo = PathInfo( _serverConf.getRootDir() + _request.getUri() );
 }
 
 
@@ -176,14 +178,13 @@ void Response::generateErrorResponse(HttpRequest &reqObj) {
 	setBodyErrorPage(responseCode);
 }
 
-bool Response::isCgiRequest(const std::string& uri) {
-    // Check if URI matches CGI patterns
-    if (_locationConf &&
-        !_locationConf->getCgiPath().empty() &&
-        !_locationConf->getCgiExt().empty())  {
+bool Response::isCgiRequest( void ) {
 
+    // Check if URI matches CGI patterns
+    if ( !_locationConf->getCgiPath().empty() && !_locationConf->getCgiExt().empty() )
+    {
         // Strip query parameters by finding the first '?'
-        std::string path = uri;
+        std::string path = _request.getUri();
         size_t queryPos = path.find('?');
         if (queryPos != std::string::npos) {
             path = path.substr(0, queryPos);
@@ -204,70 +205,50 @@ bool Response::isCgiRequest(const std::string& uri) {
     return false;
 }
 
-void		Response::processResponse(HttpRequest &ReqObj){
+bool	Response::isredirectRequest( void ){
 
-	try {
-		if (!_serverConf)
-			throw 500;
-		std::string fullPath = _serverConf->getRootDir() + ReqObj.getUri();
-		PathInfo pathInfo(fullPath);
-		pathInfo.validatePath();
-		ReqObj.setPathInfo(pathInfo);
-		// Validate and parse the path
+	/*redirect request would override all request heirarchy
+	for example we could perform a GET, POST or DELETE in an old folder 
+	and that request would need to be redirected and passed on */
 
-		// CGI REQUEST CHECK HANDLER
-		// note this is the only part of the check that returns
-		if(isCgiRequest(ReqObj.getUri())){ //should be ok but some errro with cgi handler cant find files
-			std::cout << "CGI REQUEST" << '\n';
-			int result = handleCgi(ReqObj);
-			//std::cout << "CGI result" << result << '\n';
-			if(result == 0) {
-				setBody(ReqObj.getCgiResponseString());
-			}
-			return;
-		}
+	
+	if( !_locationConf.getAllowedredirects().empty() || !_serverConf.getAllowedRedirects().empty() )
+		return( true );
 
-		// redirect request would override all request heirarchy
-		// for example we could perform a GET, POST or DELETE in an old folder and that request would need to be redirected and passed on
-		// get map of location redirects
-		std::map<std::string, std::string > locationRedirect;
-		if (_locationConf)
-			locationRedirect = _locationConf->getAllowedRedirects();
-		// get map of server redirects
-		std::map<std::string, std::string > serverRedirects = _serverConf->getAllowedRedirects();
+	return( false );
+}
 
-		// handlers
-		if (!locationRedirect.empty() || !serverRedirects.empty()) {
+void		Response::processResponse( void ){
+
+		//redirect request
+		if( isRedirectRequest() ){
 			std::cout << "REDIRECT" << '\n';
-			// ternary operator evaluate which one to pass to handle redirect
-			std::map<std::string, std::string > redirect = locationRedirect.empty() ? serverRedirects : locationRedirect;
-			HandleRedirectRequest(ReqObj, redirect);
+			HandleRedirectRequest();
 		}
 
-		// GET REQUEST HANDLER
-		else if (ReqObj.getMethod() == "GET") {
+		//cgi request
+		else if( isCgiRequest() ){
+			std::cout << "CGI REQUEST" << '\n';
+			handleCgi();
+		}
+
+		//get request
+		else if( _request.getMethod() == "GET" ) {
 			std::cout << "GET REQUEST" << '\n';
-			HandleGetRequest(ReqObj,pathInfo);
+			HandleGetRequest();
 		}
-		// POST REQUEST HANDLER
-		else if (ReqObj.getMethod() == "POST") {
+		//post request
+		else if( _request.getMethod() == "POST" ) {
 			std::cout << "POST REQUEST" << '\n';
-			HandlePostRequest(ReqObj, pathInfo);
+			HandlePostRequest();
 		}
-		// HANDLE DELETE request
-		else if (ReqObj.getMethod() == "DELETE") {
+		//delete request
+		else if( _request.getMethod() == "DELETE" ) {
 			std::cout << "DELETE REQUEST" << '\n';
-			HandleDeleteRequest(ReqObj, pathInfo);
+			HandleDeleteRequest();
 		}
 
 	}
-	// catches the error and sets the code in the response code Obj
-	catch(int error)
-	{
-		ReqObj.setResponseCode(error);
-		generateErrorResponse(ReqObj);
-	}
-
 }
 
 void Response::setSetCookieValue(std::string value) {

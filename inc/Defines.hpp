@@ -5,7 +5,8 @@
 #define DEFAULT_CONF		"conf/default.conf"
 #define DEFAULT_IP		"0.0.0.0"
 #define DEFAULT_PORT		8080
-#define MAXBODYSIZE		1000000
+#define DEFAULT_BODY_SIZE	1000000
+#define DEFAULT_UP_DIR		"./uploads/"
 
 //defines for parser. Methodes Names how config stuff is called etc.
 #define ALLOWED_METHODES	{ "POST", "DELETE", "GET" }
