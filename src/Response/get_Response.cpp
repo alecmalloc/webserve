@@ -1,129 +1,122 @@
 #include "webserv.hpp"
 
-std::string Response::constructFullPath(const std::string uri){
-	std::string fullPath = _serverConf->getRootDir();
-	if (_locationConf && uri.find(_locationConf->getPath()) == 0) {
-		// URI already starts with location path add uri
-		fullPath +=  uri;
-	} else if (_locationConf) {
-		// Location doesn't match URI prefix, need to combine them
-		fullPath += _locationConf->getPath() + uri;
-	} else {
-		// No location matched
-		fullPath += uri;
-	}
-	return(fullPath);
+//serve Files
+void	Response::serveFileIfExists( const std::string& fullPath ){
+
+	std::ifstream file( fullPath.c_str(), std::ios::in | std::ios::binary );
+
+	if( !file )
+	       throw( 500 );	
+
+	std::ostringstream	contents;
+
+	contents << file.rdbuf();
+	file.close();
+
+	setBody( contents.str() );
+
+	setResponseCode(200);
 }
 
+//server file from _serverConf
+void	Response::serveRootIndexfile( void ){
 
-bool Response::serveFileIfExists(const std::string& fullPath, HttpRequest& ReqObj) {
-    std::ifstream file(fullPath.c_str(), std::ios::in | std::ios::binary);
+	std::string			fullPath = _pathInfo.getFullPath();
+	std::vector<std::string>	indexFiles = _serverConf->getIndex();
 
-    if (file) {
-        std::ostringstream contents;
-        contents << file.rdbuf();
-        file.close();
+	if( !indexFiles.empty() ){
+		for (std::vector<std::string>::iterator it = indexFiles.begin(); \
+		     it != indexFiles.end(); ++it){
 
-        setBody(contents.str());
-        ReqObj.setResponseCode(200);
-
-        return true; // File served successfully
-    }
-
-    return false; // File not found
-}
-
-bool Response::serveRootIndexfile(HttpRequest& ReqObj,std::string fullPath){
-	std::vector<std::string> indexFiles = _serverConf->getIndex();
-    if (!indexFiles.empty()) {
-		for (std::vector<std::string>::iterator it = indexFiles.begin(); it != indexFiles.end(); ++it) {
-			const std::string& indexFile = *it; // Dereference the iterator to get the current index file
+			//store each index path
+			const std::string& indexFile = *it;
 
 			// Construct the path to the index file
 			std::string rootIndexPath = _serverConf->getRootDir() + "/" + indexFile;
 
-			if (serveFileIfExists(rootIndexPath, ReqObj) == true) {
-				return true; // Exit after serving the index file
-			}
+			//check for access and serve
+			if( access( rootIndexPath, R_OK ) == 0 )
+				serveFileIfExists(rootIndexPath, _request);
+			
 		}
 	}
 
-	if(_serverConf->getAutoIndex() == true){
-		setBody(generateDirectoryListing(fullPath));
-		ReqObj.setResponseCode(200);
-		return(true);
+	//if no index check for autodirectory listing
+	else if( _serverConf->getAutoIndex() == true ){
+		setBody( generateDirectoryListing( fullPath ) );
+		_request.setResponseCode(200);
 	}
 
 	//no root index file
-	ReqObj.setResponseCode(404);
-	throw 404;
-	return false;
+	else
+		throw( 404 );
 }
 
-bool Response::serveLocationIndex(HttpRequest& ReqObj){
-	std::vector<std::string> indexFiles = _locationConf->getIndex();
-	if (!indexFiles.empty()) {
-		for (std::vector<std::string>::iterator it = indexFiles.begin(); it != indexFiles.end(); ++it) {
-			const std::string& indexFile = *it; // Dereference the iterator to get the current index file
+//serve file from locationConf
+void Response::serveLocationIndex( void ){
 
+	std::string			fullPath = _pathInfo.getFullPath();
+	std::vector<std::string>	indexFiles = _locationConf->getIndex();
+
+	if( !indexFiles.empty() ){
+		for (std::vector<std::string>::iterator it = indexFiles.begin(); \
+		     it != indexFiles.end(); ++it){
+
+			//store each index path
+			const std::string& indexFile = *it;
+
+			//TODO::check if location index path is already with root dir
 			// Construct the path to the index file
 			std::string rootIndexPath = indexFile;
-			//std::cout << "trying index file for location " << rootIndexPath << "\n";
-			if (serveFileIfExists(rootIndexPath, ReqObj) == true) {
-				//std::cout << "found index file for location " << rootIndexPath << "\n";
-				return true; // Exit after serving the index file
-			}
+
+			//check for access and serve
+			if( access( rootIndexPath, R_OK ) == 0 )
+				serveFileIfExists(rootIndexPath, _request);
+			
 		}
 	}
-	return false;
+
+	//if no index check for autodirectory listing
+	else if( _locationConf->getAutoIndex() == true ){
+		setBody( generateDirectoryListing( fullPath ) );
+		_request.setResponseCode(200);
+	}
+
+	//no root index file
+	else
+		throw( 404 );
 }
 
-void Response::HandleGetRequest(HttpRequest& ReqObj, PathInfo& pathInfo) {
-    std::string uri = ReqObj.getUri();
-	std::string fullPath = pathInfo.getFullPath();
+static bool	isCookie( std::string uri ){
+	if (uri == "/customCookiesEndpoint/CookiesPage" || \
+	    uri == "/customCookiesEndpoint/CookiesPage/deactivate" ||\
+	    uri == "/customCookiesEndpoint/CookiesPage/activate")
+		return( true );
+	return( false );
+}
 
-    // custom cookies override - Alec
-    // check if the uri points at the /customCookiesEndpoint/CookiesPage end point
-    if (uri == "/customCookiesEndpoint/CookiesPage"
-        || uri == "/customCookiesEndpoint/CookiesPage/deactivate"
-        || uri == "/customCookiesEndpoint/CookiesPage/activate") {
-        handleCookiesPage(ReqObj);
-        return;
-    }
+void	Response::HandleGetRequest( void ){
 
-	if(pathInfo.isFile()) {
-		if(serveFileIfExists(fullPath, ReqObj) == true)
-			return;
-		else{
-			ReqObj.setResponseCode(404);
-			throw 404;
-		}
-	}
+	std::string uri = _request.getUri();
+	std::string fullPath = _pathInfo.getFullPath();
 
-	//std::cout << "serverconf root dir " << _serverConf->getRootDir() << "and uri " << uri << "and full path " << fullPath <<"\n";
-	// Check if the URI is the root directory
-	if (uri == "/" || fullPath == _serverConf->getRootDir() || fullPath == "./" || fullPath == "/") {
-  		if (serveRootIndexfile(ReqObj, fullPath) == true)
-        	return;
-	}
-    if (_locationConf) {
+	// custom cookies override - Alec
+	// check if the uri points at the /customCookiesEndpoint/CookiesPage end point
+	if( isCookie( uri ) )
+		handleCookiesPage(_request);
 
-		if(pathInfo.isDirectory()){
-			//check for location index file
-		if(serveLocationIndex(ReqObj) == true){
-			return;
-		}
-		std::cout << "loc conf auto index " << _locationConf->getAutoIndex() << " server conf auto " << _serverConf->getAutoIndex() << "\n";
+	//if request is a file -> serve
+	else if( _pathInfo.isFile() )
+		serveFileIfExists(fullPath, _request);
+	
 
-  	  if( _locationConf->getAutoIndex() == true || (_serverConf->getAutoIndex() == true && _locationConf->getAutoIndex() == 0 )){
-			setBody(generateDirectoryListing(pathInfo.getFullPath()));
-			ReqObj.setResponseCode(200);
-			return;
-		}
-		}
-	}
-
-    ReqObj.setResponseCode(404);
-    throw 404; // Not Found
+	//if request is root dir -> serve
+	else if( fullPath == _serverConf->getRootDir() )
+		serveRootIndexfile(_request, fullPath);
+	
+	//TODO::check with wrong search if 404 is returned
+	//serve locationblock
+	else
+		serveLocationIndex();
 }
 

@@ -5,7 +5,7 @@
 
 //constructors
 
-ServerConf::ServerConf( void ) : _bodySize( 0 ), _autoIndex( false ) {;}
+ServerConf::ServerConf( void ) : _bodySize( DEFAULT_BODY_SIZE ), _autoIndex( false ) {;}
 
 ServerConf::ServerConf( const ServerConf& og ){
 	_ipPort = og._ipPort;

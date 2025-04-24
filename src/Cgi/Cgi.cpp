@@ -14,108 +14,105 @@ static std::string	toString( size_t i ){
 	return( ss.str() );
 }
 
-std::string stripQueryParams(const std::string& uri) {
-    size_t pos = uri.find('?');
-    if (pos != std::string::npos) {
-        return uri.substr(0, pos);
-    }
-    return uri;
+std::string	stripQueryParams(const std::string& uri) {
+
+	size_t	pos = uri.find('?');
+
+	if( pos != std::string::npos )
+		return uri.substr(0, pos);
+
+	return uri;
 }
 
 std::string extractQueryString(const std::string& uri) {
-    size_t pos = uri.find('?');
-    if (pos != std::string::npos) {
-        return uri.substr(pos + 1);
-    }
-    return "";
+	size_t pos = uri.find('?');
+	if (pos != std::string::npos) {
+		return uri.substr(pos + 1);
+	}
+	return "";
 }
 
-static int getVectors(ServerConf server, std::vector<std::string>& ext, 
-                      std::vector<std::string>& path, std::string uri) {
-    // Strip query parameters first
-    std::string cleanUri = stripQueryParams(uri);
-    
-    // Extract just the path part (remove any query string)
-    std::string::size_type question = cleanUri.find('?');
-    if (question != std::string::npos) {
-        cleanUri = cleanUri.substr(0, question);
-    }
-    
-    // Get the path component
-    std::string uriPath = cleanUri;
-    std::string::size_type lastSlash = uriPath.find_last_of('/');
-    if (lastSlash != std::string::npos) {
-        uriPath = uriPath.substr(0, lastSlash+1);
-    }
-    
-    // Improve location matching
-    const std::vector<LocationConf>& locations = server.getLocationConfs();
-    
-    for (std::vector<LocationConf>::const_iterator it = locations.begin(); 
-         it != locations.end(); ++it) {
-        
-        std::string Compare_dir = it->getPath();
-        
-        // Match based on path prefix, not exact match
-        if (uriPath.find(Compare_dir) == 0) {
-            ext = it->getCgiExt();
-            path = it->getCgiPath();
-            
-            for (std::vector<std::string>::const_iterator extIt = ext.begin(); extIt != ext.end(); ++extIt) {
-                //std::cerr << *extIt << " ";
-            }
-            std::cerr << std::endl;
-            return (0);
-        }
-    }
-    
-    return (-1);
+static int	getVectors(ServerConf server, std::vector<std::string>& ext, \
+		std::vector<std::string>& path, std::string uri ){
+
+	// Strip query parameters first
+	std::string			cleanUri = stripQueryParams( uri );
+	// Extract just the path part (remove any query string)
+	std::string::size_type	question = cleanUri.find('?');
+
+	if( question != std::string::npos )
+		cleanUri = cleanUri.substr( 0, question );
+
+	// Get the path component
+	std::string			uriPath = cleanUri;
+	std::string::size_type	lastSlash = uriPath.find_last_of( '/' );
+
+	if( lastSlash != std::string::npos )
+		uriPath = uriPath.substr( 0, lastSlash + 1 );
 }
 
-static int	checkFile( HttpRequest& req, std::string& interpreter ){
+// Improve location matching
+const std::vector<LocationConf>& locations = server.getLocationConfs();
+
+for( std::vector<LocationConf>::const_iterator it = locations.begin(); \
+		it != locations.end(); ++it ){
+
+	std::string Compare_dir = it->getPath();
+
+	// Match based on path prefix, not exact match
+	if( uriPath.find( Compare_dir ) == 0 ){
+		ext = it->getCgiExt();
+		path = it->getCgiPath();
+		return( 0 );
+	}
+}
+return( -1 );
+}
+
+static void	checkFile( Response& resp, std::string& interpreter ){
+
 	//vectors with stored cgi parameters
-	std::vector< std::string > ext;
-	std::vector< std::string > path;
+	std::vector<std::string>	ext;
+	std::vector<std::string>	path;
+
+	//store request
+	HttpRequest&			req = resp.getHttpRequest();
 
 	//get vectors
-	if( getVectors( req.getServer(), ext, path, req.getUri() ) == -1 ){
-		return( 404);
-	}
-		
+	if( getVectors( resp.getServerConf(), ext, path, req.getUri() ) == -1 )
+		throw( 500 );
 
-	std::string uri = stripQueryParams(req.getUri());
-    
+
+	std::string			uri = stripQueryParams(req.getUri());
 	std::string			end;
 	std::string::size_type		dot = uri.rfind( '.', uri.npos );
 
-	//return if no ending is found ".cgi"
+	//return if no ending is found eg ".pl"
 	if( dot == std::string::npos ){
-		return( 404);
+		throw( 500 );
 	}
-	
+
 
 	end = uri.substr( dot, uri.npos );
 	std::vector< std::string >::iterator it = std::find( ext.begin(), ext.end(), end );
 
-	//RROR: Cgi: not found /cgi-bin/get_test.py?search=pizza+&category=news
-	//need to adjust for  endings like 
-
 	//return if ending is not inside cgiExt
 	if( it == ext.end() ){
-		return( 404);
+		throw( 500 );
 	}
-    std::string fullPath = "." + uri;
+
+	std::string fullPath = "." + uri;
 
 	//check if file is accesible
-	if( access( fullPath.c_str(), F_OK ) == -1 ){
-	return( 404);
-	}
+	if( access( fullPath.c_str(), F_OK ) == -1 )
+		throw( 500 );
+
 	//check if file is executealbe
-	if( access( fullPath.c_str(), X_OK ) == -1 ){
-		return( 403);
-		}
-	std::vector< std::string >::iterator extIt = ext.begin();
-	std::vector< std::string >::iterator pathIt = path.begin();
+	if( access( fullPath.c_str(), X_OK ) == -1 )
+		throw( 403 );
+
+	std::vector<std::string>::iterator	extIt = ext.begin();
+	std::vector<std::string>::iterator	pathIt = path.begin();
 
 	while( extIt != ext.end() &&  pathIt != path.end() ){
 		if( extIt == it ){
@@ -125,85 +122,63 @@ static int	checkFile( HttpRequest& req, std::string& interpreter ){
 		extIt++;
 		pathIt++;
 	}
+
 	if( interpreter.empty() ){
-		return( 500);
+		throw( 500 );
 	}
-	return( 200 );
 }
 
-// COMMENTED OUT BECAUSE WE DONT NEED AND REQUEST DOESNT HAVE FD ANYMORE
-// static void	setIpPort( HttpRequest& req, std::string& ip, std::string& port ){
-// 	struct sockaddr_in	serverAddr;
-// 	socklen_t		addrLen = sizeof( serverAddr );	
+static void	setEnv( Response& resp char*** env ){
 
-// 	if( getsockname( req.getFd(), ( struct sockaddr* ) &serverAddr, &addrLen ) == 0){
-// 		ip = inet_ntoa( serverAddr.sin_addr );
-// 		port = toString( ntohs( serverAddr.sin_port ) );
-// 	}
-// 	else {
-// 		ip = "127.0.0.1";
-// 		port = "80";
-// 	}
-// }
+	//HttpRequest
+	HttpRequest&	req = resp.getHttpRequest();
 
-//check if other env variables needed?
-static void	setEnv( HttpRequest& req, char*** env ){
 	//get SERVER_IP and SERVER_PORT for env
-	//std::string ip, port;
-	std::string ip = "127.0.0.1";  // Default IP
-    std::string port = "8080";     // Default port or get from config
-    // Extract from Host header if available
-    if (req.getHeaders().count("Host")) {
-        std::string host = req.getHeaders().at("Host")[0];
-        size_t colonPos = host.find(':');
-        if (colonPos != std::string::npos) {
-            ip = host.substr(0, colonPos);
-            port = host.substr(colonPos+1);
-        } else {
-            ip = host;
-        }
-	}
-	//setIpPort( req, ip, port );
+	std::string	ip = req.getHostname();
+	std::string	port = intToString( req.getPort() );
 
+	// Extract from Host header if available
+	if( req.getHeaders().count("Host") ) {
+		std::string host = req.getHeaders().at("Host")[0];
+		size_t colonPos = host.find(':');
+		if (colonPos != std::string::npos) {
+			ip = host.substr(0, colonPos);
+			port = host.substr(colonPos+1);
+		} else {
+			ip = host;
+		}
+	}
 
 	//set env via strings 
 	// Extract query string separately
-    std::string queryString = extractQueryString(req.getUri());
+	std::string queryString = extractQueryString(req.getUri());
 
 	std::map< std::string, std::string > tmpEnv;
 
-	tmpEnv[ "REQUEST_METHOD" ]	= req.getMethod().empty() ? "GET" : req.getMethod();
-	tmpEnv[ "QUERY_STRING" ]  	= queryString;
-	tmpEnv[ "SCRIPT_NAME" ]   	= req.getUrl().empty() ? \
-						"/index.cgi" : req.getUrl();
-	tmpEnv[ "SCRIPT_FILENAME" ]   	= req.getUrl().empty() ? \
-						"/index.cgi" : req.getUrl();
-	tmpEnv[ "CONTENT_LENGTH" ]	= ( req.getMethod()== "POST" ) ? \
-						toString( req.getBody().length() ) : "0";
-	tmpEnv[ "CONTENT_TYPE" ]   	= req.getHeaders().count( "Content-Type" ) ? \
-						req.getHeaders().at( "Content-Type" )[0] : \
-						"text/plain";
-	
-	tmpEnv[ "SERVER_PROTOCOL" ]  	= req.getVersion().empty() ? "HTTP/1.1" :
-						req.getVersion();
-	
-	tmpEnv[ "REDIRECT_STATUS" ]	= "200";
-	tmpEnv[ "GATEWAY_INTERFACE" ]	= "CGI/1.1";
-	tmpEnv[ "PATH_INFO" ]		= req.getUri().empty() ? "" : req.getUri();
-	tmpEnv["SERVER_NAME"] = req.getHeaders().count("Host") ? 
-                       req.getHeaders().at("Host")[0] : 
-                       ip + ":" + port;
+	tmpEnv["REQUEST_METHOD"] = req.getMethod().empty() ? "GET" : req.getMethod();
+	tmpEnv["QUERY_STRING"] = queryString;
+	tmpEnv["SCRIPT_NAME"] = req.getUrl().empty() ? "/index.cgi" : req.getUrl();
+	tmpEnv["SCRIPT_FILENAME"] = req.getUrl().empty() ? "/index.cgi" : req.getUrl();
+	tmpEnv["CONTENT_LENGTH"] = req.getMethod()== "POST" ? toString( req.getBody().length() ) : "0";
+	tmpEnv["CONTENT_TYPE"] = req.getHeaders().count( "Content-Type" ) ? \
+		req.getHeaders().at( "Content-Type" )[0] : "text/plain";
+	tmpEnv["SERVER_PROTOCOL"] = req.getVersion().empty() ? "HTTP/1.1" : req.getVersion();
+	tmpEnv["REDIRECT_STATUS"] = "200";
+	tmpEnv["GATEWAY_INTERFACE"] = "CGI/1.1";
+	tmpEnv["PATH_INFO"] = req.getUri().empty() ? "" : req.getUri();
+	tmpEnv["SERVER_NAME"] = req.getHeaders().count("Host") ? \
+		req.getHeaders().at("Host")[0] : ip + ":" + port;
 	tmpEnv["SERVER_PORT"] = port;
 	tmpEnv["REMOTE_ADDR"] = ip;
-	tmpEnv["REQUEST_URI"] = req.getHeaders().count("Host") ? 
-                       req.getHeaders().at("Host")[0] + req.getUri() :
-                       ip + ":" + port + req.getUri();
+	tmpEnv["HOST"] = resp.getHostName();
+	tmpEnv["REQUEST_URI"] = req.getHeaders().count("Host") ? \
+		req.getHeaders().at("Host")[0] + req.getUri() : ip + ":" + port + req.getUri();
 
-	
 	//transfer headers to be HTTP_...
-	const std::map< std::string, std::vector< std::string > >& headers = req.getHeaders();
-	for( std::map< std::string, std::vector< std::string > >::const_iterator it = \
-			headers.begin(); it != headers.end(); it++ ){
+	const std::map<std::string, std::vector< std::string>>&	headers = req.getHeaders();
+	for( std::map<std::string, std::vector< std::string>>::const_iterator it = headers.begin(); \
+		it != headers.end(); it++ ){
+
 		std::string key = "HTTP_" + it->first;
 		std::replace(key.begin(), key.end(), '-', '_');
 		tmpEnv[ key ] = it->second.empty() ? "" : it->second[0];
@@ -216,27 +191,28 @@ static void	setEnv( HttpRequest& req, char*** env ){
 	for( std::map< std::string, std::string >::iterator it = tmpEnv.begin(); \
 			it != tmpEnv.end(); it++ ){
 		std::string	entry = it->first + "=" + it->second;
-		( *env )[ index ] = new char[ entry.length() + 1 ];
-		( *env )[ index ] = std::strcpy( ( *env )[ index ], entry.c_str() );
+		(*env)[index] = new char[entry.length() + 1];
+		(*env)[index] = std::strcpy( (*env)[index], entry.c_str() );
 		index++;
 	}
-	( *env )[ index ] = NULL;
+	(*env)[index] = NULL;
 }
 
 static int	childProcess( HttpRequest& req, int* inputPipe, int* outputPipe, \
-	       		std::string& interpreter ){
+		std::string& interpreter ){
+
 	//dup input to pipe nad output to pipe for connection to parent
 	if( dup2( inputPipe[0], STDIN_FILENO ) == -1 ){
 		std::cerr << RED << "ERROR: Dup failed" << END << std::endl;
 		closePipe( inputPipe );
 		closePipe( outputPipe );
-		return( -1 );
+		throw( 500 );
 	}
 	if( dup2( outputPipe[1], STDOUT_FILENO ) == -1 ){
 		std::cerr << RED << "ERROR: Dup failed" << END << std::endl;
 		closePipe( inputPipe );
 		closePipe( outputPipe );
-		return( -1 );
+		throw( 500 );
 	}
 
 	//create env for execve
@@ -248,15 +224,14 @@ static int	childProcess( HttpRequest& req, int* inputPipe, int* outputPipe, \
 	close( outputPipe[0] );
 
 	// Construct the full file path by combining the root directory with the URI
-    std::string rootDir = req.getServer().getRootDir();
-    std::string uri = stripQueryParams(req.getUri());
-    std::string scriptPath = rootDir + uri;
-    
-    // Pass the clean path to execve
-    const std::string inter = interpreter;
-    char* args[] = { const_cast<char*>(inter.c_str()), 
-                    const_cast<char*>(scriptPath.c_str()), 
-                    NULL };
+	std::string		rootDir = req.getServer().getRootDir();
+	std::string		uri = stripQueryParams(req.getUri());
+	std::string		scriptPath = rootDir + uri;
+
+	// Pass the clean path to execve
+	const std::string inter = interpreter;
+	char* args[] = { const_cast<char*>(inter.c_str()), const_cast<char*>(scriptPath.c_str()), \
+		NULL };
 
 	//execute
 	execve( inter.c_str(), args, env );
@@ -264,45 +239,46 @@ static int	childProcess( HttpRequest& req, int* inputPipe, int* outputPipe, \
 	//error 
 	close( inputPipe[0] );
 	close( outputPipe[1] );
-	for( int i = 0; env[i]; i++ ){
-		delete[] env[i];
-	}
-	delete[] env;
 
-	return( -1 );
+	for( int i = 0; env[i]; i++ )
+		delete[] env[i];
+
+	delete[] env;
+	throw( 500 );
 }
 
 // Function to get the body of the response by skipping headers
 std::string getBody(const std::string& response) {
-    // If response is empty, return empty string
-    if (response.empty()) {
-        return "";
-    }
+	// If response is empty, return empty string
+	if (response.empty()) {
+		return "";
+	}
 
-    // Search for the standard HTTP header/body separator from the end
-    size_t bodyStart = 0;
-    
-    // Look for the last header separator
-    size_t headerSep = response.rfind("\r\n\r\n");
-    if (headerSep != std::string::npos) {
-        // Found standard HTTP header separator
-        bodyStart = headerSep + 4; // Skip past \r\n\r\n
-    } else {
-        // Try Unix-style separator
-        headerSep = response.rfind("\n\n");
-        if (headerSep != std::string::npos) {
-            bodyStart = headerSep + 2; // Skip past \n\n
-        } else {
-            // If no separator found, assume the whole response is the body
-            return response;
-        }
-    }
-    
-    // Return everything after the separator
-    return response.substr(bodyStart);
+	// Search for the standard HTTP header/body separator from the end
+	size_t bodyStart = 0;
+
+	// Look for the last header separator
+	size_t headerSep = response.rfind("\r\n\r\n");
+	if (headerSep != std::string::npos) {
+		// Found standard HTTP header separator
+		bodyStart = headerSep + 4; // Skip past \r\n\r\n
+	} else {
+		// Try Unix-style separator
+		headerSep = response.rfind("\n\n");
+		if (headerSep != std::string::npos) {
+			bodyStart = headerSep + 2; // Skip past \n\n
+		} else {
+			// If no separator found, assume the whole response is the body
+			return response;
+		}
+	}
+
+	// Return everything after the separator
+	return response.substr(bodyStart);
 }
 
-static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid_t pid ){
+static void	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid_t pid ){
+
 	//status for childs
 	int	status;
 
@@ -312,32 +288,27 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 
 	//send body to process if needed
 	if (req.getMethod() == "POST") {
-        // Create a local copy of the body first
-        std::string body = req.getBody();
-		while (!body.empty() && (body[body.size()-1] == '\n' || body[body.size()-1] == '\r')) {
-            body.erase(body.size() -1 );
-        }
-		req.setBody(body);
 
-		size_t bytesWritten = 0;
-		size_t totalBytes = body.size();
-		const char* data = body.c_str();
-		
-		while (bytesWritten < totalBytes) {
-			ssize_t result = write(inputPipe[1], data + bytesWritten, totalBytes - bytesWritten);
-    
-			if (result <= 0) {
-				// Handle error
-				break;
-			}
+		size_t		bytesWritten = 0;
+		size_t t	botalBytes = body.size();
+		const char*	data = body.c_str();
+
+		while( bytesWritten < totalBytes ) {
+			ssize_t result;
+			result = write(inputPipe[1], data + bytesWritten, totalBytes - bytesWritten);
+
+			// Handle error
+			if (result <= 0)
+				throw( 500 );
+
 			bytesWritten += result;
 		}
-		
+
 		// Add a small delay to ensure data is transferred before closing pipe
-		usleep(5000);  // 1ms delay
+		usleep( 5000 );  // 1ms delay
 	}
-		
-	
+
+
 	//close reaminig inputpipe so process dosent wait
 	close( inputPipe[1] );
 
@@ -356,7 +327,7 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 	size_t		bytesRead;
 
 	while( true ){
-	
+
 		//wait for child to write to fd
 		pollRet = poll( &pfd, 1, TIMEOUT_TIME );
 
@@ -365,8 +336,7 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 			close( outputPipe[0] );
 			kill( pid, SIGKILL );
 			waitpid( pid, &status, 0 );
-			throw(500);
-			return( -1 );
+			throw( 500 );
 		}
 
 		//if return == TIMEOUT
@@ -376,29 +346,33 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 			kill( pid, SIGKILL );
 			waitpid( pid, &status, 0 );
 			req.setResponseCode( 504 );
-			throw(504);
-			return( -1 );
+			throw( 504 );
 		}
+
 		else{
 			bytesRead = read( outputPipe[0], buffer, BUFFERSIZE - 1 );
+
 			if( bytesRead > MAX_BYTES ){
 				std::cerr << "CGI: Limit exceeded" << std::endl;
 				kill( pid, SIGKILL );
-				throw(500);
-				break;
+				throw( 500 );
 			}
+
 			if( bytesRead > 0 ){
 				response += std::string( buffer, BUFFERSIZE );
 				std::memset( buffer, '\0', BUFFERSIZE );
 				startTime = time( NULL );
 			}
+
 			else if( bytesRead == 0 )
 				break;
 		}
 	}
 
 	response = getBody(response);
+
 	req.setCgiResponseString(response);
+
 	//close final pipe
 	close( outputPipe[0] );
 
@@ -406,55 +380,58 @@ static int	parentProcess( HttpRequest& req, int* inputPipe, int* outputPipe, pid
 	waitpid( pid, &status, 0 );
 
 	if( WIFEXITED( status ) && WEXITSTATUS( status ) != 0 )
-		return( -1 );
-	return( 0 );
+		throw( 500 );
 }
 
-int	handleCgi( HttpRequest& req ){
+int	handleCgi( Response& resp ){
 
-	int	inputPipe[2], outputPipe[2];
-	pid_t	pid;
+	//Cgi stuff
+	int		inputPipe[2], outputPipe[2];
+	pid_t		pid;
 
-	size_t maxBodySize = req.getServer().getBodySize();//later add here location conf maxbody size 
+	//HttpRequest stuff
+	size_t		maxBodySize; 
+	HttpRequest&	req = resp.getHttpRequest();
 
-	//clean body first 
-	if (req.getMethod() == "POST") {
-        // Create a local copy of the body first
-        std::string body = req.getBody();
-		//std::cout << "body size " << body.size() << "max body size " << maxBodySize << "\n";
-		if(body.size() > maxBodySize ){
+	if( resp.getLocationConf().getBodyInitilized() )
+		maxBodySize = resp.getLocatiobConf().getBodySize(); 
+	else
+		maxBodySize = resp.getServerConf().getBodySize();
+
+	//clean body from httpboundaries \r\n
+	if ( req.getMethod() == "POST" ) {
+		// Create a local copy of the body first
+		std::string body = req.getBody();
+
+		if( body.size() > maxBodySize ){
 			std::cerr << RED << "ERROR: Cgi: POST TO BIG" << END << std::endl;
-			throw(413);
-			return (-1);//mabe add a error page here 
+			throw( 413 );
 		}
-		while (!body.empty() && (body[body.size()-1] == '\n' || body[body.size()-1] == '\r')) {
-            body.erase(body.size() -1 );
-        }
-		//body += "\r\n";
-		req.setBody(body);
+		while( !body.empty() && ( body[body.size()-1] == '\n' || body[body.size()-1] == '\r' ) )
+			body.erase( body.size() -1 );
+
+		req.setBody( body );
 	}
+
 	//check file ending and access to it  and store interpreter for executuing
 	std::string	interpreter;
-	int checkFileRes = checkFile( req, interpreter );
+	int		checkFileRes = checkFile( req, interpreter );
+
 	if( checkFileRes != 200){
-		std::cerr << RED << "ERROR: Cgi: not found " << req.getUri() << END << \
-			std::endl;
-		throw(checkFileRes);
-		return( -1 );
+		std::cerr << RED << "ERROR: Cgi: not found " << req.getUri() << END << std::endl;
+		throw( checkFileRes );
 	}
 
 	//open pipes for sending data
 	if( pipe( inputPipe ) < 0 ){
 		std::cerr << RED << "ERROR: Cgi: Pipe" << END << std::endl;
-		throw(500);
-		return( -1 );
+		throw( 500 );
 	}
 
 	if( pipe( outputPipe ) < 0 ){
 		std::cerr << RED << "ERROR: Cgi: Pipe" << END << std::endl;
 		closePipe( inputPipe );
-		throw(500);
-		return( -1 );
+		throw( 500 );
 	}
 
 	//fork for cgi execution
@@ -467,18 +444,13 @@ int	handleCgi( HttpRequest& req ){
 		closePipe( inputPipe );
 		closePipe( outputPipe );
 		throw(500);
-		return( -1 );
 	}
 
 	//handle child
 	if( pid == 0 )
-		return( childProcess( req, inputPipe, outputPipe, interpreter ) );
+		childProcess( req, inputPipe, outputPipe, interpreter );
 
 	//handle parent
-	else{
-		return( parentProcess( req, inputPipe, outputPipe, pid ) );
-	}
-
+	else
+		parentProcess( req, inputPipe, outputPipe, pid );
 }
-
-

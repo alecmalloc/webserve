@@ -17,17 +17,17 @@ class LocationConf {
 		LocationConf&	operator =( const LocationConf& og );
 
 		//getter functions
-		const std::string			getPath( void ) const;
-		const std::vector< std::string >	getAllowedMethods( void ) const;
+		const std::string				getPath( void ) const;
+		const std::vector< std::string >		getAllowedMethods( void ) const;
 		const std::map< std::string, std::string >	getAllowedRedirects( void ) const;
-		const std::string			getRootDir( void ) const;
-		int					getAutoIndex( void ) const;
-		const std::vector< std::string >	getIndex( void ) const;
-		const std::vector< std::string >	getCgiPath( void ) const;
-		const std::vector< std::string >	getCgiExt( void ) const;
-		const std::string			getUploadDir( void ) const;
-		size_t					getBodySize( void ) const;
-		bool					getBodySizeInitilized( void ) const;
+		const std::string				getRootDir( void ) const;
+		int						getAutoIndex( void ) const;
+		const std::vector< std::string >		getIndex( void ) const;
+		const std::vector< std::string >		getCgiPath( void ) const;
+		const std::vector< std::string >		getCgiExt( void ) const;
+		const std::string				getUploadDir( void ) const;
+		size_t						getBodySize( void ) const;
+		bool						getBodySizeInitilized( void ) const;
 
 		//setter functions
 		void	setPath( std::string );
@@ -73,6 +73,7 @@ class LocationConf {
 		//body size
 		bool				_bodySizeInitilized;
 		size_t				_bodySize;
+
 };
 	std::ostream& operator <<(std::ostream& os, const LocationConf& loc);
 #endif
