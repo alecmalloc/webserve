@@ -1,11 +1,7 @@
 #include "webserv.hpp"
 
-HttpRequest::HttpRequest():
-    _response_code(200),
-    _port(-1),
-    _pathInfo()
+HttpRequest::HttpRequest()
 {
-    _cgiResponseString = "";
 }
 
 HttpRequest::HttpRequest(Config& conf):
