@@ -64,20 +64,15 @@ class Response {
 		bool					getIsLocation( void );
 
 		// Setters
-		void		setHttpResponse(const std::string& httpResponse) { _httpResponse = httpResponse; }
-		void 		setResLen(int resLen) { _ResLen = resLen; }
-		void 		setStatusLine(const std::string& statusLine) { _statusLine = statusLine; }
-		void 		setBody(const std::string& body) { _body = body; }
-		void 		setFileSize(long fileSize) { _fileSize = fileSize; }
-		void 		setFilename(const std::string& filename) { _filename = filename; }
-		void 		setStatusCode(int statusCode) { statusCode = statusCode; }
-		void 		setRedirectDest(const std::string& redirectDest) { _redirectDest = redirectDest; };
-		void 		setSetCookieValue(std::string value);
-		void 		createSession( void );
-		void		deleteSession( std::string sessionID );
-		std::string findSession( std::vector<std::string> cookies );
+		void		setHttpResponse( const std::string& );	
+		void 		setStatusLine( const std::string& );
+		void 		setBody( const std::string& );
+		void 		setFileSize( long );
+		void 		setFilename( const std::string& );
+		void 		setRedirectDest( const std::string& );
+		void 		setSetCookieValue( std::string );
 		void		setBodyErrorPage(int httpCode);
-		void		setStatus(int statusCode) {_statusCode = statusCode;};
+		void		setStatus( int statusCode );
 
 
 		//memberfunctions
@@ -93,6 +88,11 @@ class Response {
 		// matching functions
 		void		matchServerBlock(const std::vector<ServerConf>& serverConfs);
 		void 		matchLocationConf( void );
+
+		//cookie session
+		void 		createSession( void );
+		void		deleteSession( std::string sessionID );
+		std::string 	findSession( std::vector<std::string> cookies );
 };
 
 // helpers
