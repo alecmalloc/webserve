@@ -105,7 +105,7 @@ class Response {
 		void setBody(const std::string& body) { _body = body; }
 		void setFileSize(long fileSize) { _fileSize = fileSize; }
 		void setFilename(const std::string& filename) { _filename = filename; }
-		void setStatusCode(int statusCode) { statusCode = statusCode; }
+		void setStatusCode(int statusCode) { _statusCode = statusCode; }
 
 		void setReasonPhrase(const std::string &reasonPhrase);
 		void setRedirectDest(const std::string& redirectDest) { _redirectDest = redirectDest; };
