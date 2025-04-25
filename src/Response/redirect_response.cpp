@@ -1,6 +1,6 @@
 #include "webserv.hpp" 
 
-void    Response::HandleRedirectRequest( HttpRequest& ReqObj ){
+void    Response::handleRedirectRequest( HttpRequest& ReqObj ){
 
 	int             code;
 	std::string     dest;

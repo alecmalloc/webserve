@@ -1,6 +1,6 @@
 #include "webserv.hpp"
 
-void	Response::HandleDeleteRequest( void ){
+void	Response::handleDeleteRequest( void ){
 
 	// TODO::check if _locationConfis defined
 	// TODO::add corrct status code when deleting

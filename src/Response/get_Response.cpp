@@ -97,7 +97,7 @@ static bool	isCookie( std::string uri ){
 	return( false );
 }
 
-void	Response::HandleGetRequest( void ){
+void	Response::handleGetRequest( void ){
 
 	std::string uri = _request.getUri();
 	std::string fullPath = _pathInfo.getFullPath();
