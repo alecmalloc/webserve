@@ -92,10 +92,13 @@ void ErrorResponse::matchErrorPage() {
 static std::string generateGenericErrorPage(int statusCode) {
     std::string html;
 
-    html += "<html><body><h1>";
-    html += "Error: ";
+    html += "<html><body>";
+    html += "<h1>Error: ";
     html += ::intToString(statusCode);
-    html += "</h1></body></html>";
+    html += "</h1>";
+    html += "<p>" + generateReasonPhrase(statusCode) + "</p>";
+    html += "</body></html>";
+    html += CSS_GLOBAL;
 
     return html;
 }

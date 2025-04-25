@@ -46,11 +46,11 @@ void	Response::genarateUploadSucces( void ){
 
 	setStatusCode( 201 );
 
-	setBody("<html><body>"
-		"<h1>Upload Successful</h1>"
-		"<p>Your file has been uploaded successfully.</p>"
-		"<a href='/'>Return to home</a>"
-		"</body></html>");
+	std::string html = "<html><body><h1>Upload Successful</h1><p>Your file has been uploaded successfully.</p><a href='/'>Return to home";
+	html += "</a></body></html>";
+	html += CSS_GLOBAL;
+
+	setBody(html);
 }
 
 //TODO::rewrite multipart uploads!!!!!!
