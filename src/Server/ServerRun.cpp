@@ -251,7 +251,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		Config confTMP = server.getConf();
 
 		// hand over content to request obj
-		std::cout << "========================REQUEST=IN============================" << '\n';
+		//std::cout << "========================REQUEST=IN============================" << '\n';
 		HttpRequest request;
 		const std::string request_str = client->getContent();
 		request.handleRequest(request_str);
@@ -276,7 +276,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 		// write response to socket
 		write(client->getSocketFd(), responseStr.c_str(), responseStr.size());
-		std::cout << "========================RESPONSE=OUT==========================" << '\n';
+		//std::cout << "========================RESPONSE=OUT==========================" << '\n';
 
 		client->clearContent();
 		client->setComplete( false );
@@ -296,8 +296,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 	//check for hanging conection
 	if( event.events & EPOLLHUP || client->getClosed() ){
-		std::cout << BLUE << "INFO:	Client: disconnected:	" << \
-			END << client->getEventFd() << '\n';
+		//std::cout << BLUE << "INFO:	Client: disconnected:	" << END << client->getEventFd() << '\n';
 		closeClient( server, client );
 		return;
 	}

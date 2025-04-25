@@ -5,7 +5,7 @@
 
 class HttpRequest {
 	private:
-		int								_response_code;
+		int							_response_code;
 		int        						_port;
 		std::string						_method;
 		std::string						_uri;

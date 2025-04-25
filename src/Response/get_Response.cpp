@@ -111,12 +111,15 @@ void	Response::HandleGetRequest( void ){
 	
 
 	//if request is root dir -> serve
-	else if( fullPath == _serverConf.getRootDir() )
+	else if( fullPath == _serverConf.getRootDir() + "/" )
 		serveRootIndexfile();
 	
-	//TODO::check with wrong search if 404 is returned
 	//serve locationblock
-	else
+	else if( _isLocation )
 		serveLocationIndex();
+
+	//404 not found
+	else
+		throw( 404 );
 }
 
