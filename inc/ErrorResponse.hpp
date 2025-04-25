@@ -23,7 +23,6 @@ class ErrorResponse {
         // matching
         void matchServerBlock();
         void matchErrorPage();
-        void matchServerName();
 
 
         // lone get for checkEvents LOLOOL
@@ -33,9 +32,10 @@ class ErrorResponse {
         std::string generateHeaders(std::string& body);
 };
 
-
-
-
-
+// helpers
+std::string generateStatusLine(int statusCode);
+std::string getCurrentDateTime();
+std::string intToString(int number);
+std::string generateReasonPhrase(int httpCode);
 
 #endif
