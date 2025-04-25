@@ -379,7 +379,7 @@ static void	parentProcess( Response& resp, int* inputPipe, int* outputPipe, pid_
 
 	response = getBody( response );
 
-	req.setCgiResponseString( response );
+	resp.setBody( response );
 
 	//close final pipe
 	close( outputPipe[0] );
