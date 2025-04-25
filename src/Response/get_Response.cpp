@@ -53,7 +53,7 @@ void	Response::serveRootIndexfile( void ){
 }
 
 //serve file from locationConf
-void Response::serveLocationIndex( void ){
+void	Response::serveLocationIndex( void ){
 
 	std::string			fullPath = _pathInfo.getFullPath();
 	std::vector<std::string>	indexFiles = _locationConf.getIndex();
@@ -65,19 +65,21 @@ void Response::serveLocationIndex( void ){
 			//store each index path
 			const std::string& indexFile = *it;
 
-			//TODO::check if location index path is already with root dir
 			// Construct the path to the index file
-			std::string rootIndexPath = indexFile;
+			std::string rootIndexPath = fullPath + indexFile;
 
 			//check for access and serve
-			if( access( rootIndexPath.c_str(), R_OK ) == 0 )
+			if( access( rootIndexPath.c_str(), R_OK ) == 0 ){
 				serveFileIfExists(rootIndexPath);
-			
+				break;
+			}
 		}
 	}
 
 	//if no index check for autodirectory listing
-	else if( _locationConf.getAutoIndex() == true ){
+	else if( ( _locationConf.getAutoIndex() ? _locationConf.getAutoIndex() : \
+			_serverConf.getAutoIndex() ) == 1 ){
+
 		setBody( generateDirectoryListing( fullPath ) );
 		_request.setResponseCode(200);
 	}

@@ -347,7 +347,6 @@ static void	parentProcess( Response& resp, int* inputPipe, int* outputPipe, pid_
 			throw( 500 );
 		}
 
-		//TODO::return TIMEOUT code not Methid not Aallowed
 		//if return == TIMEOUT
 		else if( pollRet == 0 || ( startTime - time( NULL ) ) > TIMEOUT_TIME ){
 			//std::cout << BLUE << "INFO: Cgi: Timeout" << END << '\n';
@@ -357,7 +356,6 @@ static void	parentProcess( Response& resp, int* inputPipe, int* outputPipe, pid_
 			throw( 504 );
 		}
 
-		//TODO::CGi dont work
 		else{
 			bytesRead = read( outputPipe[0], buffer, BUFFERSIZE - 1 );
 
@@ -391,7 +389,20 @@ static void	parentProcess( Response& resp, int* inputPipe, int* outputPipe, pid_
 		throw( 500 );
 }
 
-//TODO::check cgi and cleanup handleCgi funtion
+static void	checkBody( Response& resp, std::string body ){
+
+	size_t maxBodySize = resp.getLocationConf().getBodySizeInitilized() ? \
+		resp.getLocationConf().getBodySizeInitilized() : resp.getServerConf().getBodySize();
+
+	if( body.size() > maxBodySize ){
+		std::cerr << RED << "ERROR: Cgi: POST TO BIG" << END << std::endl;
+		throw( 413 );
+	}
+	while( !body.empty() && ( body[body.size()-1] == '\n' || body[body.size()-1] == '\r' ) )
+		body.erase( body.size() -1 );
+
+	resp.getHttpRequest().setBody( body );
+}
 
 void	handleCgi( Response& resp ){
 
@@ -400,29 +411,11 @@ void	handleCgi( Response& resp ){
 	pid_t		pid;
 
 	//HttpRequest stuff
-	size_t		maxBodySize; 
 	HttpRequest&	req = resp.getHttpRequest();
 
-	if( resp.getLocationConf().getBodySizeInitilized() )
-		maxBodySize = resp.getLocationConf().getBodySize(); 
-	else
-		maxBodySize = resp.getServerConf().getBodySize();
-
-	//clean body from httpboundaries \r\n
-	if( req.getMethod() == "POST" ){
-
-		// Create a local copy of the body first
-		std::string body = req.getBody();
-
-		if( body.size() > maxBodySize ){
-			std::cerr << RED << "ERROR: Cgi: POST TO BIG" << END << std::endl;
-			throw( 413 );
-		}
-		while( !body.empty() && ( body[body.size()-1] == '\n' || body[body.size()-1] == '\r' ) )
-			body.erase( body.size() -1 );
-
-		req.setBody( body );
-	}
+	//check and clean body
+	if( req.getMethod() == "POST" )
+		checkBody( resp, req.getBody() );
 
 	//check file ending and access to it  and store interpreter for executuing
 	std::string	interpreter;
