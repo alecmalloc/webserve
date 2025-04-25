@@ -23,7 +23,6 @@ class Response {
 		std::string				_httpResponse;
 		int					_ResLen;
 		std::string				_statusLine;
-		std::map <std::string, std::string>	_headerMap;
 		std::string				_body;
 		//store file-> name, size
 		long					_fileSize;
@@ -54,10 +53,8 @@ class Response {
 		Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverConfs);
 		~Response();
 
-		void    processResponse();
+		void    	processResponse();
 		void		generateHeader();
-		std::string		generateStatusLine();
-		std::string generateReasonPhrase(int httpCode);
 		void		generateHttpResponse();
 		std::string	serveFileContent();
 
@@ -66,7 +63,6 @@ class Response {
 		bool		isredirectRequest( void );
 		
 		void		handlePostData();
-		std::string	generateDirectoryListing(const std::string& path);
 		std::string	uploadPathhandler( void );
 		void		handleMultipartUpload( std::string contentType );
 		void		checkContentLength( void );
@@ -75,7 +71,6 @@ class Response {
 		void		serveFileIfExists( const std::string& fullPath );
 		void		serveRootIndexfile( void );
 		void		serveLocationIndex();
-		std::string intToString(int number);
 
 
 
@@ -90,15 +85,12 @@ class Response {
 		std::string			getHttpResponse() const { return _httpResponse; }
 		int				getResLen() const { return _ResLen; }
 		std::string getStatusLine() const { return _statusLine; }
-		std::map<std::string, std::string>	getHeaderMap() const { return _headerMap; }
 		std::string			getBody() const { return _body; }
 		long				getFileSize() const { return _fileSize; }
 		std::string			getFilename() const { return _filename; }
 		int					getStatusCode() const { return _statusCode; }
 		std::string			getReasonPhrase() const;
 		std::string			getServerName();
-		std::string			getCurrentDateTime();
-		std::string 			getContentType();
 		std::string			getRedirectDest();
 		HttpRequest&			getHttpRequest( void );
 		ServerConf			getServerConf( void );
@@ -108,7 +100,6 @@ class Response {
 		void setHttpResponse(const std::string& httpResponse) { _httpResponse = httpResponse; }
 		void setResLen(int resLen) { _ResLen = resLen; }
 		void setStatusLine(const std::string& statusLine) { _statusLine = statusLine; }
-		void setHeaderMap(const std::map<std::string, std::string>& headerMap) { _headerMap = headerMap; }
 		void setBody(const std::string& body) { _body = body; }
 		void setFileSize(long fileSize) { _fileSize = fileSize; }
 		void setFilename(const std::string& filename) { _filename = filename; }
@@ -134,8 +125,15 @@ class Response {
 		// matching functions
 		void matchServerBlock(const std::vector<ServerConf>& serverConfs);
 		void matchLocationConf( void );
-		void matchServerName( void );
 };
 
+// helpers
+std::string	generateStatusLine( int statusCode );
+std::string getCurrentDateTime();
+std::string getContentType( HttpRequest& request, PathInfo& pathInfo );
+std::string generateDirectoryListing(const std::string& path);
+std::string intToString(int number);
+std::string generateReasonPhrase(int httpCode);
+std::string matchServerName( HttpRequest& request, ServerConf& serverConf );
 
 #endif

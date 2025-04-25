@@ -75,17 +75,6 @@ void Response::matchLocationConf(void) {
 	throw 500;
 }
 
-void Response::matchServerName( void ) {
-
-	std::string hostname = _request.getHostname();
-
-	std::vector<std::string> serverNames = _serverConf.getServerConfNames();
-	// if we can find req hostname match with string in serverNames
- 	std::vector<std::string>::iterator it =  std::find(serverNames.begin(), serverNames.end(), hostname);
-
-	_serverName = ( it != serverNames.end() ) ?  hostname : "Webserv";
-}
-
 Response::Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverConfs)
 	:_request(reqObj), _redirectDest(""), _setCookieValue("") {
 
@@ -99,7 +88,7 @@ Response::Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverCon
 	matchServerBlock(serverConfs);
 
 	// match server name if exists
-	matchServerName();
+	_serverName = matchServerName(_request, _serverConf);
 
 	// match and set location block
 	matchLocationConf();
@@ -109,11 +98,11 @@ Response::Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverCon
 
 void Response::generateHttpResponse() {
 	std::stringstream header;
-	header << generateStatusLine() << "\r\n";
+	header << ::generateStatusLine(_statusCode) << "\r\n";
 	header << "Date: " << getCurrentDateTime() << "\r\n";
 	header << "Server: " << _serverName << "\r\n";
-	header << "Content-Type: " << getContentType() << "\r\n";
-	header << "Content-Length: " << intToString(getBody().length()) << "\r\n";
+	header << "Content-Type: " << ::getContentType(_request, _pathInfo) << "\r\n";
+	header << "Content-Length: " << ::intToString(getBody().length()) << "\r\n";
 	header << "Connection: " << _request.getConnectionType() << "\r\n";
 
 	if (!(_setCookieValue.empty())) {
@@ -132,11 +121,11 @@ void Response::generateHttpResponse() {
 // set the Response to a certain code (template)
 void Response::setBodyErrorPage(int httpCode) {
 	setBody("<html><body><h1>"
-	+ Response::intToString(httpCode)
+	+ ::intToString(httpCode)
 	+ " "
-	+ generateReasonPhrase(httpCode)
+	+ ::generateReasonPhrase(httpCode)
 	+ "Error "
-	+ intToString(httpCode)
+	+ ::intToString(httpCode)
 	+ "</h1></body></html>\n");
 }
 

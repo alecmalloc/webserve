@@ -1,26 +1,39 @@
 #include "webserv.hpp"
 
-std::string    Response::generateStatusLine( void ) {
-	std::string httpVersion = HTTP_VERSION;
-	std::string statusCode =  intToString(getStatusCode());
-	std::string reasonPhrase = generateReasonPhrase(getStatusCode());
-	std::stringstream statusLine;
-    statusLine << httpVersion << " " << statusCode << " " << reasonPhrase;
-    return statusLine.str();
+std::string matchServerName( HttpRequest& request, ServerConf& serverConf ) {
+
+	std::string hostname = request.getHostname();
+
+	std::vector<std::string> serverNames = serverConf.getServerConfNames();
+	// if we can find req hostname match with string in serverNames
+ 	std::vector<std::string>::iterator it =  std::find(serverNames.begin(), serverNames.end(), hostname);
+
+	std::string serverName = ( it != serverNames.end() ) ?  hostname : "Webserv";
+    return serverName;
 }
 
-std::string Response::getCurrentDateTime() {
+std::string generateStatusLine(int statusCode) {
+    std::string statusLine;
+    statusLine += HTTP_VERSION;
+    statusLine += " ";
+    statusLine +=  ::intToString(statusCode);
+    statusLine += " ";
+    statusLine += ::generateReasonPhrase(statusCode);
+    return statusLine;
+}
+
+std::string getCurrentDateTime() {
     std::time_t now = std::time(0);
     char buf[80];
     std::strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S GMT", std::gmtime(&now));
     return std::string(buf);
 }
 
-std::string Response::getContentType() {
+std::string getContentType( HttpRequest& request, PathInfo& pathInfo ) {
     // POST AND DELETE always return html
-    if (_request.getMethod() == "POST" || _request.getMethod() == "DELETE")
+    if (request.getMethod() == "POST" || request.getMethod() == "DELETE")
         return("text/html");
-    
+
     // FOR GET
     static const std::pair<std::string, std::string> contentTypes[] = {
         std::pair<std::string, std::string>("html", "text/html"),
@@ -41,7 +54,7 @@ std::string Response::getContentType() {
     static const size_t contentTypesCount = sizeof(contentTypes) / sizeof(contentTypes[0]);
 
     for (size_t i = 0; i < contentTypesCount; ++i) {
-        if (contentTypes[i].first == _pathInfo.getExtension()) {
+        if (contentTypes[i].first == pathInfo.getExtension()) {
             return contentTypes[i].second;
         }
     }
@@ -50,29 +63,7 @@ std::string Response::getContentType() {
 	return("text/html");
 }
 
-//need to adjust to use right values
-void	Response::generateHeader() {
-	std::map<std::string, std::string> headerMap;
-    
-	headerMap["Status-Line"] = generateStatusLine();
-    headerMap["Date"] = getCurrentDateTime();
-    headerMap["Server"] = _serverName;
-    headerMap["Content-Type"] = getContentType();
-	headerMap["Content-Length"] =  intToString(getBody().length());
-	headerMap["Connection"] = _request.getConnectionType();
-    // only if setCookieValue has been changed
-    if (_setCookieValue != "") {
-        headerMap["Set-Cookie"] = _setCookieValue;
-    }
-    // for redirects
-    if (_statusCode == 301 || _statusCode == 302) {
-        headerMap["Location"] = getRedirectDest();
-    }
-
-	setHeaderMap(headerMap);
-}
-
-std::string Response::generateDirectoryListing(const std::string& path) {
+std::string generateDirectoryListing(const std::string& path) {
     std::stringstream html;
     DIR *dir;
     struct dirent *entry;
@@ -127,14 +118,13 @@ std::string Response::generateDirectoryListing(const std::string& path) {
     return html.str();
 }
 
-
-std::string Response::intToString(int number) {
+std::string intToString(int number) {
     std::stringstream ss;
     ss << number;
     return ss.str();
 }
 
-std::string Response::generateReasonPhrase(int httpCode){
+std::string generateReasonPhrase(int httpCode) {
 
 	std::string reasonPhrase;
 
@@ -214,7 +204,5 @@ std::string Response::generateReasonPhrase(int httpCode){
             break;
     }
 
-    // sets response phrase in obj and also returns it
-	setReasonPhrase(reasonPhrase);
 	return(reasonPhrase);
 }

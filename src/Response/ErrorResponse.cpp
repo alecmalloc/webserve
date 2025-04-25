@@ -18,7 +18,7 @@ _isServerConf(false)
     // only check server name if we find server conf
     if (_isServerConf) {
         matchErrorPage();
-        matchServerName();
+        _serverName = matchServerName(_request, _serverConf);
     }
 }
 
@@ -51,17 +51,6 @@ const ErrorResponse& ErrorResponse::operator =(const ErrorResponse& other) {
 
 std::string ErrorResponse::getHttpResponse( void ) {
     return _httpResponse;
-}
-
-void ErrorResponse::matchServerName( void ) {
-
-	std::string hostname = _request.getHostname();
-
-	std::vector<std::string> serverNames = _serverConf.getServerConfNames();
-	// if we can find req hostname match with string in serverNames
- 	std::vector<std::string>::iterator it =  std::find(serverNames.begin(), serverNames.end(), hostname);
-
-	_serverName = ( it != serverNames.end() ) ?  hostname : "Webserv";
 }
 
 void ErrorResponse::matchServerBlock() {
@@ -100,130 +89,25 @@ void ErrorResponse::matchErrorPage() {
     // otherwise errorPage stays empty and its a str so we can check that
 }
 
-static std::string intToString(int number) {
-    std::stringstream ss;
-    ss << number;
-    return ss.str();
-}
-
 static std::string generateGenericErrorPage(int statusCode) {
     std::string html;
 
     html += "<html><body><h1>";
     html += "Error: ";
-    html += intToString(statusCode);
+    html += ::intToString(statusCode);
     html += "</h1></body></html>";
 
     return html;
 }
 
-static std::string getCurrentDateTime() {
-    std::time_t now = std::time(0);
-    char buf[80];
-    std::strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S GMT", std::gmtime(&now));
-    return std::string(buf);
-}
-
-
-static std::string generateReasonPhrase(int statusCode) {
-    std::string reasonPhrase;
-
-    // matches http code to a string for response
-    switch (statusCode){
-            case 100:
-            reasonPhrase = "Continue";
-            break;
-        case 101:
-            reasonPhrase = "Switching Protocols";
-            break;
-
-        // 2xx: Success
-        case 200:
-            reasonPhrase = "OK";
-            break;
-        case 201:
-            reasonPhrase = "Created";
-            break;
-        case 202:
-            reasonPhrase = "Accepted";
-            break;
-        case 204:
-            reasonPhrase = "No Content";
-            break;
-
-        // 3xx: Redirection
-        case 301:
-            reasonPhrase = "Moved Permanently";
-            break;
-        case 302:
-            reasonPhrase = "Found";
-            break;
-        case 304:
-            reasonPhrase = "Not Modified";
-            break;
-
-        // 4xx: Client Error
-        case 400:
-            reasonPhrase = "Bad Request";
-            break;
-        case 401:
-            reasonPhrase = "Unauthorized";
-            break;
-        case 403:
-            reasonPhrase = "Forbidden";
-            break;
-        case 404:
-            reasonPhrase = "Not Found";
-            break;
-        case 405:
-            reasonPhrase = "Method Not Allowed";
-            break;
-        case 413:
-            reasonPhrase = "413 Request Entity Too Large";
-            break;
-            // 5xx: Server Error
-        case 500:
-            reasonPhrase = "Internal Server Error";
-            break;
-        case 501:
-            reasonPhrase = "Not Implemented";
-            break;
-        case 502:
-            reasonPhrase = "Bad Gateway";
-            break;
-        case 503:
-            reasonPhrase = "Service Unavailable";
-            break;
-        case 505:
-            reasonPhrase = "HTTP Version Not Supported";
-            break;
-
-        // Default case for unknown status codes
-        default:
-            reasonPhrase = "Error";
-            break;
-    }
-	return(reasonPhrase);
-}
-
-static std::string generateStatusLine(int statusCode) {
-    std::string statusLine;
-    statusLine += HTTP_VERSION;
-    statusLine += " ";
-    statusLine +=  intToString(statusCode);
-    statusLine += " ";
-    statusLine += generateReasonPhrase(statusCode);
-    return statusLine;
-}
-
 std::string ErrorResponse::generateHeaders(std::string& body) {
     std::string headerStr;
 
-    headerStr += generateStatusLine(_statusCode) + "\r\n";
+    headerStr += ::generateStatusLine(_statusCode) + "\r\n";
     headerStr += "Date: " + getCurrentDateTime() + "\r\n";
     headerStr += "Server: " + _serverName + "\r\n";
     headerStr += "Content-Type: text/html\r\n";
-    headerStr += "Content-Length: " + intToString(body.length()) + "\r\n";
+    headerStr += "Content-Length: " + ::intToString(body.length()) + "\r\n";
     headerStr += "Connection: " + _request.getConnectionType() + "\r\n";
     headerStr += "\r\n"; // End of headers
 
