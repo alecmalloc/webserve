@@ -5,6 +5,8 @@
 
 class HttpRequest {
 	private:
+		int								_response_code;
+		int        						_port;
 		std::string						_method;
 		std::string						_uri;
 		std::string						_url;
@@ -13,13 +15,10 @@ class HttpRequest {
 		std::string						_body;
 		std::string						_cgiResponseString;
 		std::string						_hostname;
-		int        						_port;
-		int							_response_code;
-
+	
 	public:
 		//constructors
 		HttpRequest();
-		HttpRequest(Config& conf);
 		HttpRequest(const HttpRequest& other);
 		~HttpRequest();
 
@@ -32,7 +31,7 @@ class HttpRequest {
 		std::string					getMethod() const;
 		std::string					getUrl() const;
 		std::string					getVersion() const;
-		std::map<std::string, std::vector<std::string>>	getHeaders() const;
+		std::map<std::string, std::vector<std::string> >	getHeaders() const;
 		std::string					getBody() const;
 		std::string					getHostname() const;
 		std::string					getCgiResponseString() const;

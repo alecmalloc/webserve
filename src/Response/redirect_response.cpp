@@ -6,14 +6,14 @@ void    Response::HandleRedirectRequest( HttpRequest& ReqObj ){
 	std::string     dest;
 
 	//get map of location redirects 
-	std::map<std::string, std::string > locationRedirects = _locationConf->getAllowedRedirects();
+	std::map<std::string, std::string > locationRedirects = _locationConf.getAllowedRedirects();
 
 	// get map of server redirects
-	std::map<std::string, std::string > serverRedirects = _serverConf->getAllowedRedirects();
+	std::map<std::string, std::string > serverRedirects = _serverConf.getAllowedRedirects();
 
 	// ternary operator evaluate which one to pass to handle redirect
-	std::map<std::string, std::string > redirect = locationRedirect.empty() \
-		? serverRedirects : locationRedirect;
+	std::map<std::string, std::string > redirect = locationRedirects.empty() \
+		? serverRedirects : locationRedirects;
 
 	// iterator for redirect access
 	std::map<std::string, std::string >::iterator it;

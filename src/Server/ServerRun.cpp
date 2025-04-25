@@ -252,7 +252,7 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 
 		// hand over content to request obj
 		std::cout << "========================REQUEST=IN============================" << '\n';
-		HttpRequest request(confTMP);
+		HttpRequest request;
 		const std::string request_str = client->getContent();
 		request.handleRequest(request_str);
 

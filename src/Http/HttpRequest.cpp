@@ -1,25 +1,18 @@
 #include "webserv.hpp"
 
 //constructors
-HttpRequest::HttpRequest()
-{
-	;
-}
-
-HttpRequest::HttpRequest( Config& conf ): _conf( conf ), _response_code( 200 ), _port( -1 ), _pathInfo() {
+HttpRequest::HttpRequest( ): _response_code( 200 ), _port( -1 ) {
     _cgiResponseString = "";
 }
 
-HttpRequest::HttpRequest(const HttpRequest& other): _conf(other._conf), _response_code(other._response_code), \
+HttpRequest::HttpRequest(const HttpRequest& other): _response_code(other._response_code), \
 		_method(other._method), _uri(other._uri), _url(other._url), _version(other._version), \
-		_headers(other._headers), _body(other._body), _hostname(other._hostname), _server(other._server), \
-		_pathInfo(other._pathInfo) {
+		_headers(other._headers), _body(other._body), _hostname(other._hostname){
     ;
 }
 
 HttpRequest& HttpRequest::operator =( const HttpRequest& other ){
     if( this != &other ){
-        _conf = other.getConf();
         _method = other.getMethod();
         _uri = other.getUri();
         _url = other.getUrl();
@@ -28,22 +21,15 @@ HttpRequest& HttpRequest::operator =( const HttpRequest& other ){
         _body = other.getBody();
         _hostname = other.getHostname();
         _response_code = other.getResponseCode();
-        _server = other.getServer();
-        _pathInfo = other.getPathInfo();
     }
     return( *this );
 }
 
-HtttpRequest::~HttpRequest( void ){;}
+HttpRequest::~HttpRequest( void ){;}
 
 //getters
 std::string	HttpRequest::getCgiResponseString() const {
     return( _cgiResponseString );
-}
-
-
-ServerConf	HttpRequest::getServer() const {
-    return( _server );
 }
 
 std::string	HttpRequest::getHostname() const {
@@ -52,10 +38,6 @@ std::string	HttpRequest::getHostname() const {
 
 int		HttpRequest::getPort() const {
     return( _port );
-}
-
-Config&		HttpRequest::getConf() const {
-    return( _conf );
 }
 
 int		HttpRequest::getResponseCode() const {
@@ -78,11 +60,7 @@ std::string	HttpRequest::getMethod() const {
     return( _method );
 }
 
-PathInfo	HttpRequest::getPathInfo() const {
-    return( _pathInfo );
-}
-
-std::map<std::string, std::vector<std::string>>	HttpRequest::getHeaders() const {
+std::map<std::string, std::vector<std::string> >	HttpRequest::getHeaders() const {
     return( _headers );
 }
 
@@ -121,26 +99,9 @@ void	HttpRequest::setHeader( std::string tmp1, std::string tmp2 ){
 	_headers[ tmp1 ].push_back( tmp2 );
 }
 
-void	HttpRequest::setConfig( Config& tmp ){
-	_conf = tmp;
-}
-
 void	HttpRequest::setResponseCode( int tmp ){
 	_response_code = tmp;
 }
-
-void	HttpRequest::setServer( ServerConf tmp ){
-	_server = tmp;
-}
-
-void    HttpRequest::setPathInfo( PathInfo tmp ) {
-    _pathInfo = tmp;
-}
-
-void	HttpRequest::setPathInfoPath( std::string path ){
-	_pathInfo.setFullPath( path );
-}
-
 
 void HttpRequest::setPort(int port) {
     _port = port;
