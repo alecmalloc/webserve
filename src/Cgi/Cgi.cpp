@@ -347,6 +347,7 @@ static void	parentProcess( Response& resp, int* inputPipe, int* outputPipe, pid_
 			throw( 500 );
 		}
 
+		//TODO::return TIMEOUT code not Methid not Aallowed
 		//if return == TIMEOUT
 		else if( pollRet == 0 || ( startTime - time( NULL ) ) > TIMEOUT_TIME ){
 			//std::cout << BLUE << "INFO: Cgi: Timeout" << END << '\n';
@@ -356,6 +357,7 @@ static void	parentProcess( Response& resp, int* inputPipe, int* outputPipe, pid_
 			throw( 504 );
 		}
 
+		//TODO::CGi dont work
 		else{
 			bytesRead = read( outputPipe[0], buffer, BUFFERSIZE - 1 );
 

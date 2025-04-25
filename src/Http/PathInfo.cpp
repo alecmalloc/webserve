@@ -57,7 +57,7 @@ PathInfo::PathInfo(const std::string& path):
     _isFile(false),
     _hasExtension(false)
 {
-    ;
+   validatePath() ;
 }
 
 PathInfo::PathInfo(const PathInfo& other):
@@ -70,7 +70,7 @@ PathInfo::PathInfo(const PathInfo& other):
     _isFile(other._isFile),
     _hasExtension(other._hasExtension)
 {
-	validatePath();
+	;
 }
 
 PathInfo& PathInfo::operator=(const PathInfo& other) {
