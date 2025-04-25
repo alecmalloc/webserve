@@ -194,13 +194,16 @@ std::string generateReasonPhrase(int httpCode) {
         case 503:
             reasonPhrase = "Service Unavailable";
             break;
+        case 504:
+            reasonPhrase = "Gateway Timeout";
+            break;
         case 505:
             reasonPhrase = "HTTP Version Not Supported";
             break;
 
         // Default case for unknown status codes
         default:
-            reasonPhrase = "Error";
+            reasonPhrase = "We aren't sure why this failed ...";
             break;
     }
 
