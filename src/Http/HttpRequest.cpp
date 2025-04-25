@@ -5,9 +5,11 @@ HttpRequest::HttpRequest( ): _response_code( 200 ), _port( -1 ) {
     _cgiResponseString = "";
 }
 
-HttpRequest::HttpRequest(const HttpRequest& other): _response_code(other._response_code), \
+HttpRequest::HttpRequest(const HttpRequest& other): _response_code(other._response_code),  \
+		_port( other._port ), 
 		_method(other._method), _uri(other._uri), _url(other._url), _version(other._version), \
-		_headers(other._headers), _body(other._body), _hostname(other._hostname){
+		_headers(other._headers), _body(other._body), \
+		_cgiResponseString( other._cgiResponseString),  _hostname(other._hostname){
     ;
 }
 

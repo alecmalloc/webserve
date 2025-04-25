@@ -47,6 +47,7 @@ class Response {
 
 		int					_statusCode;
 		std::string				_serverName;
+		bool					_isLocation;
     public:
 
 		//constructors
@@ -103,6 +104,7 @@ class Response {
 		HttpRequest&			getHttpRequest( void );
 		ServerConf			getServerConf( void );
 		LocationConf			getLocationConf( void );
+		bool				getIsLocation( void );
 
 		// Setters
 		void setHttpResponse(const std::string& httpResponse) { _httpResponse = httpResponse; }

@@ -349,7 +349,7 @@ static void	parentProcess( Response& resp, int* inputPipe, int* outputPipe, pid_
 
 		//if return == TIMEOUT
 		else if( pollRet == 0 || ( startTime - time( NULL ) ) > TIMEOUT_TIME ){
-			std::cout << BLUE << "INFO: Cgi: Timeout" << END << '\n';
+			//std::cout << BLUE << "INFO: Cgi: Timeout" << END << '\n';
 			close( outputPipe[0] );
 			kill( pid, SIGKILL );
 			waitpid( pid, &status, 0 );

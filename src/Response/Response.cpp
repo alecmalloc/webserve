@@ -5,7 +5,7 @@
 Response::~Response(){}
 
 Response::Response()
-	: _redirectDest(""), _setCookieValue("") {
+	: _redirectDest(""), _setCookieValue(""), _isLocation( false ) {
 	// Default constructor implementation
 }
 
@@ -37,6 +37,10 @@ LocationConf	Response::getLocationConf( void ){
 	return( _locationConf );
 }
 
+bool	Response::getIsLocation( void ){
+	return( _isLocation );
+}
+
 void Response::matchServerBlock(const std::vector<ServerConf>& serverConfs) {
 	// match server block based on port
 	for (size_t i = 0; i < serverConfs.size(); i++) {
@@ -49,16 +53,20 @@ void Response::matchServerBlock(const std::vector<ServerConf>& serverConfs) {
 			// check if we can find port in set
 			if (it->second.find(_request.getPort()) != it->second.end()) {
 				_serverConf = serverConfs[i];
+				return;
 			}
 		}
 	}
-	throw 500;
+	throw( 500 );
 }
 
 void Response::matchLocationConf(void) {
 	const std::vector<LocationConf>& locations = _serverConf.getLocationConfs();
 
 	std::string uri = _request.getUri();
+
+	if( uri.empty() || uri == "/" )
+		return;
 	// Find best matching location (longest prefix match)
 	std::string bestMatch = "";
 
@@ -69,10 +77,12 @@ void Response::matchLocationConf(void) {
 			if (locPath.length() > bestMatch.length()) {
 				bestMatch = locPath;
 				_locationConf = _serverConf.getLocationConfs()[i];
+				_isLocation = true;
 			}
 		}
 	}
-	throw 500;
+	if( !_isLocation )
+		throw( 500 );
 }
 
 void Response::matchServerName( void ) {
@@ -183,29 +193,29 @@ void		Response::processResponse( void ){
 
 	//redirect request
 	if( isredirectRequest() ){
-		std::cout << "REDIRECT" << '\n';
+		//std::cout << "REDIRECT" << '\n';
 		HandleRedirectRequest( _request );
 	}
 
 	//cgi request
 	else if( isCgiRequest() ){
-		std::cout << "CGI REQUEST" << '\n';
+		//std::cout << "CGI REQUEST" << '\n';
 		::handleCgi( *this );
 	}
 
 	//get request
 	else if( _request.getMethod() == "GET" ) {
-		std::cout << "GET REQUEST" << '\n';
+		//std::cout << "GET REQUEST" << '\n';
 		HandleGetRequest();
 	}
 	//post request
 	else if( _request.getMethod() == "POST" ) {
-		std::cout << "POST REQUEST" << '\n';
+		//std::cout << "POST REQUEST" << '\n';
 		HandlePostRequest();
 	}
 	//delete request
 	else if( _request.getMethod() == "DELETE" ) {
-		std::cout << "DELETE REQUEST" << '\n';
+		//std::cout << "DELETE REQUEST" << '\n';
 		HandleDeleteRequest();
 	}
 }

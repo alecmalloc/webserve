@@ -180,7 +180,7 @@ void HttpRequest::handleRequest(const std::string& rawRequest) {
 	if (colon != std::string::npos) {
 		std::stringstream ss(_hostname.substr(colon + 1));
 		ss >> _port;
-		std::cout << "PORT: " << _port << '\n';
+		//std::cout << "PORT: " << _port << '\n';
 		_hostname = _hostname.substr(0, colon);
 	}
 
