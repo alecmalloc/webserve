@@ -3,6 +3,7 @@
 void	Response::HandleDeleteRequest( void ){
 
 	// TODO::check if _locationConfis defined
+	// TODO::add corrct status code when deleting
 	// Check if DELETE method is allowed
 	const std::vector<std::string>&	allowedMethods = _locationConf.getAllowedMethods();
 
