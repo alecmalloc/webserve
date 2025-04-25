@@ -72,7 +72,7 @@ void ErrorResponse::matchServerBlock() {
 		// get ip ports map
 		const std::map<std::string, std::set<int> > ipsPorts =  _serverConfs[i].getIpPort();
 		// loop through map
-		for (std::map<std::string, std::set<int> >::const_iterator it = ipsPorts.begin(); it != ipsPorts.end(); ++it) {
+		for (std::map<std::string, std::set<int> >::const_iterator it = ipsPorts.begin(); it != ipsPorts.end(); it++) {
 			// check if we can find port in set
 			if (it->second.find(_request.getPort()) != it->second.end()) {
 				_serverConf = _serverConfs[i];

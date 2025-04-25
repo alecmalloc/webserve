@@ -11,6 +11,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include "Cgi.hpp"
 
 class HttpRequest;
 
@@ -62,7 +63,6 @@ class Response {
 
 		//cgi
 		bool 		isCgiRequest( void );
-		void		handleCgi( Response& resp );
 		bool		isredirectRequest( void );
 		
 		void		handlePostData();
@@ -98,7 +98,7 @@ class Response {
 		std::string			getReasonPhrase() const;
 		std::string			getServerName();
 		std::string			getCurrentDateTime();
-		std::string 		getContentType();
+		std::string 			getContentType();
 		std::string			getRedirectDest();
 		HttpRequest&			getHttpRequest( void );
 		ServerConf			getServerConf( void );

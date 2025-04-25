@@ -21,6 +21,22 @@ std::string Response::getRedirectDest() {
 	return _redirectDest;
 }
 
+HttpRequest&	Response::getHttpRequest( void ){
+	return( _request );
+}
+
+ServerConf	Response::getServerConf( void ){
+	return( _serverConf );
+}
+
+std::string	Response::getServerName( void ){
+	return( _serverName );
+}
+
+LocationConf	Response::getLocationConf( void ){
+	return( _locationConf );
+}
+
 void Response::matchServerBlock(const std::vector<ServerConf>& serverConfs) {
 	// match server block based on port
 	for (size_t i = 0; i < serverConfs.size(); i++) {
@@ -29,7 +45,7 @@ void Response::matchServerBlock(const std::vector<ServerConf>& serverConfs) {
 		// get ip ports map
 		const std::map<std::string, std::set<int> > ipsPorts =  serverConfs[i].getIpPort();
 		// loop through map
-		for (std::map<std::string, std::set<int> >::const_iterator it = ipsPorts.begin(); it != ipsPorts.end(); ++it) {
+		for (std::map<std::string, std::set<int> >::const_iterator it = ipsPorts.begin(); it != ipsPorts.end(); it++) {
 			// check if we can find port in set
 			if (it->second.find(_request.getPort()) != it->second.end()) {
 				_serverConf = serverConfs[i];
@@ -168,13 +184,13 @@ void		Response::processResponse( void ){
 	//redirect request
 	if( isredirectRequest() ){
 		std::cout << "REDIRECT" << '\n';
-		HandleRedirectRequest(_request);
+		HandleRedirectRequest( _request );
 	}
 
 	//cgi request
 	else if( isCgiRequest() ){
 		std::cout << "CGI REQUEST" << '\n';
-		handleCgi(*this);
+		::handleCgi( *this );
 	}
 
 	//get request
