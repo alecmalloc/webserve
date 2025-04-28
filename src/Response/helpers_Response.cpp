@@ -68,52 +68,53 @@ std::string generateDirectoryListing(const std::string& path) {
     DIR *dir;
     struct dirent *entry;
 
+
+    if ((dir = opendir(path.c_str())) == NULL)
+	    throw( 404 );
+
     html << "<html>\n<head>\n"
-         << "<title>Index of " << path << "</title>\n"
-         << "<style>table { width: 100%; } th { text-align: left; }</style>\n"
-         << "</head>\n<body>\n"
-         << "<h1>Index of " << path << "</h1>\n"
-         << "<table>\n"
-         << "<tr><th>Name</th><th>Last Modified</th><th>Size</th></tr>\n";
+	    << "<title>Index of " << path << "</title>\n"
+	    << "<style>table { width: 100%; } th { text-align: left; }</style>\n"
+	    << "</head>\n<body>\n"
+	    << "<h1>Index of " << path << "</h1>\n"
+	    << "<table>\n"
+	    << "<tr><th>Name</th><th>Last Modified</th><th>Size</th></tr>\n";
+    while ((entry = readdir(dir)) != NULL) {
+	    std::string name = entry->d_name;
 
-    if ((dir = opendir(path.c_str())) != NULL) {
-        while ((entry = readdir(dir)) != NULL) {
-            std::string name = entry->d_name;
+	    // Skip "." and ".."
+	    if (name == "." || name == "..") {
+		    continue;
+	    }
 
-            // Skip "." and ".."
-            if (name == "." || name == "..") {
-                continue;
-            }
+	    std::string fullPath = path + "/" + name;
+	    struct stat statbuf;
 
-            std::string fullPath = path + "/" + name;
-            struct stat statbuf;
-
-            if (stat(fullPath.c_str(), &statbuf) == 0) {
-                // Format last modified time
-                char timeStr[100];
-                strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S",
-                        localtime(&statbuf.st_mtime));
-                // Add row to table
-                html << "<tr><td><a href=\"";
-                if (S_ISDIR(statbuf.st_mode)) {
-					html << name << "/";
-					html << "\">" << name << "/";
-                }
-				else{
-					html << name; // Append only the file/directory name
-					html << "\">" << name;
-				}
-                html << "</a></td><td>" << timeStr << "</td><td>";
-                if (!S_ISDIR(statbuf.st_mode)) {
-                    html << statbuf.st_size;
-                }
-                html << "</td></tr>\n";
-            }
-        }
-        closedir(dir);
+	    if (stat(fullPath.c_str(), &statbuf) == 0) {
+		    // Format last modified time
+		    char timeStr[100];
+		    strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S",
+				    localtime(&statbuf.st_mtime));
+		    // Add row to table
+		    html << "<tr><td><a href=\"";
+		    if (S_ISDIR(statbuf.st_mode)) {
+			    html << name << "/";
+			    html << "\">" << name << "/";
+		    }
+		    else{
+			    html << name; // Append only the file/directory name
+			    html << "\">" << name;
+		    }
+		    html << "</a></td><td>" << timeStr << "</td><td>";
+		    if (!S_ISDIR(statbuf.st_mode)) {
+			    html << statbuf.st_size;
+		    }
+		    html << "</td></tr>\n";
+	    }
     }
-
+    closedir(dir);
     html << "</table>\n</body>\n</html>";
+
     return html.str();
 }
 

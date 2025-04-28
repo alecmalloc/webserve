@@ -131,7 +131,7 @@ void Response::matchServerBlock(const std::vector<ServerConf>& serverConfs) {
 			}
 		}
 	}
-	throw( 500 );
+	throw( 404 );
 }
 
 void Response::matchLocationConf(void) {
@@ -156,7 +156,7 @@ void Response::matchLocationConf(void) {
 		}
 	}
 	if( !_isLocation )
-	throw( 500 );
+		throw( 404 );
 }
 
 void	Response::generateHttpResponse( void ){
