@@ -298,11 +298,12 @@ static void	parentProcess( Response& resp, int* inputPipe, int* outputPipe, pid_
 
 		size_t		bytesWritten = 0;
 		size_t 		totalBytes = req.getBody().size();
-		const char*	data = req.getBody().c_str();
+		std::string	data = req.getBody();
 
 		while( bytesWritten < totalBytes ) {
 			ssize_t result;
-			result = write( inputPipe[1], data + bytesWritten, totalBytes - bytesWritten );
+			result = write( inputPipe[1], data.c_str() + bytesWritten, \
+					totalBytes - bytesWritten );
 
 			// Handle error
 			if( result <= 0 )

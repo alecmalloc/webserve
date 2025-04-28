@@ -276,7 +276,11 @@ static void	checkEvents( Server& server, Client* client,  struct epoll_event& ev
 		}
 
 		// write response to socket
-		write(client->getSocketFd(), responseStr.c_str(), responseStr.size());
+		if( write(client->getSocketFd(), responseStr.c_str(), responseStr.size() ) == -1 ){
+			client->setError( true );
+			return;
+		}
+		
 		//std::cout << "========================RESPONSE=OUT==========================" << '\n';
 
 		client->clearContent();
