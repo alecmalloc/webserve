@@ -350,6 +350,7 @@ void	Response::handlePostRequest( void ){
 		std::string	filePath = uploadDir + "upload_" + intToString( uploadCount );
 		writeToFile( filePath, postData );
 
+		uploadCount++;
 		setStatus( 201 );
 		setBody( returnBody );
 	}
