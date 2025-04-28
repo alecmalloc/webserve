@@ -1,9 +1,11 @@
 #include "webserv.hpp"
 
+
 void	Response::handleDeleteRequest( void ){
 
-	// TODO::check if _locationConfis defined
-	// TODO::add corrct status code when deleting
+
+	if ( !(_isLocation) )
+		throw ( 500 );
 	// Check if DELETE method is allowed
 	const std::vector<std::string>&	allowedMethods = _locationConf.getAllowedMethods();
 

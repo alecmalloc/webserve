@@ -134,6 +134,12 @@ static void	parseHeaders( std::string& header, std::string& name, std::string& f
 		filename = header.substr( filePos, fileEndPos - filePos );
 	}
 
+
+	std::string html = "<html><body><h1>Upload Successful</h1><p>Your file has been uploaded successfully.</p><a href='/'>Return to home";
+	html += "</a></body></html>";
+	html += CSS_GLOBAL;
+
+	setBody(html);
 }
 
 static std::string	sanitizeFilename( const std::string& filename ){

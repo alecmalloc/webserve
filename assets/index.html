@@ -360,24 +360,6 @@
                 <button type="submit" class="btn">Execute PHP CGI</button>
             </form>
             
-            <!-- CGI with GET method -->
-            <h3>CGI with GET Parameters</h3>
-            <form action="/cgi-bin/get_test.py" method="GET">
-                <div class="form-group">
-                    <label for="search">Search Term</label>
-                    <input type="text" id="search" name="search" placeholder="Enter search term" required>
-                </div>
-                <div class="form-group">
-                    <label for="category">Category</label>
-                    <select id="category" name="category">
-                        <option value="all">All Categories</option>
-                        <option value="news">News</option>
-                        <option value="blog">Blog</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn">Test GET Request</button>
-            </form>
-            
             <div class="description">Or test with direct URL parameters:</div>
             <a href="/cgi-bin/get_test.py?name=test&id=123" class="btn">Test GET with URL Parameters</a>
             
