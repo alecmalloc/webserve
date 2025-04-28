@@ -11,7 +11,7 @@ std::string static cookiesHtmlTemplateHasCookie(std::string sessionID) {
 
     response += "<a href=\"/customCookiesEndpoint/CookiesPage/deactivate\">log out</a>";
 
-    response += "<a href=\"/\">home</a>";
+    response += "<div><a href=\"/\">home</a></div>";
 
     response += CSS_GLOBAL;
 
@@ -25,7 +25,7 @@ std::string static cookiesHtmlTemplateHasNoCookie() {
 
     response += "<a href=\"/customCookiesEndpoint/CookiesPage/activate\">log in</a>";
 
-    response += "<a href=\"/\">home</a>";
+    response += "<div><a href=\"/\">home</a></div>";
 
     response += CSS_GLOBAL;
 

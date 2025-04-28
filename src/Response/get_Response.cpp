@@ -108,25 +108,20 @@ void	Response::handleGetRequest( void ){
 
 	// custom cookies override - Alec
 	// check if the uri points at the /customCookiesEndpoint/CookiesPage end point
-	if( isCookie( uri ) )
+	if( isCookie( uri ) ) 
 		handleCookiesPage(_request);
-
 	//if request is a file -> serve
 	else if( _pathInfo.isFile() ){
 		setBody( serveFileIfExists( fullPath ) );
 		setStatus( 200 );
 	}
-	
-
 	//if request is root dir -> serve
 	else if( fullPath == _serverConf.getRootDir() + "/" )
 		serveRootIndex();
-	
 	//serve locationblock
 	else if( _isLocation )
 		serveLocationIndex();
-
-	//404 not found
+	//404 not found	else
 	else
 		throw( 404 );
 }

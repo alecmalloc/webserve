@@ -155,7 +155,8 @@ void Response::matchLocationConf(void) {
 
 	std::string uri = _request.getUri();
 
-	if( uri.empty() || uri == "/" )
+	if( uri.empty() || uri == "/" || uri == "/customCookiesEndpoint/CookiesPage" \
+	|| uri == "/customCookiesEndpoint/CookiesPage/activate" || uri == "/customCookiesEndpoint/CookiesPage/deactivate" )
 		return;
 	// Find best matching location (longest prefix match)
 	std::string bestMatch = "";
