@@ -2,44 +2,118 @@
 #include "webserv.hpp"
 #include <sstream>
 
-Response::~Response(){}
-
+//constructors
 Response::Response()
 	: _redirectDest(""), _setCookieValue(""), _isLocation( false ) {
-	// Default constructor implementation
+		;
 }
 
-void Response::setReasonPhrase(const std::string &reasonPhrase) {
-	_reasonPhrase = reasonPhrase;
+Response::Response( HttpRequest& reqObj, const std::vector<ServerConf>& serverConfs )
+	: _request( reqObj ), _redirectDest( "" ), _setCookieValue( "" ){
+
+	// check if request flagged as non 200 val
+	if (! ( reqObj.getResponseCode() >= 200 && reqObj.getResponseCode() <= 302 ) )
+		throw( reqObj.getResponseCode() );
+	
+	// set status code to state from req obj
+	setStatus( reqObj.getResponseCode() );
+
+	// match and set server block
+	matchServerBlock( serverConfs );
+
+	// match server name if exists
+	_serverName = matchServerName( _request, _serverConf );
+
+	// match and set location block
+	matchLocationConf();
+
+	_pathInfo = PathInfo( _serverConf.getRootDir() + _request.getUri() );
 }
 
-std::string Response::getReasonPhrase() const {
-	return _reasonPhrase;
+Response::~Response(){
+	;
 }
 
-std::string Response::getRedirectDest() {
-	return _redirectDest;
-}
+//getters
 
-HttpRequest&	Response::getHttpRequest( void ){
+HttpRequest&		Response::getHttpRequest( void ){
 	return( _request );
 }
 
-ServerConf	Response::getServerConf( void ){
+ServerConf		Response::getServerConf( void ){
 	return( _serverConf );
 }
 
-std::string	Response::getServerName( void ){
+std::string		Response::getServerName( void ){
 	return( _serverName );
 }
 
-LocationConf	Response::getLocationConf( void ){
+LocationConf		Response::getLocationConf( void ){
 	return( _locationConf );
 }
 
-bool	Response::getIsLocation( void ){
+bool			Response::getIsLocation( void ){
 	return( _isLocation );
 }
+
+std::string		Response::getHttpResponse( void ) const{
+	return( _httpResponse );
+}
+
+std::string		Response::getStatusLine( void ) const {
+	return( _statusLine );
+}
+
+std::string		Response::getBody( void ) const {
+	return( _body );
+}
+
+std::string		Response::getFilename( void ) const {
+	return( _filename );
+}
+
+//setters
+
+void			Response::setHttpResponse( const std::string& httpResponse ){ 
+	_httpResponse = httpResponse;
+}
+
+void 			Response::setBody( const std::string& body ){ 
+	_body = body; 
+}
+
+void 			Response::setFilename( const std::string& filename ){
+       	_filename = filename;
+}
+
+void 			Response::setStatus( int statusCode ){ 
+	_statusCode = statusCode;
+}
+
+void 			Response::setRedirectDest( const std::string& redirectDest ){ 
+	_redirectDest = redirectDest; 
+}
+
+/*void	Response::setReasonPhrase( const std::string &reasonPhrase ) {
+	_reasonPhrase = reasonPhrase;
+}*/
+
+void	Response::setBodyErrorPage( int httpCode ){
+
+	setBody("<html><body><h1>"
+	+ ::intToString(httpCode)
+	+ " "
+	+ ::generateReasonPhrase(httpCode)
+	+ "Error "
+	+ ::intToString(httpCode)
+	+ "</h1></body></html>\n");
+}
+
+void Response::setSetCookieValue(std::string value) {
+	_setCookieValue = value;
+}
+
+//helper functions
 
 void Response::matchServerBlock(const std::vector<ServerConf>& serverConfs) {
 	// match server block based on port
@@ -82,31 +156,11 @@ void Response::matchLocationConf(void) {
 		}
 	}
 	if( !_isLocation )
-		throw( 500 );
+	throw( 500 );
 }
 
-Response::Response(HttpRequest& reqObj, const std::vector<ServerConf>& serverConfs)
-	:_request(reqObj), _redirectDest(""), _setCookieValue("") {
+void	Response::generateHttpResponse( void ){
 
-	// check if request flagged as non 200 val
-	if (! (reqObj.getResponseCode() >= 200 && reqObj.getResponseCode() <= 302) )
-		throw reqObj.getResponseCode();
-	// set status code to state from req obj
-	setStatusCode(reqObj.getResponseCode());
-
-	// match and set server block
-	matchServerBlock(serverConfs);
-
-	// match server name if exists
-	_serverName = matchServerName(_request, _serverConf);
-
-	// match and set location block
-	matchLocationConf();
-
-	_pathInfo = PathInfo( _serverConf.getRootDir() + _request.getUri() );
-}
-
-void Response::generateHttpResponse() {
 	std::stringstream header;
 	header << ::generateStatusLine(_statusCode) << "\r\n";
 	header << "Date: " << getCurrentDateTime() << "\r\n";
@@ -118,25 +172,15 @@ void Response::generateHttpResponse() {
 	if (!(_setCookieValue.empty())) {
 		header << "Set-Cookie: " << _setCookieValue << "\r\n";
 	}
+
 	// to set location (esp for redirects)
 	if ( (!(_redirectDest.empty())) && (_statusCode == 301 || _statusCode == 302)) {
-		header << "Location: " << getRedirectDest() << "\r\n";
+		header << "Location: " << _redirectDest << "\r\n";
 	}
 
 	header << "\r\n"; // End of headers
 	std::string responseString = header.str() + getBody();
 	setHttpResponse(responseString);
-}
-
-// set the Response to a certain code (template)
-void Response::setBodyErrorPage(int httpCode) {
-	setBody("<html><body><h1>"
-	+ ::intToString(httpCode)
-	+ " "
-	+ ::generateReasonPhrase(httpCode)
-	+ "Error "
-	+ ::intToString(httpCode)
-	+ "</h1></body></html>\n");
 }
 
 bool Response::isCgiRequest( void ) {
@@ -183,7 +227,7 @@ void		Response::processResponse( void ){
 	//redirect request
 	if( isredirectRequest() ){
 		//std::cout << "REDIRECT" << '\n';
-		HandleRedirectRequest( _request );
+		handleRedirectRequest( _request );
 	}
 
 	//cgi request
@@ -195,21 +239,16 @@ void		Response::processResponse( void ){
 	//get request
 	else if( _request.getMethod() == "GET" ) {
 		//std::cout << "GET REQUEST" << '\n';
-		HandleGetRequest();
+		handleGetRequest();
 	}
 	//post request
 	else if( _request.getMethod() == "POST" ) {
 		//std::cout << "POST REQUEST" << '\n';
-		HandlePostRequest();
+		handlePostRequest();
 	}
 	//delete request
 	else if( _request.getMethod() == "DELETE" ) {
 		//std::cout << "DELETE REQUEST" << '\n';
-		HandleDeleteRequest();
+		handleDeleteRequest();
 	}
-}
-
-
-void Response::setSetCookieValue(std::string value) {
-	_setCookieValue = value;
 }

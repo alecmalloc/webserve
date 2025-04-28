@@ -1,6 +1,8 @@
 #include "webserv.hpp"
 
-void	Response::HandleDeleteRequest( void ) {
+
+void	Response::handleDeleteRequest( void ){
+
 
 	if ( !(_isLocation) )
 		throw ( 500 );

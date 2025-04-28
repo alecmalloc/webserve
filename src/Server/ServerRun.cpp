@@ -214,13 +214,14 @@ static void	readFromClient( Client* client ) {
 			bytesRead = recv( client->getSocketFd(), buffer, BUFFERSIZE - 1, 0 );
 		}
 		if( requestedBodysize >= definedBodySize ){
-			std::cout << "\r";
+			std::cout << "\033[2K\r";
+			std::cout.flush();
 			client->setComplete( true );
 		}
 	}
 	else
 		client->setComplete( true );
-	return;
+
 }
 
 static void	checkEvents( Server& server, Client* client,  struct epoll_event& event ){
