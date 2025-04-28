@@ -19,7 +19,7 @@ DEPS = $(OBJS:.o=.d)
 INC_DIRS = $(shell find $(INCL_DIR) -type d)
 INC_FLAGS = $(addprefix -I, $(INC_DIRS))
 
-FOLDERS = uploads session
+FOLDERS = uploads session cgi-bin/uploads
 
 CC = g++
 CPPFLAGS = $(INC_FLAGS) -Wall -Werror -Wextra -MMD -MP -g3 -std=c++98
