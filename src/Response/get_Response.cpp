@@ -51,6 +51,12 @@ void	Response::serveRootIndex( void ){
 		throw( 404 );
 }
 
+bool	checkAutoIndex( LocationConf& loc, ServerConf& ser ){
+	if( loc.getAutoIndex() == -1 )
+		throw( 403 );
+	return( loc.getAutoIndex() ? loc.getAutoIndex() : ser.getAutoIndex() );
+}
+
 //serve file from locationConf
 void	Response::serveLocationIndex( void ){
 
@@ -77,8 +83,7 @@ void	Response::serveLocationIndex( void ){
 	}
 
 	//if no index check for autodirectory listing
-	else if( ( _locationConf.getAutoIndex() ? _locationConf.getAutoIndex() : \
-			_serverConf.getAutoIndex() ) == 1 ){
+	else if( checkAutoIndex( _locationConf, _serverConf ) ){
 		setBody( generateDirectoryListing( fullPath ) );
 		_request.setResponseCode(200);
 	}
