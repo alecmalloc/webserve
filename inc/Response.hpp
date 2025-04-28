@@ -79,6 +79,7 @@ class Response {
 		void    	processResponse( void );
 		void		generateHttpResponse( void );
 		void		checkContentLength( void );
+		void		checkMethods( void );
 		void		serveLocationIndex( void );
 		void		serveRootIndex( void );
 

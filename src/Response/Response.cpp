@@ -27,6 +27,9 @@ Response::Response( HttpRequest& reqObj, const std::vector<ServerConf>& serverCo
 	// match and set location block
 	matchLocationConf();
 
+	//check allowed methods
+	checkMethods();
+
 	_pathInfo = PathInfo( _serverConf.getRootDir() + _request.getUri() );
 }
 
@@ -114,6 +117,19 @@ void Response::setSetCookieValue(std::string value) {
 }
 
 //helper functions
+
+void	Response::checkMethods( void ){
+
+	if( std::find( _locationConf.getAllowedMethods().begin(), \
+			_locationConf.getAllowedMethods().end(), \
+			_request.getMethod() ) != _locationConf.getAllowedMethods().end() )
+		return;
+	if( std::find( _serverConf.getIndex().begin(), _serverConf.getIndex().end(), \
+			_request.getUri() ) != _serverConf.getIndex().end() )		
+		return;
+	throw( 405 );
+
+}
 
 void Response::matchServerBlock(const std::vector<ServerConf>& serverConfs) {
 	// match server block based on port
