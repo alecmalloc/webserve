@@ -93,17 +93,16 @@ std::string generateDirectoryListing(const std::string& path) {
                 char timeStr[100];
                 strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S",
                         localtime(&statbuf.st_mtime));
-
                 // Add row to table
                 html << "<tr><td><a href=\"";
-                html << name; // Append only the file/directory name
                 if (S_ISDIR(statbuf.st_mode)) {
-                    html << "/"; // Add trailing slash for directories
+					html << name << "/";
+					html << "\">" << name << "/";
                 }
-                html << "\">" << name;
-                if (S_ISDIR(statbuf.st_mode)) {
-                    html << "/";
-                }
+				else{
+					html << name; // Append only the file/directory name
+					html << "\">" << name;
+				}
                 html << "</a></td><td>" << timeStr << "</td><td>";
                 if (!S_ISDIR(statbuf.st_mode)) {
                     html << statbuf.st_size;
