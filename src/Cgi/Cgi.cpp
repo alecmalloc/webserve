@@ -376,6 +376,7 @@ static void	parentProcess( Response& resp, int* inputPipe, int* outputPipe, pid_
 	}
 
 	response = getBody( response );
+	response += CSS_GLOBAL;
 
 	resp.setBody( response );
 
