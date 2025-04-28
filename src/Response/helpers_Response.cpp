@@ -88,6 +88,9 @@ std::string generateDirectoryListing(const std::string& path) {
 	    }
 
 	    std::string fullPath = path + "/" + name;
+
+	    std::string link = path[ path.size() - 1 ] != '/' ? fullPath : name;
+
 	    struct stat statbuf;
 
 	    if (stat(fullPath.c_str(), &statbuf) == 0) {
@@ -98,11 +101,11 @@ std::string generateDirectoryListing(const std::string& path) {
 		    // Add row to table
 		    html << "<tr><td><a href=\"";
 		    if (S_ISDIR(statbuf.st_mode)) {
-			    html << name << "/";
+			    html << link << "/";
 			    html << "\">" << name << "/";
 		    }
 		    else{
-			    html << name; // Append only the file/directory name
+			    html << link; // Append only the file/directory name
 			    html << "\">" << name;
 		    }
 		    html << "</a></td><td>" << timeStr << "</td><td>";
