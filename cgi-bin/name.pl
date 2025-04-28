@@ -1,18 +1,37 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use CGI;
 
-# Create CGI object
-my $cgi = CGI->new;
+# Send HTTP header manually
+print "Content-Type: text/html\r\n\r\n";
 
-# Print the HTTP header
-print $cgi->header('text/html');
+# Read query string or POST body
+my $query = '';
 
-# Get the name parameter from the form
-my $name = $cgi->param('name');
+# Handle GET or POST
+if ($ENV{'REQUEST_METHOD'} eq 'GET') {
+    $query = $ENV{'QUERY_STRING'} || '';
+}
+elsif ($ENV{'REQUEST_METHOD'} eq 'POST') {
+    my $content_length = $ENV{'CONTENT_LENGTH'} || 0;
+    read(STDIN, $query, $content_length);
+}
 
-# Print the HTML content
+# Parse parameters manually
+my %params;
+foreach my $pair (split /&/, $query) {
+    my ($key, $value) = split /=/, $pair, 2;
+    $key =~ tr/+/ /;
+    $value =~ tr/+/ /;
+    $key =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg;
+    $value =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg;
+    $params{$key} = $value;
+}
+
+# Get 'name' parameter
+my $name = $params{'name'} || 'Guest';
+
+# Print HTML
 print <<EOF;
 <html>
 <head>

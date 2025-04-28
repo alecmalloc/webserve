@@ -13,10 +13,10 @@ Response::Response( HttpRequest& reqObj, const std::vector<ServerConf>& serverCo
 
 	// check if request flagged as non 200 val
 	if (! ( reqObj.getResponseCode() >= 200 && reqObj.getResponseCode() <= 302 ) )
-		throw reqObj.getResponseCode();
+		throw( reqObj.getResponseCode() );
 	
 	// set status code to state from req obj
-	setStatusCode( reqObj.getResponseCode());
+	setStatus( reqObj.getResponseCode() );
 
 	// match and set server block
 	matchServerBlock( serverConfs );
@@ -86,21 +86,17 @@ void 			Response::setFilename( const std::string& filename ){
        	_filename = filename;
 }
 
-void 			Response::setStatusCode( int statusCode ){ 
-	statusCode = statusCode;
+void 			Response::setStatus( int statusCode ){ 
+	_statusCode = statusCode;
 }
 
 void 			Response::setRedirectDest( const std::string& redirectDest ){ 
 	_redirectDest = redirectDest; 
 }
 
-void			Response::setStatus( int statusCode ){
-	_statusCode = statusCode;
-}
-
-void	Response::setReasonPhrase( const std::string &reasonPhrase ) {
+/*void	Response::setReasonPhrase( const std::string &reasonPhrase ) {
 	_reasonPhrase = reasonPhrase;
-}
+}*/
 
 void	Response::setBodyErrorPage( int httpCode ){
 
@@ -160,7 +156,7 @@ void Response::matchLocationConf(void) {
 		}
 	}
 	if( !_isLocation )
-		throw( 500 );
+	throw( 500 );
 }
 
 void	Response::generateHttpResponse( void ){
@@ -179,7 +175,7 @@ void	Response::generateHttpResponse( void ){
 
 	// to set location (esp for redirects)
 	if ( (!(_redirectDest.empty())) && (_statusCode == 301 || _statusCode == 302)) {
-		header << "Location: " << getRedirectDest() << "\r\n";
+		header << "Location: " << _redirectDest << "\r\n";
 	}
 
 	header << "\r\n"; // End of headers

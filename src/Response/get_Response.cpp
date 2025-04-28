@@ -1,7 +1,7 @@
 #include "webserv.hpp"
 
 //serve Files
-void	Response::serveFileIfExists( const std::string& fullPath ){
+static std::string	serveFileIfExists( const std::string& fullPath ){
 
 	std::ifstream file( fullPath.c_str(), std::ios::in | std::ios::binary );
 
@@ -13,13 +13,11 @@ void	Response::serveFileIfExists( const std::string& fullPath ){
 	contents << file.rdbuf();
 	file.close();
 
-	setBody( contents.str() );
-
-	setStatusCode(200);
+	return( contents.str() );
 }
 
 //server file from _serverConf
-void	Response::serveRootIndexfile( void ){
+void	Response::serveRootIndex( void ){
 
 	std::string			fullPath = _pathInfo.getFullPath();
 	std::vector<std::string>	indexFiles = _serverConf.getIndex();
@@ -35,16 +33,17 @@ void	Response::serveRootIndexfile( void ){
 			std::string rootIndexPath = _serverConf.getRootDir() + "/" + indexFile;
 
 			//check for access and serve
-			if( access( rootIndexPath.c_str(), R_OK ) == 0 )
-				serveFileIfExists(rootIndexPath);
-			
+			if( access( rootIndexPath.c_str(), R_OK ) == 0 ){
+				setBody( serveFileIfExists( rootIndexPath ) );
+				setStatus( 200 );
+			}
 		}
 	}
 
 	//if no index check for autodirectory listing
 	else if( _serverConf.getAutoIndex() == true ){
 		setBody( generateDirectoryListing( fullPath ) );
-		_request.setResponseCode(200);
+		_request.setResponseCode( 200 );
 	}
 
 	//no root index file
@@ -70,7 +69,8 @@ void	Response::serveLocationIndex( void ){
 
 			//check for access and serve
 			if( access( rootIndexPath.c_str(), R_OK ) == 0 ){
-				serveFileIfExists(rootIndexPath);
+				setBody( serveFileIfExists( rootIndexPath ) );
+				setStatus( 200 );
 				break;
 			}
 		}
@@ -79,7 +79,6 @@ void	Response::serveLocationIndex( void ){
 	//if no index check for autodirectory listing
 	else if( ( _locationConf.getAutoIndex() ? _locationConf.getAutoIndex() : \
 			_serverConf.getAutoIndex() ) == 1 ){
-
 		setBody( generateDirectoryListing( fullPath ) );
 		_request.setResponseCode(200);
 	}
@@ -108,13 +107,15 @@ void	Response::handleGetRequest( void ){
 		handleCookiesPage(_request);
 
 	//if request is a file -> serve
-	else if( _pathInfo.isFile() )
-		serveFileIfExists(fullPath);
+	else if( _pathInfo.isFile() ){
+		setBody( serveFileIfExists( fullPath ) );
+		setStatus( 200 );
+	}
 	
 
 	//if request is root dir -> serve
 	else if( fullPath == _serverConf.getRootDir() + "/" )
-		serveRootIndexfile();
+		serveRootIndex();
 	
 	//serve locationblock
 	else if( _isLocation )

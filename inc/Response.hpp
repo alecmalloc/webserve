@@ -64,30 +64,36 @@ class Response {
 		bool					getIsLocation( void );
 
 		// Setters
-		void		setHttpResponse( const std::string& );	
-		void 		setStatusLine( const std::string& );
-		void 		setBody( const std::string& );
-		void 		setFileSize( long );
-		void 		setFilename( const std::string& );
-		void 		setRedirectDest( const std::string& );
-		void 		setSetCookieValue( std::string );
-		void		setBodyErrorPage(int httpCode);
-		void		setStatus( int statusCode );
+		void					setHttpResponse( const std::string& );	
+		void 					setStatusLine( const std::string& );
+		void 					setBody( const std::string& );
+		void 					setFileSize( long );
+		void 					setFilename( const std::string& );
+		void 					setRedirectDest( const std::string& );
+		void 					setSetCookieValue( std::string );
+		void					setBodyErrorPage(int httpCode);
+		void					setStatus( int statusCode );
 
 
 		//memberfunctions
-		void    	processResponse();
+		void    	processResponse( void );
+		void		generateHttpResponse( void );
+		void		checkContentLength( void );
+		void		serveLocationIndex( void );
+		void		serveRootIndex( void );
 
 		// Handlers
 		void		handleRedirectRequest( HttpRequest& ReqObj );
-		void		handleDeleteRequest();
-		void		handleGetRequest();
-		void		handlePostRequest();
-		void		handleCookiesPage(HttpRequest& request);
+		void		handleDeleteRequest( void );
+		void		handleGetRequest( void );
+		void		handlePostRequest( void );
+		void		handleCookiesPage( HttpRequest& request );
 
 		// matching functions
 		void		matchServerBlock(const std::vector<ServerConf>& serverConfs);
 		void 		matchLocationConf( void );
+		bool		isredirectRequest( void );
+		bool		isCgiRequest( void );
 
 		//cookie session
 		void 		createSession( void );
@@ -97,11 +103,11 @@ class Response {
 
 // helpers
 std::string	generateStatusLine( int statusCode );
-std::string	getCurrentDateTime();
+std::string	getCurrentDateTime( void );
 std::string 	getContentType( HttpRequest& request, PathInfo& pathInfo );
-std::string 	generateDirectoryListing(const std::string& path);
-std::string 	intToString(int number);
-std::string 	generateReasonPhrase(int httpCode);
+std::string 	generateDirectoryListing( const std::string& path );
+std::string 	intToString( int number );
+std::string 	generateReasonPhrase( int httpCode );
 std::string 	matchServerName( HttpRequest& request, ServerConf& serverConf );
 
 #endif

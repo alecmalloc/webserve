@@ -220,5 +220,6 @@ void	Config::parseLocationConfBlock( ServerConf& server, std::stringstream& ss )
 		}
 		getline( _configFile, tmp );
 	}
+	location.checkAccess( server.getRootDir() );
 	server.setLocationConf( location );	
 }

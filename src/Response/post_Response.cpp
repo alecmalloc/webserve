@@ -42,18 +42,7 @@ void	Response::checkContentLength( void ){
 	}
 }
 
-static void	genarateUploadSucces( void ){
-
-	setStatusCode( 201 );
-
-	setBody("<html><body>"
-		"<h1>Upload Successful</h1>"
-		"<p>Your file has been uploaded successfully.</p>"
-		"<a href='/'>Return to home</a>"
-		"</body></html>");
-}
-
-static std::string	uploadPathhandler( void ){
+/*static std::string	uploadPathhandler( void ){
 
 	std::string	uploadDir = DEFAULT_UP_DIR;
 
@@ -67,8 +56,8 @@ static std::string	uploadPathhandler( void ){
 			uploadDir += "/";
 	}
 
-	//TODO::check if upoload dir can be created or if config already fails
-	// Create directory recursively
+	TODO::check if upoload dir can be created or if config already fails
+	Create directory recursively
 	std::string	dirPath = uploadDir;
 	size_t		pos = 0;
 
@@ -98,7 +87,7 @@ static std::string	uploadPathhandler( void ){
 	}
 
 	return filePath;
-}
+}*/
 
 //find boundary and extract it
 static std::string	extractBoundary( std::string contentType ){
@@ -164,13 +153,9 @@ static std::string	sanitizeFilename( const std::string& filename ){
 	return( clean );
 }
 
-static void	writeToFile( const std::string& filename, const std::string& content ){
+static void	writeToFile( const std::string& filePath, const std::string& content ){
 	
-	std::string 	uploadPath = uploadPathhandler();
-	std::string	dirPath = uploadPath.substr( 0, uploadPath.find_last_of( "/" ) + 1 );
-	std::string	fullPath = dirPath + filename;
-
-	std::ofstream	out( fullPath.c_str(), std::ios::out | std::ios::binary );
+	std::ofstream	out( filePath.c_str(), std::ios::out | std::ios::binary );
 
 	if( !out.is_open() )
 		throw( 500 );
@@ -187,13 +172,12 @@ void	trimContent( std::string& s ){
 		s.erase( s.size() - 1 );
 }
 
-static void	handleMultipartUpload( std::string contentType ){
+static void	handleMultipartUpload( std::string contentType, const std::string& body, \
+	       		std::string uploadDir ){
 	
 	std::string		boundary = extractBoundary( contentType );
 	std::string		boundaryMarker = "--" + boundary;
 	std::string		boundaryEndMarker = boundaryMarker + "--";
-
-	const std::string&	body = _request.getBody();
 
 	size_t			pos = 0;
 
@@ -232,7 +216,7 @@ static void	handleMultipartUpload( std::string contentType ){
 
 		if( !filename.empty() ){
 			std::string sanitized = sanitizeFilename( filename );
-			writeToFile( sanitized, content );
+			writeToFile( uploadDir + sanitized, content );
 		}
 
 		pos = nextBoundary;
@@ -339,33 +323,33 @@ void	Response::handlePostRequest( void ){
 
 	std::string	postData = _request.getBody();
 	std::string	contentType = _request.getHeaders()["Content-Type"][0];
+	std::string	uploadDir = _locationConf.getUploadDir().empty() ? \
+				    _locationConf.getUploadDir() : DEFAULT_UP_DIR;
+	
+	static int	uploadCount = 0;
 
 	//check for contentlength
 	checkContentLength();
 
 	//if empty upload send 201
 	if( postData.empty() )
-		setStatusCode( 201 );
+		setStatus( 201 );
 
-	//TODO::fix multipart and bigger uploads
-	else if( contentType.find( "multipart/form-data" ) != std::string::npos )
-		handleMultipartUpload( contentType );
+	//multipart upload
+	else if( contentType.find( "multipart/form-data" ) != std::string::npos ){
+	
+		handleMultipartUpload( contentType, _request.getBody(), uploadDir );
 
+		setStatus( 201 );
+		setBody( UPLOAD_SUCCESS );
+	}
+
+	//basic upload
 	else{
+		std::string	filePath = uploadDir + "upload_" + intToString( uploadCount );
+		writeToFile( filePath, postData );
 
-		//create upload directory if it doesn't exist
-		std::string	filePath = uploadPathhandler();
-		std::ofstream	outFile( filePath.c_str(), std::ios::out | std::ios::binary );
-		if( !outFile.is_open() )
-			throw( 500 );
-
-		// Write the POST data to file
-		outFile.write( postData.c_str(), postData.length() );
-		outFile.close();
-
-		if( outFile.fail() )
-			throw( 500 );
-
-		genarateUploadSucces();
+		setStatus( 201 );
+		setBody( UPLOAD_SUCCESS );
 	}
 }
