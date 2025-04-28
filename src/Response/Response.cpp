@@ -82,6 +82,10 @@ void 			Response::setBody( const std::string& body ){
 	_body = body; 
 }
 
+void 			Response::addBody( const std::string& body ){ 
+	_body += body; 
+}
+
 void 			Response::setFilename( const std::string& filename ){
        	_filename = filename;
 }

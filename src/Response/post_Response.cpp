@@ -133,13 +133,6 @@ static void	parseHeaders( std::string& header, std::string& name, std::string& f
 			throw( 400 );
 		filename = header.substr( filePos, fileEndPos - filePos );
 	}
-
-
-	std::string html = "<html><body><h1>Upload Successful</h1><p>Your file has been uploaded successfully.</p><a href='/'>Return to home";
-	html += "</a></body></html>";
-	html += CSS_GLOBAL;
-
-	setBody(html);
 }
 
 static std::string	sanitizeFilename( const std::string& filename ){
@@ -333,6 +326,8 @@ void	Response::handlePostRequest( void ){
 				    _locationConf.getUploadDir() : DEFAULT_UP_DIR;
 	
 	static int	uploadCount = 0;
+	std::string	returnBody( UPLOAD_SUCCESS );
+	returnBody += CSS_GLOBAL;
 
 	//check for contentlength
 	checkContentLength();
@@ -347,7 +342,7 @@ void	Response::handlePostRequest( void ){
 		handleMultipartUpload( contentType, _request.getBody(), uploadDir );
 
 		setStatus( 201 );
-		setBody( UPLOAD_SUCCESS );
+		setBody( returnBody );
 	}
 
 	//basic upload
@@ -356,6 +351,6 @@ void	Response::handlePostRequest( void ){
 		writeToFile( filePath, postData );
 
 		setStatus( 201 );
-		setBody( UPLOAD_SUCCESS );
+		setBody( returnBody );
 	}
 }
