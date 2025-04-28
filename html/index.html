@@ -68,13 +68,6 @@
 			<button type="submit" class="btn">Run infinite.py</button>
 		</form>
 	
-		<h3>Custom Python CGI Tests <span class="method-badge">POST</span></h3>
-		<form action="/cgi-bin/name.py" method="POST">
-			<div class="form-group">
-				<input type="text" id="pyname" name="name" placeholder="Enter your name" required>
-			</div>
-			<button type="submit" class="btn">Execute Python CGI</button>
-		</form>
 	
 		<h3>CGI File Upload Test <span class="method-badge">POST</span></h3>
 		<form action="/cgi-bin/upload.py" method="POST" enctype="multipart/form-data">
@@ -86,13 +79,26 @@
 			</div>
 			<button type="submit" class="btn">Upload via CGI</button>
 		</form>
+
+		<h3>Python CGI <span class="method-badge">GET</span></h3>
+		<form action="/cgi-bin/name.py" method="GET">
+			<div class="form-group">
+				<input type="text" id="pyname" name="name" placeholder="Enter your name" required>
+			</div>
+			<button type="submit" class="btn">Execute Python CGI</button>
+		</form>
 	
-		<h3>Perl CGI <span class="method-badge">POST</span></h3>
-		<form action="/cgi-bin/name.pl" method="POST">
+		<h3>Perl CGI <span class="method-badge">GET</span></h3>
+		<form action="/cgi-bin/name.pl" method="GET">
 			<div class="form-group">
 				<input type="text" id="perl_name" name="name" placeholder="Enter your name" required>
 			</div>
 			<button type="submit" class="btn">Execute Perl CGI</button>
+		</form>
+
+		<h3>CGI Error Test <span class="method-badge">GET</span></h3>
+		<form action="/cgi-bin/error.pl" method="GET">
+			<button type="submit" class="btn">Execute error.pl</button>
 		</form>
 	</div>
     <script>
