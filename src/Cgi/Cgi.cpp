@@ -32,21 +32,12 @@ static std::string	extractQueryString(const std::string& uri) {
 	return "";
 }
 
-static int	getVectors(ServerConf server, std::vector<std::string>& ext, \
+/*static int	getVectors(ServerConf server, std::vector<std::string>& ext, \
 		std::vector<std::string>& path, std::string uri ){
 
-	// Strip query parameters first
-	std::string			cleanUri = stripQueryParams( uri );
-
-	// Extract just the path part (remove any query string)
-	std::string::size_type	question = cleanUri.find('?');
-
-	if( question != std::string::npos )
-		cleanUri = cleanUri.substr( 0, question );
-
 	// Get the path component
-	std::string			uriPath = cleanUri;
-	std::string::size_type	lastSlash = uriPath.find_last_of( '/' );
+	std::string			uriPath = stripQueryParams( uri );
+	std::string::size_type		lastSlash = uriPath.find_last_of( '/' );
 
 	if( lastSlash != std::string::npos )
 		uriPath = uriPath.substr( 0, lastSlash + 1 );
@@ -67,20 +58,20 @@ static int	getVectors(ServerConf server, std::vector<std::string>& ext, \
 		}
 	}
 	return( -1 );
-}
+}*/
 
 static void	checkFile( Response& resp, std::string& interpreter ){
 
 	//vectors with stored cgi parameters
-	std::vector<std::string>	ext;
-	std::vector<std::string>	path;
+	std::vector<std::string>	ext = resp.getLocationConf().getCgiExt();
+	std::vector<std::string>	path = resp.getLocationConf().getCgiPath();
 
 	//store request
 	const HttpRequest&		req = resp.getHttpRequest();
 
 	//get vectors
-	if( getVectors( resp.getServerConf(), ext, path, req.getUri() ) == -1 )
-		throw( 500 );
+	//if( getVectors( resp.getServerConf(), ext, path, req.getUri() ) == -1 )
+	//	throw( 500 );
 
 
 	std::string			uri = stripQueryParams(req.getUri());
@@ -89,23 +80,23 @@ static void	checkFile( Response& resp, std::string& interpreter ){
 
 	//return if no ending is found eg ".pl"
 	if( dot == std::string::npos ){
-		throw( 500 );
+		throw( 404 );
 	}
-
 
 	end = uri.substr( dot, uri.npos );
 	std::vector< std::string >::iterator it = std::find( ext.begin(), ext.end(), end );
 
 	//return if ending is not inside cgiExt
 	if( it == ext.end() ){
-		throw( 500 );
+		throw( 404 );
 	}
 
-	std::string fullPath = "." + uri;
+	std::string fullPath = resp.getLocationConf().getRootDir().empty() ? \
+			resp.getServerConf().getRootDir() : resp.getLocationConf().getRootDir() + uri;
 
 	//check if file is accesible
 	if( access( fullPath.c_str(), F_OK ) == -1 )
-		throw( 500 );
+		throw( 404 );
 
 	//check if file is executealbe
 	if( access( fullPath.c_str(), X_OK ) == -1 )

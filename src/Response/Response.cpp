@@ -120,6 +120,8 @@ void Response::setSetCookieValue(std::string value) {
 
 void	Response::checkMethods( void ){
 
+	if( !_isLocation )
+		return;
 	if( !_locationConf.getAllowedMethods().empty() && !_request.getMethod().empty() && \
 	std::find( _locationConf.getAllowedMethods().begin(), _locationConf.getAllowedMethods().end(), \
 	_request.getMethod() ) != _locationConf.getAllowedMethods().end() )
@@ -161,8 +163,13 @@ void Response::matchLocationConf(void) {
 	for ( size_t i = 0; i < locations.size(); i++ ) {
 		std::string locPath = locations[i].getPath();
 
-		if (uri.find(locPath) == 0) {  // URI starts with location path
-			if (locPath.length() > bestMatch.length()) {
+		if( locPath == "/" && locPath == uri ){
+			bestMatch = locPath;
+			_locationConf = _serverConf.getLocationConfs()[i];
+			_isLocation = true;
+		}
+		else if( uri.find(locPath) == 0 && locPath.size() > 1 ){
+			if( locPath.length() > bestMatch.length() ){
 				bestMatch = locPath;
 				_locationConf = _serverConf.getLocationConfs()[i];
 				_isLocation = true;
