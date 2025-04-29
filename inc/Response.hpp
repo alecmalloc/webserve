@@ -84,7 +84,7 @@ class Response {
 		void		serveRootIndex( void );
 
 		// Handlers
-		void		handleRedirectRequest( HttpRequest& ReqObj );
+		void		handleRedirectRequest( void );
 		void		handleDeleteRequest( void );
 		void		handleGetRequest( void );
 		void		handlePostRequest( void );
