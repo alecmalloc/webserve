@@ -39,16 +39,6 @@ void	Response::serveRootIndex( void ){
 			}
 		}
 	}
-
-	//if no index check for autodirectory listing
-	else if( _serverConf.getAutoIndex() == true ){
-		setBody( generateDirectoryListing( fullPath ) );
-		_request.setResponseCode( 200 );
-	}
-
-	//no root index file
-	else
-		throw( 404 );
 }
 
 bool	checkAutoIndex( LocationConf& loc, ServerConf& ser ){
@@ -81,8 +71,9 @@ void	Response::serveLocationIndex( void ){
 			}
 		}
 	}
-
-	//if no index check for autodirectory listing
+	else if (!_serverConf.getIndex().empty()){
+		serveRootIndex();
+	}
 	else if( checkAutoIndex( _locationConf, _serverConf ) ){
 		setBody( generateDirectoryListing( fullPath ) );
 		_request.setResponseCode(200);
@@ -115,13 +106,8 @@ void	Response::handleGetRequest( void ){
 		setBody( serveFileIfExists( fullPath ) );
 		setStatus( 200 );
 	}
-	//if request is root dir -> serve
-	else if( fullPath == _serverConf.getRootDir() + "/" )
-		serveRootIndex();
-	//serve locationblock
 	else if( _isLocation )
 		serveLocationIndex();
-	//404 not found	else
 	else
 		throw( 404 );
 }
