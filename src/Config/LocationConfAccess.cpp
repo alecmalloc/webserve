@@ -41,11 +41,11 @@ void	LocationConf::checkAccess( std::string rootDir ){
 					*it + " not accessible" ) );
 	}
 				
-	//check allowed redirect
+	/*check allowed redirect
 	for( std::map< std::string, std::string >::iterator it = \
 			_allowedRedirects.begin(); it != _allowedRedirects.end(); it++ ){
 		if( !accessibleFile( rootDir + _path + it->second ) )
 			throw( std::runtime_error( "Allowed Redirect " + rootDir + \
 					_path + it->second + " not accessible" ) );
-	}
+	}*/
 }
