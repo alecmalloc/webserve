@@ -1,0 +1,50 @@
+Starting program: /home/mbartsch/42/webserv/webserv 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+[Inferior 1 (process 7026) exited with code 01]
+Starting program: /home/mbartsch/42/webserv/webserv 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+[Inferior 1 (process 7050) exited with code 01]
+Starting program: /home/mbartsch/42/webserv/webserv 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+[Inferior 1 (process 7052) exited with code 01]
+Starting program: /home/mbartsch/42/webserv/webserv 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+[Inferior 1 (process 7054) exited with code 01]
+Starting program: /home/mbartsch/42/webserv/webserv 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, mainLoop (server=...) at src/Server/ServerRun.cpp:311
+Continuing.
+
+Program received signal SIGSEGV, Segmentation fault.
+0x00007ffff7cc9de5 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#0  0x00007ffff7cc9de5 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x000055555555e6e3 in std::char_traits<char>::compare (__s1=0x0, __s2=0x7ffffffdfe50 "/", __n=1)
+    at /usr/include/c++/10/bits/char_traits.h:389
+#2  0x0000555555561a44 in std::operator==<char> (
+    __lhs=<error reading variable: Cannot create a lazy string with address 0x0, and a non-zero length.>, __rhs="/") at /usr/include/c++/10/bits/basic_string.h:6186
+#3  0x0000555555587b6b in __gnu_cxx::__ops::_Iter_equals_val<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const>::operator()<__gnu_cxx::__normal_iterator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const*, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > (this=0x7ffffffdfd08, 
+    __it=<error reading variable: Cannot create a lazy string with address 0x0, and a non-zero length.>) at /usr/include/c++/10/bits/predefined_ops.h:268
+#4  0x0000555555587a36 in std::__find_if<__gnu_cxx::__normal_iterator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const*, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, __gnu_cxx::__ops::_Iter_equals_val<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const> > (
+    __first=<error reading variable: Cannot create a lazy string with address 0x0, and a non-zero length.>, 
+    __last=<error reading variable: Cannot create a lazy string with address 0x0, and a non-zero length.>, __pred=...) at /usr/include/c++/10/bits/stl_algobase.h:1937
+#5  0x000055555558798b in std::__find_if<__gnu_cxx::__normal_iterator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const*, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, __gnu_cxx::__ops::_Iter_equals_val<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const> > (__first="/html/index.html", 
+    __last=<error reading variable: Cannot create a lazy string with address 0x0, and a non-zero length.>, __pred=...) at /usr/include/c++/10/bits/stl_algobase.h:1974
+#6  0x00005555555878f2 in std::find<__gnu_cxx::__normal_iterator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const*, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > (__first="/html/index.html", 
+    __last=<error reading variable: Cannot create a lazy string with address 0x0, and a non-zero length.>, __val="/") at /usr/include/c++/10/bits/stl_algo.h:3908
+#7  0x0000555555586440 in Response::checkMethods (this=0x7ffffffe0400) at src/Response/Response.cpp:129
+#8  0x0000555555585536 in Response::Response (this=0x7ffffffe0400, reqObj=..., 
+    serverConfs=std::vector of length 1, capacity 1 = {...}) at src/Response/Response.cpp:31
+#9  0x000055555558d077 in checkEvents (server=..., client=0x5555555bb790, event=...)
+    at src/Server/ServerRun.cpp:266
+#10 0x000055555558d759 in mainLoop (server=...) at src/Server/ServerRun.cpp:337
+#11 0x000055555558d816 in Server::runServer (this=0x7fffffffe100) at src/Server/ServerRun.cpp:352
+#12 0x000055555558e31f in main (argc=1, argv=0x7fffffffe4a8) at src/main.cpp:33
+
+quit
+EOF [assumed Y]

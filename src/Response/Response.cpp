@@ -9,7 +9,7 @@ Response::Response()
 }
 
 Response::Response( HttpRequest& reqObj, const std::vector<ServerConf>& serverConfs )
-	: _request( reqObj ), _redirectDest( "" ), _setCookieValue( "" ){
+	: _request( reqObj ), _redirectDest( "" ), _setCookieValue( "" ), _isLocation( false ) {
 
 	// check if request flagged as non 200 val
 	if (! ( reqObj.getResponseCode() >= 200 && reqObj.getResponseCode() <= 302 ) )
@@ -120,12 +120,13 @@ void Response::setSetCookieValue(std::string value) {
 
 void	Response::checkMethods( void ){
 
-	if( std::find( _locationConf.getAllowedMethods().begin(), \
-			_locationConf.getAllowedMethods().end(), \
-			_request.getMethod() ) != _locationConf.getAllowedMethods().end() )
+	if( !_locationConf.getAllowedMethods().empty() && !_request.getMethod().empty() && \
+	std::find( _locationConf.getAllowedMethods().begin(), _locationConf.getAllowedMethods().end(), \
+	_request.getMethod() ) != _locationConf.getAllowedMethods().end() )
 		return;
-	if( std::find( _serverConf.getIndex().begin(), _serverConf.getIndex().end(), \
-			_request.getUri() ) != _serverConf.getIndex().end() )		
+	if( !_serverConf.getIndex().empty() && !_request.getUri().empty() && \
+	std::find( _serverConf.getIndex().begin(), _serverConf.getIndex().end(), \
+	_request.getUri() ) != _serverConf.getIndex().end() )
 		return;
 	throw( 405 );
 
