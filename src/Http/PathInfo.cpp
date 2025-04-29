@@ -110,7 +110,7 @@ int PathInfo::validatePath() {
         // Even if file doesn't exist, we keep the parsed path information
         _isDirectory = false;
         _isFile = false;
-        //return 404; // Not Found
+        return 404; // Not Found
     }
 
     // Set file type flags based on stat results
@@ -118,19 +118,21 @@ int PathInfo::validatePath() {
     _isFile = S_ISREG(statbuf.st_mode);
 
     // Additional directory check using opendir
-    if (_isDirectory) {
+    if( _isDirectory ) {
         DIR* dir = opendir(_fullPath.c_str());
         if (dir == NULL) {
             _isDirectory = false;
             throw 404;
         }
+
         closedir(dir);
 
         // Check directory permissions
         if (!(statbuf.st_mode & S_IRUSR) || !(statbuf.st_mode & S_IXUSR)) {
             throw 403;
         }
-    } else if (_isFile) {
+    }
+    else if( _isFile ) {
         // Check file permissions
         if (!(statbuf.st_mode & S_IRUSR)) {
             throw 403;

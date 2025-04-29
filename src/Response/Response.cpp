@@ -9,7 +9,7 @@ Response::Response()
 }
 
 Response::Response( HttpRequest& reqObj, const std::vector<ServerConf>& serverConfs )
-	: _request( reqObj ), _redirectDest( "" ), _setCookieValue( "" ){
+	: _request( reqObj ), _redirectDest( "" ), _setCookieValue( "" ), _isLocation( false ) {
 
 	// check if request flagged as non 200 val
 	if (! ( reqObj.getResponseCode() >= 200 && reqObj.getResponseCode() <= 302 ) )
@@ -120,15 +120,15 @@ void Response::setSetCookieValue(std::string value) {
 
 void	Response::checkMethods( void ){
 
-	if( std::find( _locationConf.getAllowedMethods().begin(), \
-			_locationConf.getAllowedMethods().end(), \
-			_request.getMethod() ) != _locationConf.getAllowedMethods().end() )
+	if( !_isLocation )
 		return;
-	if( std::find( _serverConf.getIndex().begin(), _serverConf.getIndex().end(), \
-			_request.getUri() ) != _serverConf.getIndex().end() )		
-		return;
-	throw( 405 );
+	std::vector< std::string >	tmp = _locationConf.getAllowedMethods();
 
+	for( size_t i = 0; i < tmp.size(); i++ )
+		if( tmp[i] == _request.getMethod() )
+			return;
+	
+	throw( 405 );
 }
 
 void Response::matchServerBlock(const std::vector<ServerConf>& serverConfs) {
@@ -155,7 +155,7 @@ void Response::matchLocationConf(void) {
 
 	std::string uri = _request.getUri();
 
-	if( uri.empty() || uri == "/" || uri == "/customCookiesEndpoint/CookiesPage" \
+	if( uri.empty() || uri == "/customCookiesEndpoint/CookiesPage" \
 	|| uri == "/customCookiesEndpoint/CookiesPage/activate" || uri == "/customCookiesEndpoint/CookiesPage/deactivate" )
 		return;
 	// Find best matching location (longest prefix match)
@@ -164,8 +164,13 @@ void Response::matchLocationConf(void) {
 	for ( size_t i = 0; i < locations.size(); i++ ) {
 		std::string locPath = locations[i].getPath();
 
-		if (uri.find(locPath) == 0) {  // URI starts with location path
-			if (locPath.length() > bestMatch.length()) {
+		if( locPath == "/" && locPath == uri ){
+			bestMatch = locPath;
+			_locationConf = _serverConf.getLocationConfs()[i];
+			_isLocation = true;
+		}
+		else if( uri.find(locPath) == 0 && locPath.size() > 1 ){
+			if( locPath.length() > bestMatch.length() ){
 				bestMatch = locPath;
 				_locationConf = _serverConf.getLocationConfs()[i];
 				_isLocation = true;

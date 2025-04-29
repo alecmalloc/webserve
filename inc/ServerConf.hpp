@@ -32,6 +32,7 @@ class ServerConf {
 		size_t						getChunkSize( void ) const;
 		const std::map< std::string, std::string >	getAllowedRedirects( void ) const;
 
+
 		//setter functions
 		void	setIpPort( std::string ip, int port );
 		void	setServerConfName( const std::string name );
