@@ -122,12 +122,13 @@ void	Response::checkMethods( void ){
 
 	if( !_isLocation )
 		return;
-	if( !_locationConf.getAllowedMethods().empty() && !_request.getMethod().empty() && \
-	std::find( _locationConf.getAllowedMethods().begin(), _locationConf.getAllowedMethods().end(), \
-	_request.getMethod() ) != _locationConf.getAllowedMethods().end() )
-		return;
-	throw( 405 );
+	std::vector< std::string >	tmp = _locationConf.getAllowedMethods();
 
+	for( size_t i = 0; i < tmp.size(); i++ )
+		if( tmp[i] == _request.getMethod() )
+			return;
+	
+	throw( 405 );
 }
 
 void Response::matchServerBlock(const std::vector<ServerConf>& serverConfs) {
