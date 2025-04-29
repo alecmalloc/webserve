@@ -31,13 +31,23 @@ std::vector< ServerConf >	Config::getServerConfs( void ){
 }
 
 //setters
-void	Config::setServerConf( ServerConf server ){
+void		Config::setServerConf( ServerConf server ){
 	_servers.push_back( server );
 }
 
 //memeber fucntions
 
-void	Config::parse( std::string& filename ){
+static void	checkPortsandHostnames( std::vector< ServerConf > s ){
+	
+	for( std::vector< ServerConf >::iterator i = s.begin(); i != s.end() i++ ){
+		for( std::vector< ServerConf >::iterator j = i; j != s.end(); j++ ){
+				
+		}	
+	}
+}
+
+void		Config::parse( std::string& filename ){
+
 	std::string	tmp;
 
 	_configFile.open( filename.c_str(), std::ios::in );
@@ -57,4 +67,5 @@ void	Config::parse( std::string& filename ){
 	}
 	if( _configFile.eof() && _servers.empty() )
 		throw( std::runtime_error( "Did not find server block" ) );
+	checkPortsandHostnames( _servers );
 }
