@@ -260,7 +260,7 @@ void	Config::parseServerConfBlock( ServerConf& server ){
 	void ( *functionArray[] )( ServerConf&, std::stringstream& ) = \
 	{ parseListen, parseServerConfName, parseErrorPage, parseBodySize, \
 		parseRootDir, parseAutoIndex, parseIndex, parseAllowedRedirects, \
-			parseChunkedEncoding, parseChunkSize};
+			parseChunkedEncoding, parseChunkSize };
 
 	std::string		tmp;
 

@@ -124,10 +124,6 @@ void	Response::checkMethods( void ){
 	std::find( _locationConf.getAllowedMethods().begin(), _locationConf.getAllowedMethods().end(), \
 	_request.getMethod() ) != _locationConf.getAllowedMethods().end() )
 		return;
-	if( !_serverConf.getIndex().empty() && !_request.getUri().empty() && \
-	std::find( _serverConf.getIndex().begin(), _serverConf.getIndex().end(), \
-	_request.getUri() ) != _serverConf.getIndex().end() )
-		return;
 	throw( 405 );
 
 }
@@ -156,7 +152,7 @@ void Response::matchLocationConf(void) {
 
 	std::string uri = _request.getUri();
 
-	if( uri.empty() || uri == "/" || uri == "/customCookiesEndpoint/CookiesPage" \
+	if( uri.empty() || uri == "/customCookiesEndpoint/CookiesPage" \
 	|| uri == "/customCookiesEndpoint/CookiesPage/activate" || uri == "/customCookiesEndpoint/CookiesPage/deactivate" )
 		return;
 	// Find best matching location (longest prefix match)
