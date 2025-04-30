@@ -32,34 +32,6 @@ static std::string	extractQueryString(const std::string& uri) {
 	return "";
 }
 
-/*static int	getVectors(ServerConf server, std::vector<std::string>& ext, \
-		std::vector<std::string>& path, std::string uri ){
-
-	// Get the path component
-	std::string			uriPath = stripQueryParams( uri );
-	std::string::size_type		lastSlash = uriPath.find_last_of( '/' );
-
-	if( lastSlash != std::string::npos )
-		uriPath = uriPath.substr( 0, lastSlash + 1 );
-
-	// Improve location matching
-	const std::vector<LocationConf>& locations = server.getLocationConfs();
-
-	for( std::vector<LocationConf>::const_iterator it = locations.begin(); \
-			it != locations.end(); ++it ){
-
-		std::string Compare_dir = it->getPath();
-
-		// Match based on path prefix, not exact match
-		if( uriPath.find( Compare_dir ) == 0 ){
-			ext = it->getCgiExt();
-			path = it->getCgiPath();
-			return( 0 );
-		}
-	}
-	return( -1 );
-}*/
-
 static void	checkFile( Response& resp, std::string& interpreter ){
 
 	//vectors with stored cgi parameters
@@ -68,11 +40,6 @@ static void	checkFile( Response& resp, std::string& interpreter ){
 
 	//store request
 	const HttpRequest&		req = resp.getHttpRequest();
-
-	//get vectors
-	//if( getVectors( resp.getServerConf(), ext, path, req.getUri() ) == -1 )
-	//	throw( 500 );
-
 
 	std::string			uri = stripQueryParams(req.getUri());
 	std::string			end;

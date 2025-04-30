@@ -3,7 +3,7 @@
 ErrorResponse::ErrorResponse():
 _isServerConf(false)
 {
-
+	;
 }
 
 ErrorResponse::ErrorResponse(const int& statusCode, const HttpRequest& request , const std::vector<ServerConf>& serverConfs): 
@@ -70,7 +70,6 @@ void ErrorResponse::matchServerBlock() {
 			}
 		}
 	}
-    
 	// default isserverconf is false so no need to set
 }
 
