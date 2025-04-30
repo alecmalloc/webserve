@@ -260,7 +260,7 @@ void		Response::processResponse( void ){
 	//redirect request
 	if( isredirectRequest() ){
 		//std::cout << "REDIRECT" << '\n';
-		handleRedirectRequest( _request );
+		handleRedirectRequest();
 	}
 
 	//cgi request

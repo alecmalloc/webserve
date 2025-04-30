@@ -1,6 +1,6 @@
 #include "webserv.hpp" 
 
-void    Response::handleRedirectRequest( HttpRequest& ReqObj ){
+void    Response::handleRedirectRequest( void ){
 
 	int             code;
 	std::string     dest;
@@ -29,10 +29,10 @@ void    Response::handleRedirectRequest( HttpRequest& ReqObj ){
 	dest = it->second.substr(1, it->second.length());
 
 	// set req code to the first string (301, 302) of redirect vec
-	ReqObj.setResponseCode(code);
+	setStatus( code );
 
 	// set _redirectDest to dest. this gets returned as Location in headers
-	setRedirectDest(dest);
+	setRedirectDest( dest );
 
 	// empty body on redirects
 	setBody("");
