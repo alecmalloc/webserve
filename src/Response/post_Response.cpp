@@ -189,9 +189,9 @@ void	Response::handlePostRequest( void ){
 	//check for contentlength
 	checkContentLength();
 
-	//if empty upload send 201
+	//if empty upload send 200
 	if( postData.empty() )
-		setStatus( 201 );
+		setStatus( 204 );
 
 	//multipart upload
 	else if( contentType.find( "multipart/form-data" ) != std::string::npos ){
