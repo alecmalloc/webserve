@@ -29,6 +29,9 @@
 // defines for response
 #define HTTP_VERSION    "HTTP/1.1"
 #define UPLOAD_SUCCESS	"<html><body><h1>Upload Successfull</h1></body></html>"
+#define COOKIEPAGE	"/customCookiesEndpoint/CookiesPage"
+#define COOKIEAKTIVATE	"/customCookiesEndpoint/CookiesPage/activate"
+#define COOKEDEAKTIVATE	"/customCookiesEndpoint/CookiesPage/deactivate"
 
 //defines for epoll
 #define	MAX_EVENTS 	10000

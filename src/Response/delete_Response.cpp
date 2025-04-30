@@ -1,6 +1,5 @@
 #include "webserv.hpp"
 
-
 void	Response::handleDeleteRequest( void ){
 
 

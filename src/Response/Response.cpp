@@ -97,10 +97,6 @@ void 			Response::setRedirectDest( const std::string& redirectDest ){
 	_redirectDest = redirectDest; 
 }
 
-/*void	Response::setReasonPhrase( const std::string &reasonPhrase ) {
-	_reasonPhrase = reasonPhrase;
-}*/
-
 void	Response::setBodyErrorPage( int httpCode ){
 
 	setBody("<html><body><h1>"
@@ -170,9 +166,9 @@ void Response::matchLocationConf(void) {
 
 	std::string uri = _request.getUri();
 
-	if( uri.empty() || uri == "/customCookiesEndpoint/CookiesPage" \
-	|| uri == "/customCookiesEndpoint/CookiesPage/activate" || uri == "/customCookiesEndpoint/CookiesPage/deactivate" )
+	if( uri.empty() || uri == COOKIEPAGE || uri == COOKIEACTIVATE  || uri == COOKIEDEACTIVATE )
 		return;
+
 	// Find best matching location (longest prefix match)
 	std::string bestMatch = "";
 
