@@ -132,6 +132,10 @@ void	Response::checkMethods( void ){
 }
 
 void Response::matchServerBlock(const std::vector<ServerConf>& serverConfs) {
+
+	//stores matching serverconfs
+	std::vector<ServerConf>		store;
+
 	// match server block based on port
 	for (size_t i = 0; i < serverConfs.size(); i++) {
 		// server block we are currently inspecting
@@ -139,13 +143,24 @@ void Response::matchServerBlock(const std::vector<ServerConf>& serverConfs) {
 		// get ip ports map
 		const std::map<std::string, std::set<int> > ipsPorts =  serverConfs[i].getIpPort();
 		// loop through map
-		for (std::map<std::string, std::set<int> >::const_iterator it = ipsPorts.begin(); it != ipsPorts.end(); it++) {
+		for (std::map<std::string, std::set<int> >::const_iterator it = ipsPorts.begin(); \
+				it != ipsPorts.end(); it++) {
+
 			// check if we can find port in set
-			if (it->second.find(_request.getPort()) != it->second.end()) {
-				_serverConf = serverConfs[i];
+			if (it->second.find(_request.getPort()) != it->second.end())
+				store.push_back( serverConfs[i] );
+		}
+	}
+	if( !store.empty() ){
+		for( std::vector<ServerConf>::iterator it = store.begin(); it != store.end(); it++ ){
+			std::vector<std::string>	tmp = it->getServerConfNames();
+			if( std::find( tmp.begin(), tmp.end(), _request.getHostname() ) != tmp.end() ){
+				_serverConf = (*it);
 				return;
 			}
 		}
+		_serverConf = store.at( 0 );
+		return;
 	}
 	throw( 404 );
 }
