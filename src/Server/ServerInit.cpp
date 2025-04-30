@@ -124,7 +124,20 @@ static void	addSocketEpoll( int epollFd, int newSocket ){
 		throw( std::runtime_error( "EROR: Epoll:	adding socket failed" ) );
 }
 
+static std::string	IPstring( std::string ip, int port ){
+	
+	std::ostringstream	oss;
+
+	oss << ip << ":" << port;
+
+	return( oss.str() );
+}
+
 void	Server::_initServer( void ){
+
+	//store registered sockets
+	std::vector<std::string>	reg;
+
 	//create epoll instance -> throws error on fails	
 	_epollFd = createEpoll();
 
@@ -146,6 +159,11 @@ void	Server::_initServer( void ){
 			for( std::set< int >::iterator it3 = it2->second.begin(); it3 != \
 				it2->second.end(); it3++ ){
 	
+				//only add new socket with new ip and port
+				if( std::find( reg.begin(), reg.end(), IPstring( it2->first, *it3 ) ) \
+					!= reg.end() )
+						continue;
+
 				//create sockets and add to epoll
 				int	newSocket;
 
@@ -166,8 +184,9 @@ void	Server::_initServer( void ){
 				std::cout << BLUE << "INFO:	Socket:	listening on:	" \
 					<< END << it2->first << ":" << *it3 << '\n';
 
-				//add newSocket to Epoll Instance
+				//add newSocket to Epoll Instance and to registered socket list
 				addSocketEpoll( _epollFd, newSocket );
+				reg.push_back( IPstring( it2->first, *it3 ) );
 			}
 		}
 	}

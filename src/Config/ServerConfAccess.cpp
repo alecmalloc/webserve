@@ -53,4 +53,8 @@ void	ServerConf::checkAccess( void ){
 			throw( std::runtime_error( \
 				"Indexfile: " + _rootDir + *it + " not accessible" ) );
 	}
+
+	//check if hostnames is set
+	if( _serverNames.empty() )
+		throw( std::runtime_error( "Every Serverblock needs an Hostname" ) );
 }
