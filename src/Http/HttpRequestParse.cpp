@@ -144,7 +144,6 @@ void HttpRequest::parseBody(const std::string& rawRequest) {
 	}
 
 	// Get the body using Content-Length
-	// TODO: refactor this
 	// this only works when content length is used -> which is not always the case
 	size_t contentLength = 0;
 	std::istringstream(_headers["Content-Length"][0]) >> contentLength;

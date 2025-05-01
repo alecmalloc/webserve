@@ -179,7 +179,7 @@ void Response::handleCookiesPage(HttpRequest& request) {
 
     // check if deactivate hook has been triggered
     if (request.getUri() == "/customCookiesEndpoint/CookiesPage/deactivate") {
-        // TODO clean up session FILE -> delete from sessions
+        // clean up session FILE -> delete from sessions
         deleteSession(activeSessionID);
         setBody(cookiesHtmlCookiesHaveBeenTaken());
         return;
