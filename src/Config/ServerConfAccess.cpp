@@ -32,12 +32,6 @@ void	ServerConf::checkAccess( void ){
 		throw( std::runtime_error( \
 			"RootDir: " + _rootDir + " not accsessible" ) );
 
-	// //check every location
-	// for( std::vector< LocationConf >::iterator it = _locations.begin(); 
-	// 		it != _locations.end(); it++ ){
-	// 	it->checkAccess( _rootDir );	
-	// }
-
 	//check every errorpage path
 	for( std::map< int, std::string >::iterator it = _errorPages.begin(); \
 			it != _errorPages.end(); it++ ){
@@ -53,4 +47,8 @@ void	ServerConf::checkAccess( void ){
 			throw( std::runtime_error( \
 				"Indexfile: " + _rootDir + *it + " not accessible" ) );
 	}
+
+	//check if hostnames is set
+	if( _serverNames.empty() )
+		throw( std::runtime_error( "Every Serverblock needs an Hostname" ) );
 }

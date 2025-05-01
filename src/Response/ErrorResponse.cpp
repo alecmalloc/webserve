@@ -3,7 +3,7 @@
 ErrorResponse::ErrorResponse():
 _isServerConf(false)
 {
-
+	;
 }
 
 ErrorResponse::ErrorResponse(const int& statusCode, const HttpRequest& request , const std::vector<ServerConf>& serverConfs): 
@@ -54,6 +54,10 @@ std::string ErrorResponse::getHttpResponse( void ) {
 }
 
 void ErrorResponse::matchServerBlock() {
+
+	//store serverConfs
+	std::vector<ServerConf>		store;
+
 	// match server block based on port
 	for (size_t i = 0; i < _serverConfs.size(); i++) {
 		// server block we are currently inspecting
@@ -64,13 +68,28 @@ void ErrorResponse::matchServerBlock() {
 		for (std::map<std::string, std::set<int> >::const_iterator it = ipsPorts.begin(); it != ipsPorts.end(); it++) {
 			// check if we can find port in set
 			if (it->second.find(_request.getPort()) != it->second.end()) {
-				_serverConf = _serverConfs[i];
-                _isServerConf = true;
-                break;
+				store.push_back( _serverConfs[i] );
 			}
 		}
 	}
-    
+	if( !store.empty() ){
+
+		std::vector<ServerConf>::iterator	it = store.begin();
+
+		for( ; it != store.end(); it++ ){
+			std::vector<std::string>	n = it->getServerConfNames();
+			if( std::find( n.begin(), n.end(), _request.getHostname() ) != n.end() ){
+               			 _isServerConf = true;
+				 _serverConf = (*it);
+                		return;
+			}
+		}
+		_serverConf = store.at( 0 );
+		 _isServerConf = true;
+        	return;
+			
+
+	}
 	// default isserverconf is false so no need to set
 }
 

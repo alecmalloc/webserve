@@ -28,11 +28,11 @@ void    Response::handleRedirectRequest( void ){
 	// we skip first character becuase moritz puts in a / at the beginning
 	dest = it->second.substr(1, it->second.length());
 
-	// set response code to the first string (301, 302) of redirect vec
-	_statusCode = code;
+	// set req code to the first string (301, 302) of redirect vec
+	setStatus( code );
 
 	// set _redirectDest to dest. this gets returned as Location in headers
-	setRedirectDest(dest);
+	setRedirectDest( dest );
 
 	// empty body on redirects
 	setBody("");
