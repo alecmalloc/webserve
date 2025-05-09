@@ -1,8 +1,6 @@
 # 🌐 Webserv
 ### A lightweight HTTP/1.1 Server in C++98
 
-![📸 Screenshot of Webserv Testsuite](docs/webserv_testsuite.png)
-
 ---
 
 ## 📝 Overview
@@ -10,6 +8,10 @@
 A simple HTTP/1.1 web server written in C++98 that handles `GET`, `POST`, and `DELETE` requests.  
 It supports `file serving`, `CGI execution`, `cookies`, `sessions`, and `virtual host configuration`.  
 Connections are managed using **epoll** for non-blocking I/O with high concurrency.
+
+---
+
+![📸 Screenshot of Webserv Testsuite](docs/webserv_testsuite.png)
 
 ---
 
@@ -61,29 +63,29 @@ make
 <summary>🛠️ Click to expand</summary>
 
 # Server blocks:
-listen										127.0.0.1:8080;                 # IP:Port
-server_name							localhost;                      # Hostname
-error_page								404 error_page/404.html;        # Custom error pages
-client_max_body_size			1g;                             # Max request size
-root                   ./;                             # Root directory
-index                  assets/index.html;              # Default index
-autoindex              on;                             # Directory listing
-use_chunked_encoding   on;                             # Allow chunked transfer
-chunk_size             1m;                             # Chunk size
-allowed_redirects      301 www.google.com;             # Global redirect
-
+* listen										127.0.0.1:8080;                 # IP:Port
+* server_name							localhost;                      # Hostname
+* error_page								404 error_page/404.html;    # Custom error pages
+* client_max_body_size			1g;                             # Max request size
+* root                   ./;                             # Root directory
+* index                  assets/index.html;              # Default index
+* autoindex              on;                             # Directory listing
+* use_chunked_encoding   on;                             # Allow chunked transfer
+* chunk_size             1m;                             # Chunk size
+* allowed_redirects      301 www.google.com;             # Global redirect
+ 
 # Location blocks:
-location /upload {
-    allowed_methods       GET POST DELETE; #allowed Methods
-    allowed_redirects     302 www.google.com; #location redirect
-    root                  ./uploads; #location root dir
-    autoindex             on; #location specific
-    index                 index.html; #location specific
-    cgi_ext               .py .pl; #allowed cgi scripts
-    cgi_path              /usr/bin/python3 /usr/bin/perl; #cgi executables
-    upload_dir            uploads; #upload directory
-    client_max_body_size  5m; #location specific
-}
+* location /upload {
+*     allowed_methods       GET POST DELETE; #allowed Methods
+*     allowed_redirects     302 www.google.com; #location redirect
+*     root                  ./uploads; #location root dir
+*     autoindex             on; #location specific
+*     index                 index.html; #location specific
+*     cgi_ext               .py .pl; #allowed cgi scripts
+*     cgi_path              /usr/bin/python3 /usr/bin/perl; #cgi executables
+*     upload_dir            uploads; #upload directory
+*     client_max_body_size  5m; #location specific
+* }
 
 </details>
 
