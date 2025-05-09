@@ -58,8 +58,12 @@ static void	checkFile( Response& resp, std::string& interpreter ){
 		throw( 404 );
 	}
 
-	std::string fullPath = resp.getLocationConf().getRootDir().empty() ? \
-			resp.getServerConf().getRootDir() : resp.getLocationConf().getRootDir() + uri;
+	std::string fullPath;
+
+	if( resp.getLocationConf().getRootDir().empty() )
+		fullPath = resp.getServerConf().getRootDir() + uri;
+	else
+		fullPath = resp.getLocationConf().getRootDir() + uri;
 
 	//check if file is accesible
 	if( access( fullPath.c_str(), F_OK ) == -1 )
@@ -188,7 +192,13 @@ static int	childProcess( Response& resp, int* inputPipe, int* outputPipe, \
 	close( outputPipe[0] );
 
 	// Construct the full file path by combining the root directory with the URI
-	std::string		rootDir = resp.getServerConf().getRootDir();
+	std::string	rootDir;
+
+	if( resp.getLocationConf().getRootDir().empty() )
+		rootDir = resp.getServerConf().getRootDir();
+	else
+		rootDir = resp.getLocationConf().getRootDir();
+
 	std::string		uri = stripQueryParams(req.getUri());
 	std::string		scriptPath = rootDir + uri;
 

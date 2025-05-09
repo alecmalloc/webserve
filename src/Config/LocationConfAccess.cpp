@@ -16,7 +16,7 @@ static bool	accessibleFile( std::string tmp ){
 		return( false );
 }
 
-static bool	accessibleDir( std::string tmp ){
+bool	accessibleDir( std::string tmp ){
 	//test function if path tmp is accasible
 	struct stat	info;
 

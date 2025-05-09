@@ -1,4 +1,5 @@
 #include "webserv.hpp"
+#include <string>
 
 
 //check contentlength againt defined content length 
@@ -175,12 +176,24 @@ static void	handleMultipartUpload( std::string contentType, const std::string& b
 	}
 }
 
+static std::string getUploadDir( LocationConf& loc, ServerConf& serv ){
+	std::string	uploadDir;
+	if( !loc.getUploadDir().empty() && !loc.getRootDir().empty() )
+		uploadDir = loc.getRootDir() + loc.getUploadDir();
+	else if( !loc.getUploadDir().empty() && !serv.getRootDir().empty() )
+		uploadDir = serv.getRootDir() + loc.getUploadDir();
+	else
+		uploadDir = DEFAULT_UP_DIR;
+	if( uploadDir.at( uploadDir.size() - 1 ) != '/' )
+		uploadDir += "/";
+	return( uploadDir );
+}
+
 void	Response::handlePostRequest( void ){
 
 	std::string	postData = _request.getBody();
 	std::string	contentType = _request.getHeaders()["Content-Type"][0];
-	std::string	uploadDir = _locationConf.getUploadDir().empty() ? \
-				    _locationConf.getUploadDir() : DEFAULT_UP_DIR;
+	std::string	uploadDir = getUploadDir( _locationConf, _serverConf );
 	
 	static int	uploadCount = 0;
 	std::string	returnBody( UPLOAD_SUCCESS );

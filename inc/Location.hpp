@@ -76,4 +76,5 @@ class LocationConf {
 
 };
 	std::ostream& operator <<(std::ostream& os, const LocationConf& loc);
+	bool			accessibleDir( std::string );
 #endif

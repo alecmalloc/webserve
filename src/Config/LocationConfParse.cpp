@@ -139,9 +139,13 @@ void	parseCgiExt( LocationConf& location, std::stringstream& ss ){
 
 void	parseUploadDir( LocationConf& location, std::stringstream& ss ){
 	std::string	tmp;
+	std::string	locationPath = "";
+
+	if( accessibleDir( location.getPath() ) )
+			locationPath = location.getPath();
 
 	while( ss >> tmp )
-		location.setUploadDir( location.getPath() + makePath( cutEnding( tmp ), 0 ) );
+		location.setUploadDir( locationPath + makePath( cutEnding( tmp ), 0 ) );
 	if( tmp.at( tmp.size() - 1) != ';' )
 		throw( std::runtime_error( "Line not ended on ; " + tmp ) );
 }
