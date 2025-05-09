@@ -26,10 +26,12 @@ A simple HTTP/1.1 webserver which handles GET, POST and DELETE Requests. Servers
 
 ## HOW TO RUN
 
+```bash
 git clone git@github.com:alecmalloc/webserve.git 
 cd webserv
 make 
 ./webserv conf/default.conf
+```
 
 ## CONF FILE SETUP
 
@@ -62,14 +64,26 @@ Possible Setups:
 
 ```plaintext
 /
-- src                   -> source files
-- inc                   -> include files
-- error_page            -> store custom error pages
-- assets                -> stores jpeg, gifs, pdf etc.
-- conf                  -> stores conf files
-- cgi-bin               -> stores cgi scripts python and pearl in this case
-- html                  -> stores html files
-- uploads               -> default upload directory
+├── src                            -> source files                   
+│    ├── Cgi                       -> Cgi handling
+│    ├── Config                    -> Config parsing
+│    ├── Http                      -> Request parsing
+│    ├── Response                  -> Resonse Handling
+│    ├── Server                    -> Server Initilastion and mainLoop
+│    └── main.cpp
+├── inc                            -> include files
+├── server
+│    ├── error_page                -> store custom error pages
+│    ├── assets                    -> stores jpeg, gifs, pdf et
+│    ├── conf                      -> stores conf files
+│    ├── cgi-bin                   -> stores cgi scripts python
+│    │    └── uploads                   -> cgi upload directory
+│    ├── html                      -> stores html files
+│    └── uploads                   -> default upload directory
+├── conf                           -> stores conf files
+├── Makefile
+└── README.md
+
 ```
 
 ## AUTHORS
