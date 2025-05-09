@@ -30,7 +30,11 @@ Response::Response( HttpRequest& reqObj, const std::vector<ServerConf>& serverCo
 	//check allowed methods
 	checkMethods();
 
-	_pathInfo = PathInfo( _serverConf.getRootDir() + _request.getUri() );
+	if( _isLocation && !_locationConf.getRootDir().empty() )
+		_pathInfo = PathInfo( _locationConf.getRootDir() + _request.getUri() );
+	else
+		_pathInfo = PathInfo( _serverConf.getRootDir() + _request.getUri() );
+
 }
 
 Response::~Response(){

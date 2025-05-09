@@ -19,8 +19,7 @@ DEPS = $(OBJS:.o=.d)
 INC_DIRS = $(shell find $(INCL_DIR) -type d)
 INC_FLAGS = $(addprefix -I, $(INC_DIRS))
 
-FOLDERS = uploads session cgi-bin/uploads
-
+FOLDERS = uploads session 
 CC = c++
 CPPFLAGS = $(INC_FLAGS) -Wall -Werror -Wextra -MMD -MP -g3 -std=c++98
 
@@ -43,18 +42,6 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	mkdir -p $(@D)
 	$(CC) $(CPPFLAGS) -c $< -o $@
 
-bonus: $(BONUS_NAME)
-
-$(BONUS_NAME): $(BONUS_OBJS)
- ifdef $(LIB)
-	make -C $(LIB)
- endif
-	$(LD) $(LDFLAGS) -o $@ $(BONUS_OBJS) $(BONUS_LINKS)
-
-$(BUILD_DIR)/%_bonus.o: $(SRC_DIR)/%_bonus.cpp
-	mkdir -p $(@D)
-	$(CC) $(CPPFLAGS) -c $< -o $@
-
 clean:
 	$(RM) -r $(BUILD_DIR) $(FOLDERS)
 
@@ -64,4 +51,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: clean fclean re all bonus
+.PHONY: clean fclean re all
