@@ -62,7 +62,7 @@ make
 <details>
 <summary>🛠️ Click to expand</summary>
 
-# Server blocks:
+### Server blocks:
 * listen										127.0.0.1:8080;                 # IP:Port
 * server_name							localhost;                      # Hostname
 * error_page								404 error_page/404.html;    # Custom error pages
@@ -74,8 +74,8 @@ make
 * chunk_size             1m;                             # Chunk size
 * allowed_redirects      301 www.google.com;             # Global redirect
  
-# Location blocks:
-* location /upload {
+### Location blocks:
+* location /upload
 *     allowed_methods       GET POST DELETE; #allowed Methods
 *     allowed_redirects     302 www.google.com; #location redirect
 *     root                  ./uploads; #location root dir
@@ -85,7 +85,6 @@ make
 *     cgi_path              /usr/bin/python3 /usr/bin/perl; #cgi executables
 *     upload_dir            uploads; #upload directory
 *     client_max_body_size  5m; #location specific
-* }
 
 </details>
 
