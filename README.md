@@ -1,91 +1,120 @@
-# WEBSERV -- A lightweight HTTP/1.1 Server in C++98
+# 🌐 Webserv
+### A lightweight HTTP/1.1 Server in C++98
 
-## OVERVIEW
+---
 
-A simple HTTP/1.1 webserver which handles GET, POST and DELETE Requests. Servers Files and handles CGI. The connentions get handled via epoll and is a non-blocking I/O structure. The Server implements Cookies aswell as Sessions and is capable of handling any CGI script. 
+## 📝 Overview
 
-## FEATURES
+A simple HTTP/1.1 web server written in C++98 that handles `GET`, `POST`, and `DELETE` requests.  
+It supports `file serving`, `CGI execution`, `cookies`, `sessions`, and `virtual host configuration`.  
+Connections are managed using **epoll** for non-blocking I/O with high concurrency.
 
-- Feature 1 - concurrent Client handeling, up to tens of thouands and a time complexity of O(1) thanks to epoll
+---
 
-- Feature 2 - Full HTTP/1.1 support, handles GET, POST, DELETE request, keep-alive connections and multidata uploads
+## ✨ Features
 
-- Feature 3 - Fileserving, can serve static files aswell as directory listing
+- ⚡ **Concurrent Client Handling**  
+  Supports tens of thousands of clients with `O(1)` time complexity using `epoll`.
 
-- Feature 4 - CGI execution, can handle multiple CGI scripts and languages aswell as errors and timeouts
+- 🌍 **Full HTTP/1.1 Support**  
+  Keep-alive, chunked transfer, multipart uploads, and request parsing.
 
-- Feature 5 - Session Management, server is capable of registering Cookies and Sessions and handles Clients accordingly
+- 🗂️ **File & Directory Serving**  
+  Static files, directory listings, and default index resolution.
 
-- Feature 6 - Virtual hostname hosting, capable to host multiple Servers under one Ip:Port combo
+- 🧩 **CGI Execution**  
+  Multi-language CGI support with timeout and error handling.
 
-- Feature 7 - Locaiton Configuration, handles different locations according to the conf file
+- 🍪 **Session & Cookie Management**  
+  Track and persist user sessions using cookies.
 
-- Feature 8 - custom conf file
+- 🏷️ **Virtual Host Support**  
+  Serve multiple hosts on a single IP:Port combo.
 
-- Feature 9 - generates basic error pages if no specific error pages defined 
+- 📁 **Flexible Location Configs**  
+  Per-location settings like root paths, methods, redirects, and CGI.
 
-## HOW TO RUN
+- ⚙️ **Custom Config File Format**  
+  Easily define server behavior with a simple `.conf` file.
+
+- ❌ **Auto-generated Error Pages**  
+  Built-in error page generation if none is defined.
+
+---
+
+## 🚀 How to Run
 
 ```bash
-git clone git@github.com:alecmalloc/webserve.git 
+git clone https://github.com/alecmalloc/webserv.git
 cd webserv
-make 
+make
 ./webserv conf/default.conf
 ```
 
-## CONF FILE SETUP
+---
 
-```
-Possible Setups:
+## ⚙️ Config File Setup
 
-- different Ip:Ports                            -> listen               127.0.0.1:8080;
-- different Hostnames                           -> server_name          localhost;
-- define Errorpages                             -> error_page           404 404.html;
-- define Client max bodysize                    -> client_max_body_size 1g;
-- define root Directory                         -> root                 ./;
-- define default index file                     -> index                assets/index.html;
-- allow auto Directory listing                  -> autoindex            on;
-- allow chunked transfer                        -> use_chunked_encoding on;
-- define chunk size                             -> chunk_size           1m;
-- define default redirects                      -> allowed_redirects    301 www.google.com;
-- different Locations                           -> location / {}
-    - allow different Methods                   -> allowed_methods      GET POST DELETE;
-    - define lcoation specific redirects        -> allowed_redirects    302 www.google.com;
-    - define location specific root directory   -> root                 ./location;
-    - allow auto directory listing              -> autoindex            on;
-    - define location specific index file       -> index                assets/index.html;
-    - define cgi executable endings             -> cgi_ext              .py .pl;
-    - define allowed cgi executables            -> cgi_path             /usr/bin/python3;
-    - define a specified upload directory       -> upload_dir           uploads;
-    - define a location client body size        client_max_body_size    1;
-```
+<details>
+<summary>🛠️ Click to expand</summary>
 
-## Project Structure
+# Server blocks:
+listen										127.0.0.1:8080;                 # IP:Port
+server_name							localhost;                      # Hostname
+error_page								404 error_page/404.html;        # Custom error pages
+client_max_body_size			1g;                             # Max request size
+root                   ./;                             # Root directory
+index                  assets/index.html;              # Default index
+autoindex              on;                             # Directory listing
+use_chunked_encoding   on;                             # Allow chunked transfer
+chunk_size             1m;                             # Chunk size
+allowed_redirects      301 www.google.com;             # Global redirect
+
+# Location blocks:
+location /upload {
+    allowed_methods       GET POST DELETE; #allowed Methods
+    allowed_redirects     302 www.google.com; #location redirect
+    root                  ./uploads; #location root dir
+    autoindex             on; #location specific
+    index                 index.html; #location specific
+    cgi_ext               .py .pl; #allowed cgi scripts
+    cgi_path              /usr/bin/python3 /usr/bin/perl; #cgi executables
+    upload_dir            uploads; #upload directory
+    client_max_body_size  5m; #location specific
+}
+
+</details>
+
+---
+
+## 📁 Project Structure
 
 ```plaintext
-/
-├── src                            -> source files                   
-│    ├── Cgi                       -> Cgi handling
-│    ├── Config                    -> Config parsing
-│    ├── Http                      -> Request parsing
-│    ├── Response                  -> Resonse Handling
-│    ├── Server                    -> Server Initilastion and mainLoop
-│    └── main.cpp
-├── inc                            -> include files
-├── server
-│    ├── error_page                -> store custom error pages
-│    ├── assets                    -> stores jpeg, gifs, pdf et
-│    ├── conf                      -> stores conf files
-│    ├── cgi-bin                   -> stores cgi scripts python
-│    │    └── uploads                   -> cgi upload directory
-│    ├── html                      -> stores html files
-│    └── uploads                   -> default upload directory
-├── conf                           -> stores conf files
+webserv/
+├── src/                 → C++ source code
+│   ├── Cgi/             → CGI logic
+│   ├── Config/          → .conf file parsing
+│   ├── Http/            → Request parsing
+│   ├── Response/        → Response handling
+│   ├── Server/          → Server loop & init
+│   └── main.cpp
+├── inc/                 → Header files
+├── server/
+│   ├── assets/          → Test files (images, PDFs, etc.)
+│   ├── cgi-bin/         → CGI scripts (Python, Perl)
+│   │   └── uploads/     → Uploads from CGI
+│   ├── error_page/      → Custom error HTML pages
+│   ├── html/            → Static web pages
+│   └── uploads/         → Default upload target
+├── conf/                → Example config files
 ├── Makefile
 └── README.md
-
 ```
 
-## AUTHORS
+---
 
-@alecmalloc @eschencode @bartsch-tech
+## 👨‍💻 Authors
+
+- [@alecmalloc](https://github.com/alecmalloc)
+- [@eschencode](https://github.com/eschencode)
+- [@bartsch-tech](https://github.com/bartsch-tech)
