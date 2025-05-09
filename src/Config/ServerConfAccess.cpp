@@ -17,15 +17,6 @@ static bool	accessibleFile( std::string tmp ){
 		return( false );
 }
 
-static bool	accessibleDir( std::string tmp ){
-	//test function if path tmp is accasible
-	struct stat	info;
-
-	if( stat( cutEnding( tmp ).c_str(), &info ) != 0 )	return false;
-	else if( info.st_mode & S_IFDIR )			return true;
-	else 							return false;
-}
-
 void	ServerConf::checkAccess( void ){
 	//check root dir 
 	if( !_rootDir.empty() &&  !accessibleDir( _rootDir ) )

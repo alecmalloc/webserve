@@ -1,6 +1,8 @@
 # 🌐 Webserv
 ### A lightweight HTTP/1.1 Server in C++98
 
+![📸 Screenshot of Webserv Testsuite](docs/webserv_testsuite.png)
+
 ---
 
 ## 📝 Overview
