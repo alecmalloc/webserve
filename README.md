@@ -120,4 +120,4 @@ webserv/
 
 - [@alecmalloc](https://github.com/alecmalloc)
 - [@eschencode](https://github.com/eschencode)
-- [@bartsch-tech](https://github.com/bartsch-tech)
+- [@bartschi-code](https://github.com/bartschi-code)
